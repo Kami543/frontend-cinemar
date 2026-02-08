@@ -1,0 +1,240 @@
+/* Menu Overlay - estilo G1 (fundo escuro) */
+.menuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5); /* Fundo escuro semitransparente como G1 */
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.menuOverlay.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Menu Content - BRANCO como G1 - AGORA COM SCROLL NO CONTAINER TODO */
+.menuContent {
+  background: white;
+  width: 320px;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto; /* Barra de rolagem no container todo */
+  pointer-events: auto;
+  z-index: 10000;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Personalizar a barra de rolagem */
+.menuContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.menuContent::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.menuContent::-webkit-scrollbar-thumb {
+  background: #c4170c;
+  border-radius: 3px;
+}
+
+.menuContent::-webkit-scrollbar-thumb:hover {
+  background: #b3140b;
+}
+
+.menuOverlay.open .menuContent {
+  transform: translateX(0);
+}
+
+/* REMOVIDO: .menuHeader e .closeButton - Não são mais necessários */
+
+/* Conteúdo do menu */
+.menuBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 30px 20px; /* Ajustado: adicionado padding-top de 20px */
+}
+
+/* Navegação do menu */
+.menuNavigation {
+  flex: 1;
+  min-height: 0;
+  margin-bottom: 20px;
+}
+
+.menuList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.menuListItem {
+  width: 100%;
+}
+
+.menuItemButton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1rem;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.menuItemButton:hover {
+  background-color: #f5f5f5;
+  color: #c4170c;
+}
+
+.menuItemIcon {
+  display: none; /* Oculta os ícones */
+}
+
+.menuItemLabel {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Seção de autenticação no menu - estilo G1 */
+.menuAuthSection {
+  padding-top: 20px;
+  border-top: 2px solid #eee;
+  margin-top: auto;
+}
+
+.menuArrow {
+  color: #ff0000; /* Vermelho */
+  font-size: 1.3rem;
+  font-weight: bold;
+  transition: transform 0.3s ease;
+}
+
+.menuItemButton:hover .menuArrow {
+  transform: translateX(5px); /* Efeito de movimento na hover */
+}
+
+.menuInfo {
+  text-align: center;
+  color: #666;
+  line-height: 1.6;
+  font-size: 14px;
+  margin-bottom: 20px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Menu Auth Buttons (mobile) - estilo G1 */
+.menuAuthButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.menuLoginButton {
+  background: #c4170c;
+  border: none;
+  color: white;
+  padding: 14px 25px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.menuLoginButton:hover {
+  background: #b3140b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(196, 23, 12, 0.2);
+}
+
+.menuRegisterButton {
+  background: transparent;
+  border: 2px solid #c4170c;
+  color: #c4170c;
+  padding: 14px 25px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  width: 100%;
+}
+
+.menuRegisterButton:hover {
+  background: rgba(196, 23, 12, 0.05);
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .menuContent {
+    width: 85%;
+    max-width: 320px;
+  }
+  
+  .menuBody {
+    padding: 20px 15px 25px 15px; /* Ajustado: adicionado padding-top */
+  }
+  
+  .menuItemButton {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+  
+  .menuAuthButtons {
+    gap: 10px;
+  }
+  
+  .menuLoginButton,
+  .menuRegisterButton {
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+}
+
+/* Para telas muito pequenas */
+@media (max-width: 480px) {
+  .menuContent {
+    width: 90%;
+  }
+  
+  .menuBody {
+    padding: 20px 12px 20px 12px; /* Ajustado: adicionado padding-top */
+  }
+  
+  .menuLogo {
+    height: 50px;
+  }
+}

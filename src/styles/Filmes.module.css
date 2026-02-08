@@ -1,0 +1,1700 @@
+/* Variáveis CSS para temas */
+:root {
+  /* Tema Claro (Vermelho & Branco) - TEXTOS PRETOS */
+  --light-primary: #dc2626;
+  --light-primary-dark: #b91c1c;
+  --light-primary-light: #f87171;
+  --light-bg: #ffffff;
+  --light-surface: #f8fafc;
+  --light-surface-elevated: #ffffff;
+  --light-text-primary: #000000; /* PRETO */
+  --light-text-secondary: #4b5563;
+  --light-text-tertiary: #6b7280;
+  --light-border: #e5e7eb;
+  --light-border-strong: #d1d5db;
+  --light-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --light-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.1);
+  
+  /* Tema Escuro (Vermelho & Preto) */
+  --dark-primary: #ef4444;
+  --dark-primary-dark: #dc2626;
+  --dark-primary-light: #fca5a5;
+  --dark-bg: #000000;
+  --dark-surface: #111827;
+  --dark-surface-elevated: #1f2937;
+  --dark-text-primary: #f9fafb;
+  --dark-text-secondary: #d1d5db;
+  --dark-text-tertiary: #9ca3af;
+  --dark-border: #374151;
+  --dark-border-strong: #4b5563;
+  --dark-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --dark-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.5);
+
+  /* Verde apenas para Spotify */
+  --spotify-green: #1DB954;
+  --spotify-green-dark: #1AA34A;
+  
+  /* Variáveis ativas - inicialmente definidas para tema claro */
+  --primary: var(--light-primary);
+  --primary-dark: var(--light-primary-dark);
+  --primary-light: var(--light-primary-light);
+  --bg: var(--light-bg);
+  --surface: var(--light-surface);
+  --surface-elevated: var(--light-surface-elevated);
+  --text-primary: var(--light-text-primary); /* PRETO */
+  --text-secondary: var(--light-text-secondary);
+  --text-tertiary: var(--light-text-tertiary);
+  --border: var(--light-border);
+  --border-strong: var(--light-border-strong);
+  --shadow: var(--light-shadow);
+  --shadow-lg: var(--light-shadow-lg);
+}
+
+/* Tema Escuro - sobrescreve as variáveis ativas */
+.dark {
+  --primary: var(--dark-primary);
+  --primary-dark: var(--dark-primary-dark);
+  --primary-light: var(--dark-primary-light);
+  --bg: var(--dark-bg);
+  --surface: var(--dark-surface);
+  --surface-elevated: var(--dark-surface-elevated);
+  --text-primary: var(--dark-text-primary); /* BRANCO */
+  --text-secondary: var(--dark-text-secondary);
+  --text-tertiary: var(--dark-text-tertiary);
+  --border: var(--dark-border);
+  --border-strong: var(--dark-border-strong);
+  --shadow: var(--dark-shadow);
+  --shadow-lg: var(--dark-shadow-lg);
+}
+
+/* Adicionar variáveis RGB para opacidade */
+:root {
+  --primary-rgb: 220, 38, 38;
+}
+
+.dark {
+  --primary-rgb: 239, 68, 68;
+}
+
+/* Reset e correções globais */
+.filmesContainer * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+.filmesContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--bg);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* GARANTIR TEXTOS PRETOS NO MODO CLARO */
+.filmesContainer:not(.dark) {
+  --text-primary: #000000 !important;
+  --text-secondary: #4b5563 !important;
+  --text-tertiary: #6b7280 !important;
+  color: #000000 !important;
+}
+
+.filmesContainer.dark {
+  color: var(--text-primary) !important;
+}
+
+.themeChanging {
+  opacity: 0.95;
+  transition: opacity 0.3s ease;
+}
+
+/* Header */
+.header {
+  padding: 1.5rem 2rem;
+  position: relative;
+  width: 100%;
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
+}
+
+.headerContent {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.titleMain {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: var(--primary);
+}
+
+.titleSub {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.themeToggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: var(--primary);
+}
+
+.themeToggle:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* Layout Principal */
+.filmesContent {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Sidebar */
+.sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  overflow: hidden;
+  min-height: 600px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+}
+
+.sidebarHeader {
+  padding: 1rem 1.25rem;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+.sidebarTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+}
+
+.totalFilmes {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0;
+  background: var(--primary);
+  color: white;
+}
+
+/* Filtros */
+.filters {
+  padding: 1rem 1.25rem;
+  border-bottom: 2px solid var(--border);
+  flex-shrink: 0;
+}
+
+.filterButtons {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filterBtn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--border);
+  border-radius: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.filterBtn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.filterBtn.active {
+  font-weight: 700;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.searchBox {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem 0.5rem 2rem;
+  border: 2px solid var(--border);
+  border-radius: 0;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.clearSearch {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.125rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+}
+
+.clearSearch:hover {
+  color: var(--text-primary);
+}
+
+/* Lista de Filmes */
+.filmeList {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filmeList::-webkit-scrollbar {
+  width: 4px;
+}
+
+.filmeList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filmeList::-webkit-scrollbar-thumb {
+  background: var(--border);
+}
+
+.filmeList::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+.filmeListItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 0;
+  position: relative;
+  background: transparent;
+  width: 100%;
+  min-height: 90px;
+  align-items: center;
+}
+
+.filmeListItem:hover {
+  border-color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.02);
+}
+
+.filmeListItem.active {
+  border-width: 2px;
+  border-color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.05);
+}
+
+.filmeListItem.highlighted {
+  border-color: var(--primary);
+}
+
+.listItemImage {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.filmeThumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+  border: 1px solid var(--border);
+}
+
+.upcomingBadge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  border: 1px solid white;
+  z-index: 2;
+}
+
+.listItemContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.listItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.25rem;
+  width: 100%;
+}
+
+.filmeNumber {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0;
+  background: var(--primary);
+  color: white;
+}
+
+.itemActions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.actionBtn {
+  width: 20px;
+  height: 20px;
+  border-radius: 0;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.6rem;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: var(--text-tertiary);
+}
+
+.actionBtn:hover,
+.actionBtn.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
+.listItemTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  width: 100%;
+  color: var(--text-primary);
+}
+
+.listItemMeta {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+}
+
+.listItemYear,
+.listItemDirector {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.listItemFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  width: 100%;
+  margin-top: 0.125rem;
+}
+
+.listItemDate {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.filmeStatus {
+  font-size: 0.65rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid;
+}
+
+.realizado {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.próximo {
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary);
+  border-color: rgba(var(--primary-rgb), 0.3);
+}
+
+/* Detalhes do Filme */
+.filmeDetails {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  overflow: hidden;
+  min-height: 600px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+}
+
+.detailsContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Header dos Detalhes */
+.detailsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border);
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.titleSection {
+  flex: 1;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.detailsTitle {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  color: var(--text-primary);
+}
+
+/* CORREÇÃO DO BADGE DE FILME EM DESTAQUE */
+.highlightBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid var(--primary);
+  flex-shrink: 0;
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary);
+  transition: all 0.2s ease;
+}
+
+.highlightBadge:hover {
+  background: rgba(var(--primary-rgb), 0.15);
+}
+
+/* CORREÇÃO ESPECÍFICA PARA MODO ESCURO */
+.dark .highlightBadge {
+  background: rgba(var(--primary-rgb), 0.15) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+.dark .highlightBadge:hover {
+  background: rgba(var(--primary-rgb), 0.25) !important;
+}
+
+.dark .highlightBadge svg {
+  color: var(--primary) !important;
+}
+
+.titleMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  width: 100%;
+  color: var(--text-secondary);
+}
+
+.detailsYear {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--primary);
+}
+
+.detailsGenre,
+.detailsDuration,
+.detailsViews {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.actionButtonsTop {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.ratingBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  flex-shrink: 0;
+  background: transparent;
+  color: #d97706;
+}
+
+.dark .ratingBadge {
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.ratingIcon {
+  font-size: 0.75rem;
+}
+
+.ratingValue {
+  font-weight: 700;
+}
+
+.ratingCount {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.actionsRight {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.iconButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 0;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background: transparent;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.iconButton:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
+.iconButton.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
+.iconActive {
+  color: var(--primary);
+}
+
+.shareContainer {
+  position: relative;
+}
+
+.shareMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.375rem;
+  min-width: 160px;
+  z-index: 1000;
+  border-radius: 0;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.shareMenu button,
+.shareMenu a {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  background: transparent;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.shareMenu button:hover,
+.shareMenu a:hover {
+  background: rgba(var(--primary-rgb), 0.05);
+}
+
+.dark .shareMenu button:hover,
+.dark .shareMenu a:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.shareMenu button:last-child,
+.shareMenu a:last-child {
+  border-bottom: none;
+}
+
+/* Conteúdo Principal */
+.detailsMainContent {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* Coluna Esquerda */
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.posterContainer {
+  position: relative;
+  border: 2px solid var(--border);
+  overflow: hidden;
+  height: 350px;
+  width: 100%;
+}
+
+.posterImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.filmeStatusBadge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+}
+
+.statusBadge {
+  font-size: 0.7rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid white;
+}
+
+.statusBadge.realizado {
+  background: #16a34a;
+  color: white;
+}
+
+.statusBadge.próximo {
+  background: var(--primary);
+  color: white;
+}
+
+.quickInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.infoCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+  background: var(--bg);
+}
+
+.infoCard:hover {
+  border-color: var(--primary);
+}
+
+.infoIcon {
+  font-size: 1rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.infoCard > div {
+  flex: 1;
+}
+
+.infoCard h4 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.25rem 0;
+  color: var(--text-secondary);
+}
+
+.infoCard p {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+/* Coluna Direita */
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow: auto;
+  min-height: 0;
+}
+
+.synopsisSection {
+  margin-bottom: 0.5rem;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: 0.375rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--text-primary);
+}
+
+.synopsisText {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  font-weight: 500;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  color: var(--text-secondary);
+}
+
+/* Ficha Técnica */
+.technicalSection {
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.technicalInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.techRow {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.techRow:last-child {
+  border-bottom: none;
+}
+
+.techRow strong {
+  font-size: 0.875rem;
+  font-weight: 700;
+  min-width: 120px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+}
+
+.techRow span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+  flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  color: var(--text-secondary);
+}
+
+/* Prêmios */
+.awardsSection {
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.awardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.awardItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+  background: var(--bg);
+}
+
+.awardItem:hover {
+  border-color: var(--primary);
+}
+
+.awardIcon {
+  color: #fbbf24;
+  font-size: 0.75rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+.awardItem span {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  flex: 1;
+  color: var(--text-secondary);
+}
+
+/* Tags */
+.tagsSection {
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.tag {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.tag:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* SEÇÃO DE ACESSOS */
+.accessSection {
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.accessButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.accessButton {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 2px solid var(--primary);
+  border-radius: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+  background: rgba(var(--primary-rgb), 0.05);
+  color: var(--text-primary);
+}
+
+.accessButton:hover {
+  transform: translateY(-2px);
+  border-width: 2px;
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
+.buttonIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.buttonInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.buttonTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.buttonSubtitle {
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--text-secondary);
+}
+
+/* APENAS A PLAYLIST DO SPOTIFY TEM COR DIFERENTE */
+.playlistButton {
+  border-color: var(--spotify-green) !important;
+  background: rgba(29, 185, 84, 0.05) !important;
+}
+
+.playlistButton .buttonIcon {
+  color: var(--spotify-green) !important;
+}
+
+.playlistButton .buttonTitle {
+  color: var(--spotify-green) !important;
+}
+
+.playlistButton:hover {
+  border-color: var(--spotify-green-dark) !important;
+  background: rgba(29, 185, 84, 0.1) !important;
+}
+
+/* Próxima Exibição */
+.nextFilmeInfo {
+  margin-bottom: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.nextFilmeDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.nextFilmeDetail {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.nextFilmeDetail strong {
+  font-weight: 700;
+  min-width: 80px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+}
+
+.nextFilmeDetail span {
+  color: var(--text-secondary);
+}
+
+/* Main Actions */
+.mainActions {
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--border);
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* Filmes Próximos */
+.upcomingActions {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 0.875rem 1.5rem;
+  border-radius: 0;
+  border: 2px solid;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.primaryButton {
+  flex: 1;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.primaryButton:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+.secondaryButton {
+  background: transparent;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.secondaryButton:hover {
+  background: var(--primary);
+  color: white;
+}
+
+/* Filmes Passados */
+.pastFilmeNote {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: var(--bg);
+  color: var(--text-secondary);
+}
+
+.pastIcon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+
+/* CORREÇÕES ESPECÍFICAS PARA GARANTIR VERMELHO NO TEMA ESCURO */
+.dark .titleMain,
+.dark .detailsYear,
+.dark .filterBtn:hover,
+.dark .themeToggle,
+.dark .actionBtn:hover,
+.dark .actionBtn.active,
+.dark .iconButton:hover,
+.dark .iconButton.active,
+.dark .secondaryButton,
+.dark .tag:hover,
+.dark .infoIcon,
+.dark .buttonIcon:not(.playlistButton .buttonIcon) {
+  color: var(--primary) !important;
+}
+
+.dark .filmeNumber,
+.dark .totalFilmes,
+.dark .filterBtn.active,
+.dark .themeToggle:hover,
+.dark .primaryButton,
+.dark .statusBadge.próximo,
+.dark .upcomingBadge,
+.dark .actionBtn:hover,
+.dark .actionBtn.active,
+.dark .iconButton:hover,
+.dark .iconButton.active,
+.dark .secondaryButton:hover,
+.dark .statusBadge.próximo {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.dark .filmeListItem:hover,
+.dark .filmeListItem.active,
+.dark .infoCard:hover,
+.dark .awardItem:hover,
+.dark .filterBtn:hover {
+  border-color: var(--primary) !important;
+}
+
+.dark .filmeListItem.active {
+  background: rgba(var(--primary-rgb), 0.1) !important;
+}
+
+.dark .accessButton:hover {
+  background: rgba(var(--primary-rgb), 0.15) !important;
+}
+
+.dark .filmeList::-webkit-scrollbar-thumb:hover {
+  background: var(--primary) !important;
+}
+
+/* GARANTIR TEXTOS PRETOS NO MODO CLARO - REGRAS ESPECÍFICAS */
+.filmesContainer:not(.dark) .listItemTitle,
+.filmesContainer:not(.dark) .detailsTitle,
+.filmesContainer:not(.dark) .sectionTitle,
+.filmesContainer:not(.dark) .synopsisText,
+.filmesContainer:not(.dark) .subtitle,
+.filmesContainer:not(.dark) .titleSub,
+.filmesContainer:not(.dark) .sidebarTitle,
+.filmesContainer:not(.dark) .infoCard p,
+.filmesContainer:not(.dark) .techRow strong,
+.filmesContainer:not(.dark) .techRow span,
+.filmesContainer:not(.dark) .awardItem span,
+.filmesContainer:not(.dark) .tag,
+.filmesContainer:not(.dark) .buttonTitle,
+.filmesContainer:not(.dark) .buttonSubtitle,
+.filmesContainer:not(.dark) .nextFilmeDetail strong,
+.filmesContainer:not(.dark) .nextFilmeDetail span,
+.filmesContainer:not(.dark) .pastFilmeNote {
+  color: var(--text-primary) !important;
+}
+
+/* Apenas o título da playlist do Spotify deve ser verde */
+.filmesContainer:not(.dark) .playlistButton .buttonTitle {
+  color: var(--spotify-green) !important;
+}
+
+/* CORREÇÕES PARA CONTRASTE NO TEMA ESCURO */
+
+/* CORREÇÃO 1: CONTRASTE PARA HOVER DE FILME EM DESTAQUE NO MODO ESCURO */
+.dark .filmeListItem.highlighted:hover {
+  border-color: var(--primary) !important;
+  background: rgba(var(--primary-rgb), 0.08) !important;
+}
+
+.dark .filmeListItem.highlighted.active {
+  background: rgba(var(--primary-rgb), 0.12) !important;
+}
+
+/* CORREÇÃO 2: VISIBILIDADE DOS ÍCONES "AMEI" E "SALVAR" NO MODO ESCURO */
+.dark .actionBtn,
+.dark .iconButton {
+  color: var(--text-tertiary) !important;
+  background: var(--surface-elevated) !important;
+  border-color: var(--border-strong) !important;
+}
+
+.dark .actionBtn:hover,
+.dark .actionBtn.active,
+.dark .iconButton:hover,
+.dark .iconButton.active {
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  background: rgba(var(--primary-rgb), 0.15) !important;
+}
+
+/* Contraste específico para botões na lista lateral */
+.dark .filmeListItem .actionBtn {
+  background: var(--surface-elevated) !important;
+  border-color: var(--border-strong) !important;
+}
+
+.dark .filmeListItem .actionBtn:hover,
+.dark .filmeListItem .actionBtn.active {
+  background: rgba(var(--primary-rgb), 0.2) !important;
+  border-color: var(--primary) !important;
+}
+
+/* CORREÇÃO 3: CONTRASTE PARA ÍCONES DENTRO DOS BOTÕES */
+.dark .actionBtn svg,
+.dark .iconButton svg {
+  transition: color 0.2s ease;
+}
+
+.dark .actionBtn:hover svg,
+.dark .actionBtn.active svg,
+.dark .iconButton:hover svg,
+.dark .iconButton.active svg {
+  color: var(--primary) !important;
+  fill: var(--primary) !important;
+}
+
+/* CORREÇÃO 4: VISIBILIDADE DOS BOTÕES DE AÇÃO */
+.dark .filmeListItem .itemActions {
+  opacity: 1 !important;
+}
+
+.dark .filmeListItem:hover .itemActions {
+  opacity: 1 !important;
+}
+
+/* CORREÇÃO 5: CONTRASTE ADICIONAL PARA OS ÍCONES NO HEADER DOS DETALHES */
+.dark .actionsRight .iconButton {
+  border-color: var(--border-strong) !important;
+  background: var(--surface-elevated) !important;
+}
+
+.dark .actionsRight .iconButton:hover {
+  border-color: var(--primary) !important;
+  background: rgba(var(--primary-rgb), 0.15) !important;
+}
+
+/* CORREÇÃO 6: VISIBILIDADE DOS ÍCONES NO MODO CLARO */
+.filmesContainer:not(.dark) .actionBtn svg,
+.filmesContainer:not(.dark) .iconButton svg {
+  color: var(--text-tertiary) !important;
+}
+
+.filmesContainer:not(.dark) .actionBtn:hover svg,
+.filmesContainer:not(.dark) .actionBtn.active svg,
+.filmesContainer:not(.dark) .iconButton:hover svg,
+.filmesContainer:not(.dark) .iconButton.active svg {
+  color: var(--primary) !important;
+  fill: var(--primary) !important;
+}
+
+/* CORREÇÃO 7: VISIBILIDADE DO MENU DE COMPARTILHAMENTO */
+.dark .shareMenu {
+  background: var(--surface-elevated) !important;
+  border-color: var(--border-strong) !important;
+}
+
+.dark .shareMenu button,
+.dark .shareMenu a {
+  color: var(--text-primary) !important;
+}
+
+.dark .shareMenu button:hover,
+.dark .shareMenu a:hover {
+  background: rgba(var(--primary-rgb), 0.1) !important;
+}
+
+/* CORREÇÃO 8: VISIBILIDADE DOS ÍCONES NAS INFORMAÇÕES RÁPIDAS */
+.dark .infoIcon,
+.dark .awardIcon {
+  color: var(--primary) !important;
+}
+
+/* CORREÇÃO 9: CONTRASTE PARA BADGES E STATUS */
+.dark .filmeStatus {
+  font-weight: 700 !important;
+}
+
+.dark .statusBadge {
+  border-width: 2px !important;
+}
+
+/* CORREÇÃO 10: VISIBILIDADE DOS BOTÕES DE FILTRO */
+.dark .filterBtn {
+  background: var(--surface-elevated) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--text-secondary) !important;
+}
+
+.dark .filterBtn:hover {
+  background: rgba(var(--primary-rgb), 0.1) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+.dark .filterBtn.active {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: white !important;
+}
+
+/* CORREÇÃO 11: CONTRASTE NA BARRA DE BUSCA */
+.dark .searchInput {
+  background: var(--surface-elevated) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark .searchInput::placeholder {
+  color: var(--text-tertiary) !important;
+}
+
+.dark .searchInput:focus {
+  border-color: var(--primary) !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+}
+
+.dark .searchIcon {
+  color: var(--text-secondary) !important;
+}
+
+.dark .clearSearch {
+  color: var(--text-secondary) !important;
+}
+
+.dark .clearSearch:hover {
+  color: var(--text-primary) !important;
+}
+
+/* CORREÇÃO 12: CONTRASTE PARA SEÇÃO DE ACESSOS */
+.dark .accessButton {
+  background: rgba(var(--primary-rgb), 0.08) !important;
+  border-color: var(--primary) !important;
+}
+
+.dark .accessButton:hover {
+  background: rgba(var(--primary-rgb), 0.15) !important;
+  border-color: var(--primary-dark) !important;
+}
+
+.dark .buttonIcon:not(.playlistButton .buttonIcon) {
+  color: var(--primary) !important;
+}
+
+.dark .buttonTitle {
+  color: var(--text-primary) !important;
+}
+
+.dark .buttonSubtitle {
+  color: var(--text-secondary) !important;
+}
+
+/* CORREÇÃO 13: ESTADOS ATIVOS DOS BOTÕES DE AÇÃO */
+.dark .actionBtn.active,
+.dark .iconButton.active {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.3);
+}
+
+/* CORREÇÃO 14: VISIBILIDADE DOS BOTÕES PEQUENOS NA LISTA */
+.dark .actionBtn {
+  transition: all 0.2s ease;
+}
+
+.dark .actionBtn:active {
+  transform: scale(0.95);
+}
+
+/* CORREÇÃO 15: VISIBILIDADE DO HOVER EM TODOS OS BOTÕES INTERATIVOS */
+.dark .actionBtn:hover,
+.dark .iconButton:hover,
+.dark .accessButton:hover,
+.dark .tag:hover {
+  transform: translateY(-1px);
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+  .filmesContent {
+    grid-template-columns: 350px 1fr;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .detailsMainContent {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .posterContainer {
+    height: 300px;
+  }
+}
+
+@media (max-width: 992px) {
+  .filmesContent {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  
+  .sidebar {
+    height: auto;
+    max-height: 500px;
+  }
+  
+  .filmeDetails {
+    height: auto;
+  }
+  
+  .detailsMainContent {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .leftColumn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 1rem;
+  }
+  
+  .filmesContent {
+    padding: 1rem;
+  }
+  
+  .titleMain {
+    font-size: 1.5rem;
+  }
+  
+  .detailsTitle {
+    font-size: 1.25rem;
+  }
+  
+  .detailsHeader {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .actionButtonsTop {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .upcomingActions {
+    flex-direction: column;
+  }
+  
+  .filmeList {
+    max-height: 400px;
+  }
+  
+  .posterContainer {
+    height: 250px;
+  }
+  
+  .accessButton {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .buttonIcon {
+    font-size: 1.25rem;
+  }
+  
+  .techRow {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .techRow strong {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .titleMain {
+    font-size: 1.25rem;
+  }
+  
+  .titleSub {
+    font-size: 0.75rem;
+  }
+  
+  .detailsTitle {
+    font-size: 1rem;
+  }
+  
+  .titleMeta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .filterButtons {
+    flex-direction: column;
+  }
+  
+  .filmeListItem {
+    grid-template-columns: 50px 1fr;
+    min-height: 80px;
+    padding: 0.5rem;
+  }
+  
+  .listItemImage {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .listItemTitle {
+    font-size: 0.8rem;
+  }
+  
+  .posterContainer {
+    height: 200px;
+  }
+  
+  .accessButton {
+    padding: 0.625rem;
+    gap: 0.5rem;
+  }
+  
+  .buttonTitle {
+    font-size: 0.75rem;
+  }
+  
+  .buttonSubtitle {
+    font-size: 0.65rem;
+  }
+  
+  /* Correções responsivas para tema escuro */
+  .dark .filmeListItem .actionBtn {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .dark .actionsRight .iconButton {
+    width: 28px;
+    height: 28px;
+  }
+}
