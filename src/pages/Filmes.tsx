@@ -79,7 +79,7 @@ export default function Filmes() {
     {
       id: 1,
       title: "Ainda Estou Aqui",
-      director: "Walter Carvalho",
+      director: "Wallter Carvalho",
       year: 2015,
       status: "Realizado",
       date: "5 de Outubro, 2024",
