@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   FaCalendarAlt,
@@ -12,10 +12,12 @@ import {
   FaArrowLeft,
   FaFilter,
   FaSearch,
-  FaRegCalendarCheck,
-  FaClock,
   FaSun,
-  FaMoon
+  FaMoon,
+  FaStar,
+  FaClock,
+  FaCheckCircle,
+  FaCalendarPlus
 } from 'react-icons/fa';
 import styles from '../styles/Eventos.module.css';
 
@@ -35,9 +37,39 @@ interface Evento {
 }
 
 function Eventos() {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('darkMode');
+      if (saved !== null) {
+        return JSON.parse(saved);
+      }
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+  
   const [filtroAtivo, setFiltroAtivo] = useState<string>('todos');
   const [busca, setBusca] = useState<string>('');
+
+  // Aplica o modo escuro ao carregar e quando mudar
+  useEffect(() => {
+    const root = document.documentElement;
+    
+    if (isDarkMode) {
+      root.classList.add('darkMode');
+      root.style.colorScheme = 'dark';
+    } else {
+      root.classList.remove('darkMode');
+      root.style.colorScheme = 'light';
+    }
+    
+    // Salva a preferência
+    localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+  }, [isDarkMode]);
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
 
   const eventos: Evento[] = [
     {
@@ -72,7 +104,7 @@ function Eventos() {
       data: 'Abril 2025',
       dataCompleta: '23 de Abril de 2025',
       local: 'Escola EEEP Mess',
-      descricao: 'Celebração do Dia Mundial do Livro com maratona de leitura, troca de livros, encontro com autores locais e oficinas de produção literária.',
+      descricao: 'Celebração o Dia Mundial do Livro com maratona de leitura, troca de livros, encontro com autores locais e oficinas de produção literária.',
       tipo: 'evento-local',
       status: 'ativo',
       parceiros: ['EEEP Mess', 'Biblioteca Municipal', 'Editora Independente'],
@@ -169,46 +201,16 @@ function Eventos() {
       parceiros: ['EEEP Mess', 'Secretaria de Educação', 'CineMar'],
       importancia: 'media',
       link: '/festival-cinema-estudantil'
-    },
-    {
-      id: 11,
-      titulo: 'Mutirão de Limpeza das Praias',
-      data: 'Janeiro 2025',
-      dataCompleta: '18 de Janeiro de 2025',
-      local: 'Praias de Camocim',
-      descricao: 'Ação comunitária para retirada de resíduos sólidos das praias, com educação ambiental sobre impacto do lixo nos ecossistemas marinhos.',
-      tipo: 'sustentabilidade',
-      status: 'realizado',
-      parceiros: ['Surfistas de Camocim', 'Projeto Tamar', 'Comunidade Costeira'],
-      importancia: 'media',
-      link: '/limpeza-praias'
-    },
-    {
-      id: 12,
-      titulo: 'Marcha das Mulheres de Camocim',
-      data: 'Março 2025',
-      dataCompleta: '8 de Março de 2025',
-      local: 'Centro de Camocim',
-      descricao: 'Marcha pelo Dia Internacional da Mulher, com pautas específicas da realidade local: combate à violência, direitos reprodutivos e igualdade salarial.',
-      tipo: 'movimento-social',
-      status: 'futuro',
-      parceiros: ['Coletivo de Mulheres', 'Fórum de Enfrentamento à Violência', 'Sindicato das Trabalhadoras Domésticas'],
-      importancia: 'alta',
-      link: '/marcha-mulheres'
     }
   ];
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
   const tiposEvento = [
-    { id: 'todos', label: 'Todos os Eventos', icone: FaCalendarAlt, cor: '#dc2626' },
-    { id: 'movimento-social', label: 'Movimentos Sociais', icone: FaUsers, cor: '#3b82f6' },
-    { id: 'plebiscito', label: 'Plebiscitos Populares', icone: FaVoteYea, cor: '#8b5cf6' },
+    { id: 'todos', label: 'Todos', icone: FaCalendarAlt, cor: '#dc2626' },
+    { id: 'movimento-social', label: 'Sociais', icone: FaUsers, cor: '#3b82f6' },
+    { id: 'plebiscito', label: 'Plebiscitos', icone: FaVoteYea, cor: '#8b5cf6' },
     { id: 'sustentabilidade', label: 'Sustentabilidade', icone: FaLeaf, cor: '#10b981' },
-    { id: 'evento-local', label: 'Eventos Locais', icone: FaMapMarkerAlt, cor: '#f59e0b' },
-    { id: 'cultural', label: 'Eventos Culturais', icone: FaBook, cor: '#ec4899' }
+    { id: 'evento-local', label: 'Locais', icone: FaMapMarkerAlt, cor: '#f59e0b' },
+    { id: 'cultural', label: 'Culturais', icone: FaBook, cor: '#ec4899' }
   ];
 
   const eventosFiltrados = eventos.filter(evento => {
@@ -232,6 +234,15 @@ function Eventos() {
     }
   };
 
+  const getIconePorStatus = (status: string) => {
+    switch(status) {
+      case 'ativo': return <FaClock />;
+      case 'realizado': return <FaCheckCircle />;
+      case 'futuro': return <FaCalendarPlus />;
+      default: return <FaCalendarAlt />;
+    }
+  };
+
   const getCorStatus = (status: string) => {
     switch(status) {
       case 'ativo': return '#10b981';
@@ -250,31 +261,44 @@ function Eventos() {
     }
   };
 
+  const getCorImportancia = (importancia: string) => {
+    switch(importancia) {
+      case 'alta': return '#dc2626';
+      case 'media': return '#f59e0b';
+      case 'baixa': return '#10b981';
+      default: return '#6b7280';
+    }
+  };
+
   return (
-    <div className={`${styles.eventosPage} ${isDarkMode ? styles.dark : ''}`}>
+    <div className={`${styles.eventosPage} ${isDarkMode ? styles.darkMode : ''}`}>
       {/* Header */}
-      <header className={styles.heroHeader}>
+      <header className={`${styles.heroHeader} ${isDarkMode ? styles.darkHeader : ''}`}>
         <div className={styles.heroHeaderContent}>
           <div className={styles.heroHeaderTop}>
-            <div className={styles.breadcrumb}>
-              <Link to="/" className={styles.breadcrumbLink}>
-                <FaArrowLeft /> Voltar para Início
-              </Link>
+            <Link to="/" className={styles.backButton}>
+              <FaArrowLeft />
+              <span>Voltar para Início</span>
+            </Link>
+            
+            <div className={styles.themeControls}>
+              <button 
+                className={`${styles.themeToggle} ${isDarkMode ? styles.darkToggle : ''}`}
+                onClick={toggleTheme}
+                aria-label={isDarkMode ? "Mudar para modo claro" : "Mudar para modo escuro"}
+              >
+                {isDarkMode ? <FaSun /> : <FaMoon />}
+                <span className={styles.themeLabel}>
+                  {isDarkMode ? 'Modo Claro' : 'Modo Escuro'}
+                </span>
+              </button>
             </div>
-            <button 
-              className={styles.themeToggle}
-              onClick={toggleTheme}
-              aria-label={isDarkMode ? "Alternar para tema claro" : "Alternar para tema escuro"}
-            >
-              {isDarkMode ? <FaSun /> : <FaMoon />}
-              <span>{isDarkMode ? "Tema Claro" : "Tema Escuro"}</span>
-            </button>
           </div>
           
           <div className={styles.heroMain}>
             <h1 className={styles.heroTitle}>
               <FaHandsHelping className={styles.titleIcon} />
-              EVENTOS E MOBILIZAÇÕES
+              Eventos e Mobilizações
             </h1>
             <p className={styles.heroSubtitle}>
               O CineMar apoia e participa ativamente de diversos movimentos sociais, plebiscitos, 
@@ -285,7 +309,7 @@ function Eventos() {
       </header>
 
       {/* Filtros e Busca */}
-      <div className={styles.filtersSection}>
+      <div className={`${styles.filtersSection} ${isDarkMode ? styles.darkFilters : ''}`}>
         <div className={styles.filtersContent}>
           <div className={styles.searchContainer}>
             <div className={styles.searchBox}>
@@ -295,7 +319,7 @@ function Eventos() {
                 placeholder="Buscar eventos por título, local ou descrição..."
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
-                className={styles.searchInput}
+                className={`${styles.searchInput} ${isDarkMode ? styles.darkInput : ''}`}
               />
             </div>
             
@@ -310,14 +334,17 @@ function Eventos() {
                 return (
                   <button
                     key={tipo.id}
-                    className={`${styles.tipoFilterBtn} ${filtroAtivo === tipo.id ? styles.active : ''}`}
+                    className={`${styles.tipoFilterBtn} ${filtroAtivo === tipo.id ? styles.active : ''} ${isDarkMode ? styles.darkFilterBtn : ''}`}
                     onClick={() => setFiltroAtivo(tipo.id)}
-                    style={{ borderColor: tipo.cor }}
+                    style={filtroAtivo === tipo.id ? { borderColor: tipo.cor, color: tipo.cor } : {}}
                   >
                     <Icone />
                     <span>{tipo.label}</span>
                     {filtroAtivo === tipo.id && (
-                      <div className={styles.activeIndicator} style={{ backgroundColor: tipo.cor }} />
+                      <div 
+                        className={styles.activeIndicator} 
+                        style={{ background: tipo.cor }}
+                      />
                     )}
                   </button>
                 );
@@ -328,24 +355,18 @@ function Eventos() {
       </div>
 
       {/* Conteúdo Principal */}
-      <main className={styles.mainContent}>
-        {/* Todos os Eventos */}
-        <div className={styles.allEvents}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>
-              <FaCalendarAlt className={styles.sectionTitleIcon} />
-              Todos os Eventos
-              <span className={styles.eventosCount}>({eventosFiltrados.length})</span>
-            </h2>
-          </div>
-          
+      <main className={`${styles.mainContent} ${isDarkMode ? styles.darkMain : ''}`}>
+        <div className={styles.contentWrapper}>
+          {/* Grade de Eventos */}
           {eventosFiltrados.length === 0 ? (
             <div className={styles.noResults}>
-              <div className={styles.noResultsIcon}>
+              <div className={`${styles.noResultsIcon} ${isDarkMode ? styles.darkNoResultsIcon : ''}`}>
                 <FaSearch />
               </div>
-              <h3>Nenhum evento encontrado</h3>
-              <p>Tente alterar os filtros ou termos de busca</p>
+              <h3 className={isDarkMode ? styles.darkText : ''}>Nenhum evento encontrado</h3>
+              <p className={isDarkMode ? styles.darkTextSecondary : ''}>
+                Tente alterar os filtros ou termos de busca
+              </p>
               <button 
                 className={styles.clearFiltersBtn}
                 onClick={() => {
@@ -359,79 +380,111 @@ function Eventos() {
           ) : (
             <div className={styles.eventsGrid}>
               {eventosFiltrados.map(evento => (
-                <div key={evento.id} className={styles.eventoCard}>
+                <div key={evento.id} className={`${styles.eventoCard} ${isDarkMode ? styles.darkCard : ''}`}>
+                  {/* Cabeçalho do Card */}
                   <div className={styles.eventoCardHeader}>
-                    <div className={styles.eventoCardTipo}>
-                      {getIconePorTipo(evento.tipo)}
-                      <span>{tiposEvento.find(t => t.id === evento.tipo)?.label}</span>
+                    <div className={styles.headerLeft}>
+                      <div className={`${styles.eventoTipo} ${isDarkMode ? styles.darkTextSecondary : ''}`}>
+                        <div className={styles.tipoContent}>
+                          {getIconePorTipo(evento.tipo)}
+                          <span className={styles.tipoLabel}>
+                            {tiposEvento.find(t => t.id === evento.tipo)?.label}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className={`${styles.eventoCardStatus} ${styles[evento.status]}`}>
-                      {getTextoStatus(evento.status)}
+                    
+                    <div className={styles.headerRight}>
+                      <div 
+                        className={`${styles.eventoStatus} ${styles[evento.status]}`}
+                        style={{ 
+                          background: `${getCorStatus(evento.status)}15`,
+                          color: getCorStatus(evento.status)
+                        }}
+                      >
+                        {getIconePorStatus(evento.status)}
+                        <span className={styles.statusText}>
+                          {getTextoStatus(evento.status)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   
+                  {/* Conteúdo do Card */}
                   <div className={styles.eventoCardContent}>
-                    <h3 className={styles.eventoCardTitulo}>{evento.titulo}</h3>
+                    <h3 className={`${styles.eventoTitulo} ${isDarkMode ? styles.darkText : ''}`}>
+                      {evento.titulo}
+                    </h3>
                     
-                    <div className={styles.eventoCardMeta}>
-                      <div className={styles.metaItem}>
-                        <FaCalendarAlt className={styles.metaItemIcon} />
-                        <span className={styles.metaItemText}>{evento.dataCompleta}</span>
+                    <div className={styles.eventoMetaCompact}>
+                      <div className={`${styles.metaItemCompact} ${isDarkMode ? styles.darkMetaItem : ''}`}>
+                        <FaCalendarAlt className={styles.metaIconCompact} />
+                        <span className={styles.metaValueCompact}>{evento.data}</span>
                       </div>
-                      <div className={styles.metaItem}>
-                        <FaMapMarkerAlt className={styles.metaItemIcon} />
-                        <span className={styles.metaItemText}>{evento.local}</span>
+                      
+                      <div className={`${styles.metaItemCompact} ${isDarkMode ? styles.darkMetaItem : ''}`}>
+                        <FaMapMarkerAlt className={styles.metaIconCompact} />
+                        <span className={styles.metaValueCompact}>{evento.local}</span>
                       </div>
                     </div>
                     
-                    <p className={styles.eventoCardDescricao}>
+                    <p className={`${styles.eventoDescricao} ${isDarkMode ? styles.darkTextSecondary : ''}`}>
                       {evento.descricao}
                     </p>
                     
-                    <div className={styles.eventoCardParceiros}>
-                      <div className={styles.parceirosPreview}>
-                        {evento.parceiros.slice(0, 3).map((parceiro, index) => (
-                          <span key={index} className={styles.parceiroTag}>{parceiro}</span>
-                        ))}
-                        {evento.parceiros.length > 3 && (
-                          <span className={styles.moreParceiros}>+{evento.parceiros.length - 3}</span>
-                        )}
+                    {/* Rodapé do Card */}
+                    <div className={styles.eventoCardFooterCompact}>
+                      {evento.link && (
+                        <Link to={evento.link} className={styles.eventoLinkCompact}>
+                          <span>Detalhes</span>
+                          <FaArrowRight className={styles.linkIconCompact} />
+                        </Link>
+                      )}
+                      
+                      {/* Importância */}
+                      <div className={styles.importanciaBadgeCompact}>
+                        <span 
+                          className={styles.importanciaTextCompact}
+                          style={{ 
+                            background: `${getCorImportancia(evento.importancia)}15`,
+                            color: getCorImportancia(evento.importancia)
+                          }}
+                        >
+                          <FaStar className={styles.importanciaIconCompact} />
+                          {evento.importancia === 'alta' ? 'Alta' :
+                           evento.importancia === 'media' ? 'Média' :
+                           'Baixa'}
+                        </span>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className={styles.eventoCardFooter}>
-                    {evento.link && (
-                      <Link to={evento.link} className={styles.eventoCardLink}>
-                        Detalhes <FaArrowRight className={styles.eventoCardLinkIcon} />
-                      </Link>
-                    )}
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </div>
 
-        {/* CTA */}
-        <div className={styles.ctaSection}>
-          <div className={styles.ctaCard}>
-            <div className={styles.ctaContent}>
-              <h2 className={styles.ctaTitle}>
-                <FaHandsHelping className={styles.ctaTitleIcon} />
-                Quer propor um evento?
-              </h2>
-              <p className={styles.ctaText}>
-                O CineMar está sempre aberto a novas parcerias e apoios a eventos que 
-                contribuam para o desenvolvimento social, cultural e ambiental de Camocim.
-              </p>
-              <div className={styles.ctaActions}>
-                <Link to="/contato" className={styles.ctaButton}>
-                  <FaUsers className={styles.ctaButtonIcon} /> Propor Parceria
-                </Link>
-                <Link to="/sobre-nos" className={styles.ctaButtonSecondary}>
-                  <FaArrowRight className={styles.ctaButtonSecondaryIcon} /> Conheça Nossos Critérios
-                </Link>
+          {/* CTA */}
+          <div className={styles.ctaSection}>
+            <div className={`${styles.ctaCard} ${isDarkMode ? styles.darkCard : ''}`}>
+              <div className={styles.ctaContent}>
+                <h2 className={styles.ctaTitle}>
+                  <FaHandsHelping className={styles.ctaTitleIcon} />
+                  Quer propor um evento?
+                </h2>
+                <p className={styles.ctaText}>
+                  O CineMar está sempre aberto a novas parcerias e apoios a eventos que 
+                  contribuam para o desenvolvimento social, cultural e ambiental de Camocim.
+                </p>
+                <div className={styles.ctaActions}>
+                  <Link to="/contato" className={styles.ctaButton}>
+                    <FaUsers className={styles.ctaButtonIcon} /> 
+                    Propor Parceria
+                  </Link>
+                  <Link to="/sobre-nos" className={styles.ctaButtonSecondary}>
+                    Conheça Nossos Critérios
+                    <FaArrowRight className={styles.ctaButtonIcon} />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

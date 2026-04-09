@@ -6,7 +6,6 @@ import {
   FaMapMarkerAlt, 
   FaArrowRight, 
   FaFilm, 
-  FaUsers, 
   FaHeart,
   FaStar,
   FaQuoteRight,
@@ -17,16 +16,15 @@ import {
   FaBuilding,
   FaHandshake,
   FaFire,
-  FaHeadphones,
   FaTag,
   FaSun,
   FaMoon,
   FaPlay,
   FaComments,
   FaAngleRight,
-  FaRegCircle
+  FaRegCircle,
+  FaUsers 
 } from 'react-icons/fa';
-import cinemarLogo from '../images/cinemar-logo.png';
 import Corra from '../images/filmes/Corra.jpg';
 import AgenteSecreto from '../images/filmes/O-agente-secreto.jpg';
 import styles from '../styles/HomePage.module.css';
@@ -52,7 +50,6 @@ function HomePage() {
   const [proximoFilme, setProximoFilme] = useState<Filme | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const [activeCategory, setActiveCategory] = useState<string>('sobre');
 
   useEffect(() => {
     const loadData = () => {
@@ -112,10 +109,6 @@ function HomePage() {
     setIsDarkMode(!isDarkMode);
   };
 
-  const handleCategoryClick = (category: string) => {
-    setActiveCategory(category);
-  };
-
   if (isLoading) {
     return (
       <div className={`${styles.homePage} ${isDarkMode ? styles.dark : ''}`}>
@@ -132,11 +125,8 @@ function HomePage() {
       <header className={styles.heroHeader}>
         <div className={styles.container}>
           <div className={styles.heroContent}>
-            {/* Logo menor e Tema Toggle */}
+            {/* Tema Toggle */}
             <div className={styles.heroHeaderTop}>
-              <div className={styles.logoContainer}>
-                <img src={cinemarLogo} alt="CineMar Logo" className={styles.logo} />
-              </div>
               <button 
                 className={styles.themeToggle}
                 onClick={toggleTheme}
@@ -153,73 +143,12 @@ function HomePage() {
                 PORQUE O CINEMA É UM ENCONTRO
               </h1>
               <p className={styles.heroSubtitle}>
-                CineMar • Onde o filme é só o começo
+                CineMar • Um encontro com o cinema e a comunidade
               </p>
-            </div>
-
-            {/* Stats Simples */}
-            <div className={styles.statsContainer}>
-              <div className={styles.statItem}>
-                <FaFilm className={styles.statIcon} />
-                <div className={styles.statContent}>
-                  <span className={styles.statValue}>12</span>
-                  <span className={styles.statLabel}>Filmes</span>
-                </div>
-              </div>
-              <div className={styles.statItem}>
-                <FaUsers className={styles.statIcon} />
-                <div className={styles.statContent}>
-                  <span className={styles.statValue}>100+</span>
-                  <span className={styles.statLabel}>Participantes</span>
-                </div>
-              </div>
-              <div className={styles.statItem}>
-                <FaHeadphones className={styles.statIcon} />
-                <div className={styles.statContent}>
-                  <span className={styles.statValue}>8</span>
-                  <span className={styles.statLabel}>Playlists</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </header>
-
-      {/* Navegação por Categorias */}
-      <div className={styles.categoriesNavigation}>
-        <div className={styles.container}>
-          <div className={styles.categoryFilters}>
-            <button 
-              className={`${styles.categoryFilterBtn} ${activeCategory === 'sobre' ? styles.active : ''}`}
-              onClick={() => handleCategoryClick('sobre')}
-            >
-              <FaBookOpen className={styles.categoryIcon} />
-              <span>Sobre Nós</span>
-            </button>
-            <button 
-              className={`${styles.categoryFilterBtn} ${activeCategory === 'sessoes' ? styles.active : ''}`}
-              onClick={() => handleCategoryClick('sessoes')}
-            >
-              <FaCalendarAlt className={styles.categoryIcon} />
-              <span>Sessões</span>
-            </button>
-            <button 
-              className={`${styles.categoryFilterBtn} ${activeCategory === 'playlists' ? styles.active : ''}`}
-              onClick={() => handleCategoryClick('playlists')}
-            >
-              <FaHeadphones className={styles.categoryIcon} />
-              <span>Playlists</span>
-            </button>
-            <button 
-              className={`${styles.categoryFilterBtn} ${activeCategory === 'local' ? styles.active : ''}`}
-              onClick={() => handleCategoryClick('local')}
-            >
-              <FaMapMarkerAlt className={styles.categoryIcon} />
-              <span>Local</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Conteúdo Principal */}
       <main className={styles.mainContent}>
@@ -236,7 +165,7 @@ function HomePage() {
                       O CINEMAR: ESPAÇO DE ENCONTRO E TRANSFORMAÇÃO
                     </h2>
                     <p className={styles.cardSubtitle}>
-                      Comunidade Cinematográfica desde 2023
+                      Cineclube Camocinense desde 2025
                     </p>
                   </div>
                   <div className={styles.curatorBadge}>
@@ -248,42 +177,58 @@ function HomePage() {
                   <div className={styles.sectionBlock}>
                     <h3 className={styles.sectionTitle}>
                       <FaQuoteRight className={styles.sectionIcon} />
-                      Nossa Missão
+                      Nossa História
                     </h3>
                     <div className={styles.sectionContent}>
                       <p>
-                        O <strong>CineMar</strong> nasceu em 2023 da paixão compartilhada por cinema e do desejo 
-                        de criar um espaço de encontro autêntico em Camocim. Somos um <strong>movimento cultural ativo</strong> 
-                        que acredita no poder transformador da sétima arte para unir pessoas, provocar reflexões 
-                        críticas e ampliar horizontes culturais.
+                        A ideia do <strong>CineMar</strong> surgiu em meados de 2023 quando os professores de Sociologia 
+                        <strong> Luiz Seixas</strong> e <strong>Renato Silva</strong>, junto com o professor de História 
+                        <strong> Marcelo Lima</strong>, resolveram criar um cineclube na cidade de Camocim (CE).
                       </p>
-                      
-                      <div className={styles.missionPoints}>
-                        <div className={styles.missionPoint}>
-                          <FaRegCircle className={styles.missionIcon} />
-                          <div className={styles.missionText}>
-                            <strong>Acessibilidade:</strong> Cinema de qualidade gratuitamente
-                          </div>
-                        </div>
-                        <div className={styles.missionPoint}>
-                          <FaRegCircle className={styles.missionIcon} />
-                          <div className={styles.missionText}>
-                            <strong>Comunidade:</strong> Diálogo intergeracional através do cinema
-                          </div>
-                        </div>
-                        <div className={styles.missionPoint}>
-                          <FaRegCircle className={styles.missionIcon} />
-                          <div className={styles.missionText}>
-                            <strong>Formação Crítica:</strong> Desenvolver pensamento analítico
-                          </div>
+                      <p>
+                        O projeto ficou fermentando nas intenções de seus proponentes até março de 2025 quando, 
+                        finalmente, os professores Luiz Seixas, Renato Silva e os estudantes <strong>Victor Kelves</strong> e 
+                        <strong> Daniela Lopes</strong>, junto com o presidente e vice-presidente do Sindicato dos 
+                        Pescadores, respectivamente <strong>sr. Manoel Silva</strong> e <strong>sr. Francisco</strong>, 
+                        reuniram-se no auditório do sindicato para debater a viabilidade da proposta.
+                      </p>
+                      <p>
+                        Foi a discente <strong>Daniela Lopes</strong> quem batizou o cineclube com o nome que possui até hoje: 
+                        <strong> CineMar</strong>.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.sectionBlock}>
+                    <h3 className={styles.sectionTitle}>
+                      <FaHandshake className={styles.sectionIcon} />
+                      Parcerias Estratégicas
+                    </h3>
+                    <div className={styles.missionPoints}>
+                      <div className={styles.missionPoint}>
+                        <FaRegCircle className={styles.missionIcon} />
+                        <div className={styles.missionText}>
+                          <strong>Sindicato dos Pescadores:</strong> Sede principal e parceiro fundador
                         </div>
                       </div>
-                      
-                      <p>
-                        Nossa <strong>curadoria diversificada</strong> equilibra clássicos atemporais com 
-                        produções contemporâneas, sempre priorizando narrativas que estimulam o debate e 
-                        a reflexão coletiva.
-                      </p>
+                      <div className={styles.missionPoint}>
+                        <FaRegCircle className={styles.missionIcon} />
+                        <div className={styles.missionText}>
+                          <strong>ACCAL:</strong> Sede para sessões especiais
+                        </div>
+                      </div>
+                      <div className={styles.missionPoint}>
+                        <FaRegCircle className={styles.missionIcon} />
+                        <div className={styles.missionText}>
+                          <strong>IFCE Camocim:</strong> Busca de formalização como projeto de extensão
+                        </div>
+                      </div>
+                      <div className={styles.missionPoint}>
+                        <FaRegCircle className={styles.missionIcon} />
+                        <div className={styles.missionText}>
+                          <strong>Cunversa Podcast:</strong> Divulgação das atividades
+                        </div>
+                      </div>
                     </div>
                   </div>
                   
@@ -295,26 +240,26 @@ function HomePage() {
                     <div className={styles.membersGrid}>
                       <div className={styles.memberCard}>
                         <div className={styles.memberInfo}>
-                          <h4>Coordenador Geral</h4>
-                          <p>Maria Silva</p>
+                          <h4>Coordenadores</h4>
+                          <p>Luiz Seixas • Renato Silva</p>
                         </div>
                       </div>
                       <div className={styles.memberCard}>
                         <div className={styles.memberInfo}>
-                          <h4>Curadoria</h4>
-                          <p>João Santos & Ana Costa</p>
+                          <h4>Colaboradores Fundadores</h4>
+                          <p>Victor Kelves • Daniela Lopes</p>
                         </div>
                       </div>
                       <div className={styles.memberCard}>
                         <div className={styles.memberInfo}>
-                          <h4>Mediação</h4>
-                          <p>Pedro Oliveira</p>
+                          <h4>Parceiros Fundadores</h4>
+                          <p>Manoel Silva • Francisco</p>
                         </div>
                       </div>
                       <div className={styles.memberCard}>
                         <div className={styles.memberInfo}>
-                          <h4>Produção</h4>
-                          <p>Carla Rodrigues</p>
+                          <h4>Parceiros Institucionais</h4>
+                          <p>Santhiago Pontes • Cassiano Ricardo</p>
                         </div>
                       </div>
                     </div>
@@ -322,7 +267,7 @@ function HomePage() {
                   
                   <div className={styles.cardActionsFooter}>
                     <Link to="/sobre-nos" className={styles.primaryButton}>
-                      EXPLORAR NOSSA HISTÓRIA <FaArrowRight />
+                      CONHEÇA NOSSA HISTÓRIA <FaArrowRight />
                     </Link>
                   </div>
                 </div>
@@ -468,6 +413,9 @@ function HomePage() {
                         <div className={styles.detailItem}>
                           <strong>Entrada:</strong> Gratuita • 16 anos
                         </div>
+                        <div className={styles.detailItem}>
+                          <strong>Frequência:</strong> Sessões quinzenais
+                        </div>
                       </div>
                     </div>
                     
@@ -511,33 +459,43 @@ function HomePage() {
                     NOSSA SEDE
                   </h4>
                   <p className={styles.addressDetails}>
-                    <strong>Sindicato dos Pescadores de Camocim</strong><br/>
+                    <strong>Sindicato dos Pescadores e Pescadoras de Camocim</strong><br/>
                     Rua EUA, 118, Praia<br/>
                     Camocim - Ceará<br/>
                     CEP: 62400-000
                   </p>
+                  <div className={styles.mapNote}>
+                    <FaClock className={styles.noteIcon} />
+                    <span>Sessões quinzenais • Sextas-feiras • 19:30h</span>
+                  </div>
                 </div>
                 
                 <div className={styles.partnershipCard}>
                   <h4 className={styles.partnershipTitle}>
                     <FaHandshake className={styles.partnershipIcon} />
-                    PARCERIA ESTRATÉGICA
+                    PARCERIAS ESTRATÉGICAS
                   </h4>
                   <p className={styles.partnershipText}>
-                    A colaboração com o <strong>Sindicato dos Pescadores</strong> representa uma aliança 
-                    que reconhece a cultura como direito social fundamental, possibilitando atividades 
-                    culturais acessíveis enquanto fortalece os laços entre movimento sindical e produção 
-                    cultural comunitária.
+                    O CineMar conta com o apoio fundamental de diversas instituições que acreditam 
+                    no poder transformador da cultura audiovisual em Camocim.
                   </p>
                   
                   <div className={styles.leadershipGrid}>
                     <div className={styles.leaderItem}>
-                      <h5>Presidente</h5>
-                      <p>Sr. Manoel</p>
+                      <h5>Sindicato dos Pescadores</h5>
+                      <p>Sede e parceiro fundador</p>
                     </div>
                     <div className={styles.leaderItem}>
-                      <h5>Vice-Presidente</h5>
-                      <p>Sr. Francisco</p>
+                      <h5>ACCAL</h5>
+                      <p>Sede para sessões especiais</p>
+                    </div>
+                    <div className={styles.leaderItem}>
+                      <h5>IFCE Camocim</h5>
+                      <p>Em formalização como projeto de extensão</p>
+                    </div>
+                    <div className={styles.leaderItem}>
+                      <h5>Cunversa Podcast</h5>
+                      <p>Divulgação cultural</p>
                     </div>
                   </div>
                 </div>
@@ -558,14 +516,18 @@ function HomePage() {
                     <FaMapMarkerAlt className={styles.mapIcon} />
                     LOCALIZAÇÃO CENTRAL
                   </h4>
-                  <p className={styles.mapDescription}>Centro de Camocim - Ceará</p>
+                  <p className={styles.mapDescription}>Praia de Camocim - Ceará</p>
                   <div className={styles.mapNote}>
                     <FaClock className={styles.noteIcon} />
-                    <span>Sessões: Sextas e Sábados às 19:30h</span>
+                    <span>Sessões: Quinzenalmente às Sextas 19:30h</span>
                   </div>
                   <div className={styles.mapNote}>
                     <FaUsers className={styles.noteIcon} />
                     <span>Capacidade: 80 pessoas</span>
+                  </div>
+                  <div className={styles.mapNote}>
+                    <FaHeart className={styles.noteIcon} />
+                    <span>Entrada Franca • Livre para todos</span>
                   </div>
                 </div>
               </div>

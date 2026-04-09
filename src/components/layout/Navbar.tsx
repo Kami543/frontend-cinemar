@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { FaUser } from 'react-icons/fa';
 import image from '../../images/cinemar-logo.png';
@@ -9,24 +9,24 @@ export default function Navbar() {
   const [isMounted, setIsMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const burgerMenuRef = useRef<HTMLButtonElement>(null);
-  const navigate = useNavigate(); // Adicione este hook
 
   const handleLogin = () => {
     console.log('Login clicked');
     // Aqui você pode redirecionar para a página de login se necessário
-    // navigate('/login');
+    // window.location.href = '/login';
   };
 
   const handleRegister = () => {
     console.log('Register clicked');
     // Aqui você pode redirecionar para a página de cadastro se necessário
-    // navigate('/register');
+    // window.location.href = '/register';
   };
 
-  const handleMenuItemClick = (path: string) => {
-    console.log(`Navigating to ${path}`);
-    navigate(path); // Use navigate para mudar a rota
-  };
+  // REMOVA esta função - o Menu vai navegar sozinho
+  // const handleMenuItemClick = (path: string) => {
+  //   console.log(`Navigating to ${path}`);
+  //   navigate(path);
+  // };
 
   const toggleMenu = () => {
     console.log('Toggle menu clicked, current state:', isMenuOpen);
@@ -127,11 +127,10 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Componente Menu */}
+          {/* Componente Menu - REMOVA a prop onMenuItemClick */}
           <Menu 
             isOpen={isMenuOpen}
             onClose={() => setIsMenuOpen(false)}
-            onMenuItemClick={handleMenuItemClick}
             onLogin={handleLogin}
             onRegister={handleRegister}
             logo={image}
