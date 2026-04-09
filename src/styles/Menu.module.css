@@ -7,7 +7,7 @@
   bottom: 0;
   width: 100%;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5); /* Fundo escuro semitransparente como G1 */
+  background: rgba(0, 0, 0, 0.5);
   z-index: 9999;
   opacity: 0;
   visibility: hidden;
@@ -21,7 +21,7 @@
   pointer-events: auto;
 }
 
-/* Menu Content - BRANCO como G1 - AGORA COM SCROLL NO CONTAINER TODO */
+/* Menu Content - BRANCO como G1 */
 .menuContent {
   background: white;
   width: 320px;
@@ -33,10 +33,12 @@
   flex-direction: column;
   transform: translateX(-100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-y: auto; /* Barra de rolagem no container todo */
+  overflow-y: auto;
   pointer-events: auto;
   z-index: 10000;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  /* Adicione isso para prevenir fechamento acidental */
+  touch-action: pan-y;
 }
 
 /* Personalizar a barra de rolagem */
@@ -61,14 +63,36 @@
   transform: translateX(0);
 }
 
-/* REMOVIDO: .menuHeader e .closeButton - Não são mais necessários */
+/* Botão de fechar - AGORA VISÍVEL */
+.closeButton {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 22px;
+  cursor: pointer;
+  z-index: 10001;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: #f5f5f5;
+  color: #c4170c;
+}
 
 /* Conteúdo do menu */
 .menuBody {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px 20px 30px 20px; /* Ajustado: adicionado padding-top de 20px */
+  padding: 50px 20px 30px 20px; /* Aumentado padding-top para dar espaço ao botão fechar */
 }
 
 /* Navegação do menu */
@@ -99,10 +123,15 @@
   padding: 1rem;
   background: none;
   border: none;
-  color: inherit;
+  color: #333;
   font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  text-align: left;
+  /* Adicione isso para melhorar acessibilidade em mobile */
+  min-height: 50px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .menuItemButton:hover {
@@ -110,13 +139,20 @@
   color: #c4170c;
 }
 
-.menuItemIcon {
-  display: none; /* Oculta os ícones */
-}
-
 .menuItemLabel {
   font-weight: 500;
   white-space: nowrap;
+}
+
+.menuArrow {
+  color: #c4170c;
+  font-size: 1.3rem;
+  font-weight: bold;
+  transition: transform 0.3s ease;
+}
+
+.menuItemButton:hover .menuArrow {
+  transform: translateX(5px);
 }
 
 /* Seção de autenticação no menu - estilo G1 */
@@ -124,17 +160,6 @@
   padding-top: 20px;
   border-top: 2px solid #eee;
   margin-top: auto;
-}
-
-.menuArrow {
-  color: #ff0000; /* Vermelho */
-  font-size: 1.3rem;
-  font-weight: bold;
-  transition: transform 0.3s ease;
-}
-
-.menuItemButton:hover .menuArrow {
-  transform: translateX(5px); /* Efeito de movimento na hover */
 }
 
 .menuInfo {
@@ -146,7 +171,7 @@
   font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* Menu Auth Buttons (mobile) - estilo G1 */
+/* Menu Auth Buttons - estilo G1 */
 .menuAuthButtons {
   display: flex;
   flex-direction: column;
@@ -205,12 +230,18 @@
   }
   
   .menuBody {
-    padding: 20px 15px 25px 15px; /* Ajustado: adicionado padding-top */
+    padding: 45px 15px 25px 15px;
   }
   
   .menuItemButton {
     padding: 12px 14px;
     font-size: 15px;
+  }
+  
+  .closeButton {
+    top: 12px;
+    right: 12px;
+    font-size: 20px;
   }
   
   .menuAuthButtons {
@@ -231,10 +262,33 @@
   }
   
   .menuBody {
-    padding: 20px 12px 20px 12px; /* Ajustado: adicionado padding-top */
+    padding: 45px 12px 20px 12px;
   }
   
-  .menuLogo {
-    height: 50px;
+  .menuItemButton {
+    padding: 10px 12px;
+    font-size: 14px;
   }
+  
+  .closeButton {
+    top: 10px;
+    right: 10px;
+    font-size: 18px;
+  }
+  
+  .menuInfo {
+    font-size: 13px;
+    margin-bottom: 15px;
+  }
+}
+
+.menuItemButton.active {
+  background-color: #f0f0f0;
+  color: #c4170c;
+  font-weight: 600;
+}
+
+.menuItemButton.active .menuArrow {
+  color: #c4170c;
+  transform: translateX(5px);
 }
