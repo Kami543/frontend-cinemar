@@ -1,0 +1,22 @@
+# Define a pasta de saída do seu build (geralmente 'dist' para Vite ou 'build' para CRA)
+[build]
+  publish = "dist"
+
+# CORREÇÃO DO ERRO DE MIME TYPE
+# Força o tipo correto para arquivos JavaScript
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/*.mjs"
+  [headers.values]
+    Content-Type = "application/javascript"
+
+# CORREÇÃO DO REACT ROUTER (tela branca ao recarregar)
+# Redireciona todas as rotas para o index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
