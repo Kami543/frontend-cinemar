@@ -1,27 +1,24 @@
-import { useState, useEffect } from 'react';
-import { 
-  FaArrowLeft, 
-  FaCalendarAlt, 
-  FaUsers, 
-  FaFilm, 
+import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  FaArrowLeft,
+  FaCalendarAlt,
+  FaFilm,
   FaSearch,
   FaChevronLeft,
   FaChevronRight,
   FaTimes,
-  FaExternalLinkAlt,
   FaVideo,
   FaImage,
-  FaChevronUp,
-  FaChevronDown,
   FaSun,
   FaMoon,
   FaGoogleDrive,
   FaRegImages,
-  FaDownload
 } from 'react-icons/fa';
 import styles from '../styles/Fotos.module.css';
 
-// Definir interfaces TypeScript
+/* =========================================================
+   TIPOS
+   ======================================================= */
 interface Foto {
   id: number;
   url: string;
@@ -30,7 +27,7 @@ interface Foto {
   data: string;
   categoria: string;
   tipo: 'foto' | 'video';
-  driveLink?: string; // Link original do Google Drive
+  driveLink?: string;
 }
 
 interface Sessao {
@@ -41,174 +38,162 @@ interface Sessao {
   dataSessao: string;
   participantes: number;
   descricao: string;
-  totalFotos: number;
   fotos: Foto[];
 }
 
-// URLs do Google Drive para a sessão "O AGENTE SECRETO"
-const AGENTE_SECRETO_FOTOS = {
-  fotosDebate: [
-    {
-      id: 1,
-      url: "https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t1&sz=w1000",
-      driveLink: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t1/view",
-      titulo: "DEBATE COMPLETO - PARTE 1",
-      descricao: "Momentos iniciais do debate sobre O Agente Secreto",
-      data: "06/11/2024",
-      categoria: "Debate",
-      tipo: "foto" as const
-    },
-    {
-      id: 2,
-      url: "https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t2&sz=w1000",
-      driveLink: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t2/view",
-      titulo: "APRESENTAÇÃO DO FILME",
-      descricao: "Introdução à obra de Kleber Mendonça Filho",
-      data: "06/11/2024",
-      categoria: "Apresentação",
-      tipo: "foto" as const
-    },
-    {
-      id: 3,
-      url: "https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t3&sz=w1000",
-      driveLink: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t3/view",
-      titulo: "MEDIAÇÃO DO DEBATE",
-      descricao: "Coordenação das discussões sobre o filme",
-      data: "06/11/2024",
-      categoria: "Mediação",
-      tipo: "foto" as const
-    },
-    {
-      id: 4,
-      url: "https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t4&sz=w1000",
-      driveLink: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t4/view",
-      titulo: "PARTICIPANTES ATENTOS",
-      descricao: "Público engajado durante o debate",
-      data: "06/11/2024",
-      categoria: "Participação",
-      tipo: "foto" as const
-    },
-    {
-      id: 5,
-      url: "https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t5&sz=w1000",
-      driveLink: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t5/view",
-      titulo: "MOMENTOS DE REFLEXÃO",
-      descricao: "Discussões sobre ditadura e cinema brasileiro",
-      data: "06/11/2024",
-      categoria: "Debate",
-      tipo: "foto" as const
-    },
-    {
-      id: 6,
-      url: "https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t6&sz=w1000",
-      driveLink: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t6/view",
-      titulo: "ENCERRAMENTO",
-      descricao: "Final da sessão com conclusões importantes",
-      data: "06/11/2024",
-      categoria: "Encerramento",
-      tipo: "foto" as const
-    }
-  ],
-  videos: [
-    {
-      id: 101,
-      url: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t7/preview",
-      driveLink: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t7/view",
-      titulo: "DEBATE COMPLETO - GRAVAÇÃO INTEGRAL",
-      descricao: "Gravação completa da sessão de debate (2h 15min)",
-      data: "06/11/2024",
-      categoria: "Debate",
-      tipo: "video" as const
-    },
-    {
-      id: 102,
-      url: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t8/preview",
-      driveLink: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t8/view",
-      titulo: "MELHORES MOMENTOS",
-      descricao: "Compilação dos momentos mais importantes do debate",
-      data: "06/11/2024",
-      categoria: "Highlights",
-      tipo: "video" as const
-    },
-    {
-      id: 103,
-      url: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t9/preview",
-      driveLink: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t9/view",
-      titulo: "ENTREVISTAS COM PARTICIPANTES",
-      descricao: "Depoimentos após a sessão",
-      data: "06/11/2024",
-      categoria: "Entrevistas",
-      tipo: "video" as const
-    }
-  ],
-  bastidores: [
-    {
-      id: 201,
-      url: "https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t10&sz=w1000",
-      driveLink: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t10/view",
-      titulo: "PREPARAÇÃO DO ESPAÇO",
-      descricao: "Organização antes do início da sessão",
-      data: "06/11/2024",
-      categoria: "Bastidores",
-      tipo: "foto" as const
-    },
-    {
-      id: 202,
-      url: "https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t11&sz=w1000",
-      driveLink: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t11/view",
-      titulo: "EQUIPE DE PRODUÇÃO",
-      descricao: "Trabalho da equipe organizadora",
-      data: "06/11/2024",
-      categoria: "Bastidores",
-      tipo: "foto" as const
-    },
-    {
-      id: 203,
-      url: "https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t12&sz=w1000",
-      driveLink: "https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t12/view",
-      titulo: "INTERAÇÕES INFORMÁIS",
-      descricao: "Conversas entre participantes antes do debate",
-      data: "06/11/2024",
-      categoria: "Bastidores",
-      tipo: "foto" as const
-    }
-  ]
-};
+/* =========================================================
+   UTILITÁRIOS
+   ======================================================= */
+function getDriveEmbedUrl(url: string, tipo: 'foto' | 'video'): string {
+  if (tipo !== 'video') return url;
+  const match = url.match(/\/d\/([^/]+)/) ?? url.match(/id=([^&]+)/);
+  const id = match?.[1];
+  return id ? `https://drive.google.com/file/d/${id}/preview` : url;
+}
 
-// Componente para imagem com fallback
-const ImagemComFallback = ({ 
-  src, 
-  alt, 
-  className, 
-  driveLink,
-  modoEscuro 
-}: { 
-  src: string; 
-  alt: string; 
-  className: string; 
-  driveLink?: string;
-  modoEscuro: boolean;
-}) => {
-  const [erroCarregamento, setErroCarregamento] = useState(false);
+function usePrefersDark(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+function useDarkMode(): [boolean, () => void] {
+  const [dark, setDark] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('modoEscuro');
+      return saved !== null ? JSON.parse(saved) : usePrefersDark();
+    } catch {
+      return false;
+    }
+  });
+
+  const toggle = useCallback(() => {
+    setDark(prev => {
+      const next = !prev;
+      localStorage.setItem('modoEscuro', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle('dark-mode', dark);
+  }, [dark]);
+
+  return [dark, toggle];
+}
+
+/* =========================================================
+   DADOS
+   ======================================================= */
+const SESSOES: Sessao[] = [
+  {
+    id: 6,
+    titulo: 'O AGENTE SECRETO',
+    diretor: 'Kleber Mendonça Filho',
+    ano: 2025,
+    dataSessao: '06/11/2024',
+    participantes: 68,
+    descricao:
+      'Sessão especial de pré-estreia com debate sobre o novo filme de Kleber Mendonça Filho, abordando temas como ditadura, identidade nacional e cinema contemporâneo brasileiro.',
+    fotos: [
+      {
+        id: 1,
+        url: 'https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t1&sz=w1000',
+        driveLink: 'https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t1/view',
+        titulo: 'Debate completo — parte 1',
+        descricao: 'Momentos iniciais do debate sobre O Agente Secreto',
+        data: '06/11/2024',
+        categoria: 'Debate',
+        tipo: 'foto',
+      },
+      {
+        id: 2,
+        url: 'https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t2&sz=w1000',
+        driveLink: 'https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t2/view',
+        titulo: 'Apresentação do filme',
+        descricao: 'Introdução à obra de Kleber Mendonça Filho',
+        data: '06/11/2024',
+        categoria: 'Apresentação',
+        tipo: 'foto',
+      },
+      {
+        id: 101,
+        url: 'https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t7/preview',
+        driveLink: 'https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t7/view',
+        titulo: 'Debate completo — gravação integral',
+        descricao: 'Gravação completa da sessão de debate (2h 15min)',
+        data: '06/11/2024',
+        categoria: 'Debate',
+        tipo: 'video',
+      },
+      {
+        id: 201,
+        url: 'https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t10&sz=w1000',
+        driveLink: 'https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t10/view',
+        titulo: 'Preparação do espaço',
+        descricao: 'Organização antes do início da sessão',
+        data: '06/11/2024',
+        categoria: 'Bastidores',
+        tipo: 'foto',
+      },
+    ],
+  },
+  {
+    id: 1,
+    titulo: 'AINDA ESTOU AQUI',
+    diretor: 'Walter Salles',
+    ano: 2024,
+    dataSessao: '05/10/2024',
+    participantes: 42,
+    descricao:
+      'Documentário sobre a trajetória de Walter Salles no cinema nacional, com debate sobre linguagem cinematográfica e memória visual brasileira.',
+    fotos: [
+      {
+        id: 1,
+        url: 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=800&q=80',
+        titulo: 'Abertura da sessão',
+        descricao: 'Momento inicial do debate sobre Walter Salles',
+        data: '05/10/2024',
+        categoria: 'Debate',
+        tipo: 'foto',
+      },
+      {
+        id: 2,
+        url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800&q=80',
+        titulo: 'Mediação',
+        descricao: 'Mediação do debate pelos coordenadores',
+        data: '05/10/2024',
+        categoria: 'Debate',
+        tipo: 'foto',
+      },
+    ],
+  },
+];
+
+/* =========================================================
+   COMPONENTE: IMAGEM COM FALLBACK
+   ======================================================= */
+interface MidiaProps {
+  midia: Foto;
+  dark: boolean;
+  className: string;
+}
+
+function ImagemComFallback({ midia, dark, className }: MidiaProps) {
+  const [erro, setErro] = useState(false);
 
   const abrirDrive = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (driveLink) {
-      window.open(driveLink, '_blank');
-    }
+    if (midia.driveLink) window.open(midia.driveLink, '_blank');
   };
 
-  if (erroCarregamento) {
+  if (erro) {
     return (
-      <div className={`${styles.fallbackImage} ${modoEscuro ? styles.darkFallback : ''}`}>
+      <div className={`${styles.fallbackImage} ${dark ? styles.darkFallback : ''}`}>
         <FaRegImages className={styles.fallbackIcon} />
-        <p className={styles.fallbackText}>Imagem indisponível no momento</p>
-        {driveLink && (
-          <button 
-            className={styles.driveButton}
-            onClick={abrirDrive}
-          >
-            <FaGoogleDrive className={styles.driveIcon} />
+        <p className={styles.fallbackText}>Imagem indisponível</p>
+        {midia.driveLink && (
+          <button className={styles.driveButton} onClick={abrirDrive}>
+            <FaGoogleDrive />
             Ver no Google Drive
           </button>
         )}
@@ -217,61 +202,34 @@ const ImagemComFallback = ({
   }
 
   return (
-    <div className={styles.imageContainer}>
-      <img 
-        src={src} 
-        alt={alt}
-        className={className}
-        onError={() => setErroCarregamento(true)}
-        loading="lazy"
-      />
-      {driveLink && (
-        <button 
-          className={styles.driveOverlayButton}
-          onClick={abrirDrive}
-          title="Abrir no Google Drive"
-        >
-          <FaGoogleDrive className={styles.driveOverlayIcon} />
-        </button>
-      )}
-    </div>
+    <img
+      src={midia.url}
+      alt={midia.titulo}
+      className={className}
+      onError={() => setErro(true)}
+      loading="lazy"
+      decoding="async"
+    />
   );
-};
+}
 
-// Componente para vídeo com fallback
-const VideoComFallback = ({ 
-  src, 
-  titulo, 
-  className, 
-  driveLink,
-  modoEscuro 
-}: { 
-  src: string; 
-  titulo: string; 
-  className: string; 
-  driveLink?: string;
-  modoEscuro: boolean;
-}) => {
-  const [erroCarregamento, setErroCarregamento] = useState(false);
+function VideoComFallback({ midia, dark, className }: MidiaProps) {
+  const [erro, setErro] = useState(false);
+  const src = getDriveEmbedUrl(midia.url, 'video');
 
   const abrirDrive = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (driveLink) {
-      window.open(driveLink, '_blank');
-    }
+    if (midia.driveLink) window.open(midia.driveLink, '_blank');
   };
 
-  if (erroCarregamento) {
+  if (erro) {
     return (
-      <div className={`${styles.fallbackVideo} ${modoEscuro ? styles.darkFallback : ''}`}>
+      <div className={`${styles.fallbackVideo} ${dark ? styles.darkFallback : ''}`}>
         <FaVideo className={styles.fallbackIcon} />
-        <p className={styles.fallbackText}>Vídeo indisponível no momento</p>
-        {driveLink && (
-          <button 
-            className={styles.driveButton}
-            onClick={abrirDrive}
-          >
-            <FaGoogleDrive className={styles.driveIcon} />
+        <p className={styles.fallbackText}>Vídeo indisponível</p>
+        {midia.driveLink && (
+          <button className={styles.driveButton} onClick={abrirDrive}>
+            <FaGoogleDrive />
             Assistir no Google Drive
           </button>
         )}
@@ -280,256 +238,376 @@ const VideoComFallback = ({
   }
 
   return (
-    <div className={styles.videoContainerWrapper}>
-      <iframe
-        src={src}
-        title={titulo}
-        className={className}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        onError={() => setErroCarregamento(true)}
-      />
-      {driveLink && (
-        <button 
-          className={styles.driveOverlayButton}
-          onClick={abrirDrive}
-          title="Abrir no Google Drive"
-        >
-          <FaGoogleDrive className={styles.driveOverlayIcon} />
+    <iframe
+      src={src}
+      title={midia.titulo}
+      className={className}
+      allow="autoplay; encrypted-media; picture-in-picture"
+      allowFullScreen
+      onError={() => setErro(true)}
+    />
+  );
+}
+
+/* =========================================================
+   COMPONENTE: CARD DE SESSÃO
+   ======================================================= */
+function SessaoCard({
+  sessao,
+  dark,
+  onClick,
+}: {
+  sessao: Sessao;
+  dark: boolean;
+  onClick: () => void;
+}) {
+  const fotos = sessao.fotos.filter(f => f.tipo === 'foto').length;
+  const videos = sessao.fotos.filter(f => f.tipo === 'video').length;
+
+  return (
+    <div
+      className={`${styles.sessaoCard} ${dark ? styles.darkCard : ''}`}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => e.key === 'Enter' && onClick()}
+      aria-label={`Ver galeria de ${sessao.titulo}`}
+    >
+      <div className={styles.sessaoCardHeader}>
+        <h3 className={styles.sessaoCardTitulo}>{sessao.titulo}</h3>
+        <span className={styles.sessaoCardStatus}>{sessao.participantes} participantes</span>
+      </div>
+
+      <div className={styles.sessaoCardContent}>
+        <div className={styles.eventoCardMeta}>
+          <span className={styles.metaItem}>
+            <FaCalendarAlt className={styles.metaItemIcon} />
+            {sessao.dataSessao}
+          </span>
+          <span className={styles.metaItem}>
+            <FaFilm className={styles.metaItemIcon} />
+            {sessao.diretor}
+          </span>
+        </div>
+
+        <p className={styles.eventoCardDescricao}>{sessao.descricao}</p>
+
+        <div className={styles.sessaoCardStats}>
+          <span className={styles.statItem}>{fotos} foto{fotos !== 1 ? 's' : ''}</span>
+          <span className={styles.statItem}>{videos} vídeo{videos !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+
+      <div className={styles.sessaoCardFooter}>
+        <button className={styles.verFotosButton} tabIndex={-1}>
+          Ver galeria completa
         </button>
-      )}
+      </div>
     </div>
   );
-};
+}
 
-// Função para converter links do Google Drive para iframe/view
-const getDriveLink = (url: string, tipo: 'foto' | 'video') => {
-  if (tipo === 'video') {
-    const fileId = url.split('/d/')[1]?.split('/')[0] || 
-                   url.split('id=')[1]?.split('&')[0];
-    return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : url;
-  }
-  return url;
-};
+/* =========================================================
+   COMPONENTE: CARD DE MÍDIA
+   ======================================================= */
+function MidiaCard({
+  midia,
+  dark,
+  onClick,
+}: {
+  midia: Foto;
+  dark: boolean;
+  onClick: () => void;
+}) {
+  const isVideo = midia.tipo === 'video';
 
-// Dados das sessões com fotos
-const sessoesComFotos: Sessao[] = [
-  {
-    id: 6,
-    titulo: "O AGENTE SECRETO",
-    diretor: "Kleber Mendonça Filho",
-    ano: 2025,
-    dataSessao: "06/11/2024",
-    participantes: 68,
-    descricao: "Sessão especial de pré-estreia com debate sobre o novo filme de Kleber Mendonça Filho, abordando temas como ditadura, identidade nacional e cinema contemporâneo brasileiro.",
-    totalFotos: 24,
-    fotos: [
-      ...AGENTE_SECRETO_FOTOS.fotosDebate,
-      ...AGENTE_SECRETO_FOTOS.videos,
-      ...AGENTE_SECRETO_FOTOS.bastidores
-    ]
-  },
-  {
-    id: 1,
-    titulo: "AINDA ESTOU AQUI",
-    diretor: "Walter Carvalho",
-    ano: 2015,
-    dataSessao: "05/10/2024",
-    participantes: 42,
-    descricao: "Documentário sobre a trajetória de Walter Carvalho no cinema nacional",
-    totalFotos: 24,
-    fotos: [
-      {
-        id: 1,
-        url: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        driveLink: "https://drive.google.com/drive/folders/example",
-        titulo: "ABERTURA DA SESSÃO",
-        descricao: "Momento inicial do debate sobre Walter Carvalho",
-        data: "05/10/2024",
-        categoria: "Debate",
-        tipo: "foto"
-      },
-      {
-        id: 2,
-        url: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        driveLink: "https://drive.google.com/drive/folders/example",
-        titulo: "MEDIAÇÃO",
-        descricao: "Mediação do debate pelos coordenadores",
-        data: "05/10/2024",
-        categoria: "Debate",
-        tipo: "foto"
-      }
-    ]
-  },
-  // ... outras sessões
-];
+  return (
+    <div
+      className={`${styles.midiaCard} ${isVideo ? styles.videoCard : ''} ${dark ? styles.darkCard : ''}`}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => e.key === 'Enter' && onClick()}
+      aria-label={`Abrir ${midia.tipo}: ${midia.titulo}`}
+    >
+      <div className={styles.midiaImagemContainer}>
+        {isVideo ? (
+          <VideoComFallback midia={midia} dark={dark} className={styles.videoPreview} />
+        ) : (
+          <ImagemComFallback midia={midia} dark={dark} className={styles.midiaImagem} />
+        )}
+      </div>
 
+      <div className={styles.midiaInfo}>
+        <div className={styles.midiaTipo}>
+          {isVideo ? <FaVideo /> : <FaImage />}
+          <span>{isVideo ? 'Vídeo' : 'Foto'}</span>
+        </div>
+        <h4 className={styles.midiaTitulo}>{midia.titulo}</h4>
+        <p className={styles.midiaDescricao}>{midia.descricao}</p>
+        <div className={styles.midiaMeta}>
+          <span className={styles.midiaData}>{midia.data}</span>
+          <span className={styles.midiaCategoria}>{midia.categoria}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   COMPONENTE: VISUALIZADOR
+   ======================================================= */
+function Visualizador({
+  midia,
+  sessaoTitulo,
+  dark,
+  onFechar,
+  onNavegar,
+}: {
+  midia: Foto;
+  sessaoTitulo: string;
+  dark: boolean;
+  onFechar: () => void;
+  onNavegar: (dir: 'anterior' | 'proximo') => void;
+}) {
+  const isVideo = midia.tipo === 'video';
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onFechar();
+      if (e.key === 'ArrowLeft') onNavegar('anterior');
+      if (e.key === 'ArrowRight') onNavegar('proximo');
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onFechar, onNavegar]);
+
+  return (
+    <div
+      className={`${styles.visualizadorOverlay} ${dark ? styles.darkVisualizador : ''}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Visualizando: ${midia.titulo}`}
+      onClick={e => e.target === e.currentTarget && onFechar()}
+    >
+      <div className={styles.visualizadorContent}>
+        <button
+          className={styles.fecharVisualizador}
+          onClick={onFechar}
+          aria-label="Fechar visualizador"
+        >
+          <FaTimes />
+        </button>
+
+        <div className={styles.visualizadorNavegacao}>
+          <button
+            className={styles.navegacaoButton}
+            onClick={() => onNavegar('anterior')}
+            aria-label="Mídia anterior"
+          >
+            <FaChevronLeft />
+          </button>
+
+          <div className={styles.visualizadorPrincipal}>
+            {isVideo ? (
+              <div className={styles.videoContainer}>
+                <VideoComFallback
+                  midia={midia}
+                  dark={dark}
+                  className={styles.visualizadorVideo}
+                />
+              </div>
+            ) : (
+              <ImagemComFallback
+                midia={midia}
+                dark={dark}
+                className={styles.visualizadorImagem}
+              />
+            )}
+          </div>
+
+          <button
+            className={styles.navegacaoButton}
+            onClick={() => onNavegar('proximo')}
+            aria-label="Próxima mídia"
+          >
+            <FaChevronRight />
+          </button>
+        </div>
+
+        <div className={styles.visualizadorInfo}>
+          <h3 className={styles.visualizadorTitulo}>
+            {midia.titulo}
+            <span className={styles.midiaTipoBadge}>{isVideo ? 'Vídeo' : 'Foto'}</span>
+          </h3>
+          <p className={styles.visualizadorDescricao}>{midia.descricao}</p>
+          <div className={styles.visualizadorMeta}>
+            <span>{midia.data}</span>
+            <span>{midia.categoria}</span>
+            <span>Sessão: {sessaoTitulo}</span>
+          </div>
+          {midia.driveLink && (
+            <button
+              className={styles.visualizadorDriveButton}
+              onClick={() => window.open(midia.driveLink, '_blank')}
+            >
+              <FaGoogleDrive />
+              Abrir no Google Drive
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   COMPONENTE PRINCIPAL
+   ======================================================= */
 export default function Fotos() {
+  const [dark, toggleDark] = useDarkMode();
+  const [themeChanging, setThemeChanging] = useState(false);
   const [sessaoSelecionada, setSessaoSelecionada] = useState<Sessao | null>(null);
   const [busca, setBusca] = useState('');
-  const [filtroAno, setFiltroAno] = useState<string>('todos');
-  const [visualizadorAtivo, setVisualizadorAtivo] = useState(false);
+  const [filtroAno, setFiltroAno] = useState('todos');
+  const [categoriaAtiva, setCategoriaAtiva] = useState('todas');
   const [midiaSelecionada, setMidiaSelecionada] = useState<Foto | null>(null);
-  const [categoriaAtiva, setCategoriaAtiva] = useState<string>('todas');
-  const [mostrarFiltros, setMostrarFiltros] = useState(true);
-  const [modoEscuro, setModoEscuro] = useState<boolean>(() => {
-    const salvo = localStorage.getItem('modoEscuro');
-    if (salvo !== null) return JSON.parse(salvo);
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
 
-  const alternarModoEscuro = () => {
-    const novoModo = !modoEscuro;
-    setModoEscuro(novoModo);
-    localStorage.setItem('modoEscuro', JSON.stringify(novoModo));
+  /* Lock de scroll quando visualizador está aberto */
+  useEffect(() => {
+    document.body.style.overflow = midiaSelecionada ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [midiaSelecionada]);
+
+  /* Resetar categoria ao trocar de sessão */
+  useEffect(() => {
+    setCategoriaAtiva('todas');
+  }, [sessaoSelecionada]);
+
+  const handleToggleDark = () => {
+    setThemeChanging(true);
+    toggleDark();
+    setTimeout(() => setThemeChanging(false), 450);
   };
 
-  const anosUnicos = ['todos', ...Array.from(new Set(sessoesComFotos.map(s => s.dataSessao.split('/')[2] || '2024')))];
+  /* Filtros da lista de sessões */
+  const anosUnicos = ['todos', ...Array.from(
+    new Set(SESSOES.map(s => s.dataSessao.split('/')[2] ?? ''))
+  ).filter(Boolean)];
 
-  const sessoesFiltradas = sessoesComFotos.filter(sessao => {
-    const buscaMatch = busca === '' || 
-      sessao.titulo.toLowerCase().includes(busca.toLowerCase()) ||
-      sessao.descricao.toLowerCase().includes(busca.toLowerCase()) ||
-      sessao.diretor.toLowerCase().includes(busca.toLowerCase());
-    
-    const anoMatch = filtroAno === 'todos' || (sessao.dataSessao.split('/')[2] || '2024') === filtroAno;
-    
-    return buscaMatch && anoMatch;
+  const sessoesFiltradas = SESSOES.filter(s => {
+    const q = busca.toLowerCase();
+    const matchBusca = !q ||
+      s.titulo.toLowerCase().includes(q) ||
+      s.diretor.toLowerCase().includes(q) ||
+      s.descricao.toLowerCase().includes(q);
+    const matchAno = filtroAno === 'todos' || (s.dataSessao.split('/')[2] ?? '') === filtroAno;
+    return matchBusca && matchAno;
   });
 
-  const categoriasUnicas = sessaoSelecionada 
+  /* Filtros da galeria */
+  const categorias = sessaoSelecionada
     ? ['todas', ...Array.from(new Set(sessaoSelecionada.fotos.map(f => f.categoria)))]
     : [];
 
-  const midiasFiltradas = sessaoSelecionada 
+  const midiasFiltradas = sessaoSelecionada
     ? categoriaAtiva === 'todas'
       ? sessaoSelecionada.fotos
-      : sessaoSelecionada.fotos.filter(midia => midia.categoria === categoriaAtiva)
+      : sessaoSelecionada.fotos.filter(f => f.categoria === categoriaAtiva)
     : [];
 
-  const abrirVisualizador = (midia: Foto) => {
-    setMidiaSelecionada(midia);
-    setVisualizadorAtivo(true);
-    document.body.style.overflow = 'hidden';
-  };
+  /* Navegação no visualizador */
+  const navegarMidia = useCallback(
+    (dir: 'anterior' | 'proximo') => {
+      if (!midiaSelecionada) return;
+      const idx = midiasFiltradas.findIndex(f => f.id === midiaSelecionada.id);
+      const next = dir === 'anterior'
+        ? midiasFiltradas[idx > 0 ? idx - 1 : midiasFiltradas.length - 1]
+        : midiasFiltradas[idx < midiasFiltradas.length - 1 ? idx + 1 : 0];
+      if (next) setMidiaSelecionada(next);
+    },
+    [midiaSelecionada, midiasFiltradas]
+  );
 
-  const fecharVisualizador = () => {
-    setVisualizadorAtivo(false);
-    setMidiaSelecionada(null);
-    document.body.style.overflow = 'auto';
-  };
-
-  const navegarMidia = (direcao: 'anterior' | 'proximo') => {
-    if (!midiaSelecionada || !sessaoSelecionada) return;
-    
-    const midias = midiasFiltradas;
-    const indexAtual = midias.findIndex(f => f.id === midiaSelecionada.id);
-    
-    if (direcao === 'anterior') {
-      const anterior = indexAtual > 0 ? midias[indexAtual - 1] : midias[midias.length - 1];
-      setMidiaSelecionada(anterior);
-    } else {
-      const proximo = indexAtual < midias.length - 1 ? midias[indexAtual + 1] : midias[0];
-      setMidiaSelecionada(proximo);
-    }
-  };
-
-  const abrirDriveLink = (driveLink?: string) => {
-    if (driveLink) {
-      window.open(driveLink, '_blank');
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, []);
-
-  useEffect(() => {
-    if (modoEscuro) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-  }, [modoEscuro]);
+  /* Rótulo do botão de voltar */
+  const labelVoltar = sessaoSelecionada ? 'Voltar para sessões' : 'Voltar para início';
 
   return (
-    <div className={`${styles.fotosContainer} ${modoEscuro ? styles.darkMode : ''}`}>
-      {/* Header */}
-      <header className={`${styles.heroHeader} ${modoEscuro ? styles.darkHeader : ''}`}>
+    <div className={`${styles.fotosContainer} ${dark ? styles.darkMode : ''}`}>
+
+      {/* ---- HEADER ---- */}
+      <header className={`${styles.heroHeader} ${dark ? styles.darkHeader : ''}`}>
         <div className={styles.heroHeaderContent}>
           <div className={styles.heroHeaderTop}>
             <div className={styles.breadcrumb}>
-              <button 
+              <button
                 className={styles.voltarInicioButton}
                 onClick={() => sessaoSelecionada ? setSessaoSelecionada(null) : window.history.back()}
+                aria-label={labelVoltar}
               >
-                <FaArrowLeft className={styles.buttonIcon} /> {sessaoSelecionada ? 'Voltar para Sessões' : 'Voltar para Início'}
+                <FaArrowLeft />
+                {labelVoltar}
               </button>
             </div>
-            
+
             <div className={styles.themeControls}>
-              <button 
-                className={styles.themeToggle}
-                onClick={alternarModoEscuro}
-                title={modoEscuro ? 'Alternar para modo claro' : 'Alternar para modo escuro'}
+              <button
+                className={`${styles.themeToggle} ${themeChanging ? styles.themeChanging : ''}`}
+                onClick={handleToggleDark}
+                aria-label={dark ? 'Alternar para modo claro' : 'Alternar para modo escuro'}
               >
-                {modoEscuro ? <FaSun className={styles.themeIcon} /> : <FaMoon className={styles.themeIcon} />}
+                {dark ? <FaSun /> : <FaMoon />}
                 <span className={styles.themeLabel}>
-                  {modoEscuro ? 'Modo Claro' : 'Modo Escuro'}
+                  {dark ? 'Modo claro' : 'Modo escuro'}
                 </span>
               </button>
             </div>
           </div>
-          
+
           <div className={styles.heroMain}>
             <h1 className={styles.heroTitle}>
-              {sessaoSelecionada ? sessaoSelecionada.titulo : 'FOTOS E VÍDEOS DAS SESSÕES'}
+              {sessaoSelecionada ? sessaoSelecionada.titulo : 'Fotos e vídeos das sessões'}
             </h1>
             <p className={styles.heroSubtitle}>
-              {sessaoSelecionada 
-                ? `Galeria de fotos e vídeos da sessão - ${sessaoSelecionada.diretor}`
-                : 'Galeria completa de fotos e vídeos dos debates do CineMar'
-              }
+              {sessaoSelecionada
+                ? `Galeria da sessão · ${sessaoSelecionada.diretor}`
+                : 'Galeria completa dos debates do CineMar'}
             </p>
           </div>
         </div>
       </header>
 
+      {/* ---- LISTA DE SESSÕES ---- */}
       {!sessaoSelecionada ? (
         <>
-          {/* Filtros e Busca */}
-          <div className={`${styles.filtersSection} ${modoEscuro ? styles.darkFilters : ''}`}>
+          <div className={styles.filtersSection}>
             <div className={styles.filtersContent}>
               <div className={styles.searchContainer}>
                 <div className={styles.searchBox}>
-                  <FaSearch className={styles.searchIcon} />
+                  <FaSearch className={styles.searchIcon} aria-hidden="true" />
                   <input
-                    type="text"
-                    placeholder="Buscar sessões por título, diretor ou descrição..."
+                    type="search"
+                    placeholder="Buscar por título, diretor ou descrição…"
                     value={busca}
-                    onChange={(e) => setBusca(e.target.value)}
-                    className={`${styles.searchInput} ${modoEscuro ? styles.darkInput : ''}`}
+                    onChange={e => setBusca(e.target.value)}
+                    className={styles.searchInput}
+                    aria-label="Buscar sessões"
                   />
                 </div>
-                
+
                 <div className={styles.filtersInfo}>
-                  <FaChevronDown className={styles.filterIcon} />
                   <span>Filtrar por ano:</span>
                 </div>
-                
-                <div className={styles.tipoFilters}>
+
+                <div className={styles.tipoFilters} role="group" aria-label="Filtros de ano">
                   {anosUnicos.map(ano => (
                     <button
                       key={ano}
-                      className={`${styles.tipoFilterBtn} ${filtroAno === ano ? styles.active : ''} ${modoEscuro ? styles.darkFilterBtn : ''}`}
+                      className={`${styles.tipoFilterBtn} ${filtroAno === ano ? styles.active : ''}`}
                       onClick={() => setFiltroAno(ano)}
+                      aria-pressed={filtroAno === ano}
                     >
-                      {ano === 'todos' ? 'Todos os Anos' : `Ano ${ano}`}
-                      {filtroAno === ano && (
-                        <div className={styles.activeIndicator} />
-                      )}
+                      {ano === 'todos' ? 'Todos os anos' : `Ano ${ano}`}
                     </button>
                   ))}
                 </div>
@@ -537,89 +615,42 @@ export default function Fotos() {
             </div>
           </div>
 
-          {/* Conteúdo Principal */}
-          <main className={`${styles.mainContent} ${modoEscuro ? styles.darkMain : ''}`}>
+          <main className={styles.mainContent}>
             <div className={styles.allEvents}>
               <div className={styles.sectionHeader}>
-                <h2 className={`${styles.selecaoTitulo} ${modoEscuro ? styles.darkTitle : ''}`}>
-                  <FaCalendarAlt className={styles.sectionTitleIcon} />
-                  Todas as Sessões
-                  <span className={styles.eventosCount}>({sessoesFiltradas.length})</span>
+                <h2 className={styles.selecaoTitulo}>
+                  <FaCalendarAlt className={styles.sectionTitleIcon} aria-hidden="true" />
+                  Todas as sessões
+                  <span className={styles.eventosCount}>{sessoesFiltradas.length}</span>
                 </h2>
-                <p className={`${styles.sectionSubtitle} ${modoEscuro ? styles.darkSubtitle : ''}`}>
-                  Selecione uma sessão para ver fotos, vídeos e momentos especiais dos debates
+                <p className={styles.sectionSubtitle}>
+                  Selecione uma sessão para ver fotos, vídeos e momentos especiais
                 </p>
               </div>
-              
+
               {sessoesFiltradas.length === 0 ? (
-                <div className={styles.noResults}>
-                  <div className={`${styles.noResultsIcon} ${modoEscuro ? styles.darkNoResultsIcon : ''}`}>
-                    <FaSearch className={styles.noResultsIconSvg} />
+                <div className={styles.noResults} role="status">
+                  <div className={styles.noResultsIcon} aria-hidden="true">
+                    <FaSearch />
                   </div>
-                  <h3 className={modoEscuro ? styles.darkText : ''}>Nenhuma sessão encontrada</h3>
-                  <p className={modoEscuro ? styles.darkText : ''}>Tente alterar os filtros ou termos de busca</p>
-                  <button 
+                  <h3>Nenhuma sessão encontrada</h3>
+                  <p>Tente alterar os filtros ou o termo de busca</p>
+                  <button
                     className={styles.clearFiltersBtn}
-                    onClick={() => {
-                      setFiltroAno('todos');
-                      setBusca('');
-                    }}
+                    onClick={() => { setFiltroAno('todos'); setBusca(''); }}
                   >
-                    Limpar Filtros
+                    Limpar filtros
                   </button>
                 </div>
               ) : (
                 <div className={styles.sessoesList}>
                   {sessoesFiltradas.map(sessao => (
-                    <div
+                    <SessaoCard
                       key={sessao.id}
-                      className={`${styles.sessaoCard} ${modoEscuro ? styles.darkCard : ''}`}
+                      sessao={sessao}
+                      dark={dark}
                       onClick={() => setSessaoSelecionada(sessao)}
-                    >
-                      <div className={styles.sessaoCardHeader}>
-                        <h3 className={`${styles.sessaoCardTitulo} ${modoEscuro ? styles.darkText : ''}`}>{sessao.titulo}</h3>
-                        <span className={styles.sessaoCardStatus}>
-                          {sessao.participantes} participantes
-                        </span>
-                      </div>
-                      
-                      <div className={styles.sessaoCardContent}>
-                        <div className={styles.eventoCardMeta}>
-                          <div className={`${styles.metaItem} ${modoEscuro ? styles.darkMetaItem : ''}`}>
-                            <FaCalendarAlt className={styles.metaItemIcon} />
-                            <span className={styles.metaItemText}>{sessao.dataSessao}</span>
-                          </div>
-                          <div className={`${styles.metaItem} ${modoEscuro ? styles.darkMetaItem : ''}`}>
-                            <FaFilm className={styles.metaItemIcon} />
-                            <span className={styles.metaItemText}>{sessao.diretor}</span>
-                          </div>
-                        </div>
-                        
-                        <p className={`${styles.eventoCardDescricao} ${modoEscuro ? styles.darkTextSecondary : ''}`}>
-                          {sessao.descricao}
-                        </p>
-                        
-                        <div className={styles.sessaoCardStats}>
-                          <div className={`${styles.statItem} ${modoEscuro ? styles.darkTextSecondary : ''}`}>
-                            <span>
-                              {sessao.fotos.filter(f => f.tipo === 'foto').length} fotos
-                            </span>
-                          </div>
-                          
-                          <div className={`${styles.statItem} ${modoEscuro ? styles.darkTextSecondary : ''}`}>
-                            <span>
-                              {sessao.fotos.filter(f => f.tipo === 'video').length} vídeos
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className={styles.sessaoCardFooter}>
-                        <button className={styles.verFotosButton}>
-                          Ver Galeria Completa
-                        </button>
-                      </div>
-                    </div>
+                    />
                   ))}
                 </div>
               )}
@@ -627,119 +658,74 @@ export default function Fotos() {
           </main>
         </>
       ) : (
-        /* Tela de Galeria da Sessão Selecionada */
-        <main className={`${styles.mainContent} ${modoEscuro ? styles.darkMain : ''}`}>
-          {/* Cabeçalho da Sessão */}
-          <div className={`${styles.sessaoHeader} ${modoEscuro ? styles.darkCard : ''}`}>
+
+        /* ---- GALERIA DA SESSÃO ---- */
+        <main className={styles.mainContent}>
+          <div className={`${styles.sessaoHeader} ${dark ? styles.darkCard : ''}`}>
             <div className={styles.sessaoInfo}>
               <div className={styles.sessaoHeaderTop}>
-                <h2 className={`${styles.sessaoTitulo} ${modoEscuro ? styles.darkText : ''}`}>
-                  {sessaoSelecionada.titulo}
-                </h2>
-                <div className={`${styles.sessaoStats} ${modoEscuro ? styles.darkStats : ''}`}>
-                  <span>
-                    {sessaoSelecionada.fotos.filter(f => f.tipo === 'foto').length} FOTOS
-                  </span>
-                  <span>
-                    {sessaoSelecionada.fotos.filter(f => f.tipo === 'video').length} VÍDEOS
-                  </span>
+                <h2 className={styles.sessaoTitulo}>{sessaoSelecionada.titulo}</h2>
+                <div className={styles.sessaoStats}>
+                  <span>{sessaoSelecionada.fotos.filter(f => f.tipo === 'foto').length} fotos</span>
+                  <span>{sessaoSelecionada.fotos.filter(f => f.tipo === 'video').length} vídeos</span>
                 </div>
               </div>
-              
+
               <div className={styles.sessaoDetalhes}>
                 <div className={styles.sessaoInfoLinha}>
-                  <span className={`${styles.sessaoInfoItem} ${modoEscuro ? styles.darkTextSecondary : ''}`}>
-                    <FaFilm className={styles.infoItemIcon} /> {sessaoSelecionada.diretor} • {sessaoSelecionada.ano}
+                  <span className={styles.sessaoInfoItem}>
+                    <FaFilm aria-hidden="true" />
+                    {sessaoSelecionada.diretor} · {sessaoSelecionada.ano}
                   </span>
-                  <span className={`${styles.sessaoInfoItem} ${modoEscuro ? styles.darkTextSecondary : ''}`}>
-                    <FaCalendarAlt className={styles.infoItemIcon} /> {sessaoSelecionada.dataSessao}
-                  </span>
-                  <span className={`${styles.sessaoInfoItem} ${modoEscuro ? styles.darkTextSecondary : ''}`}>
-                    <FaUsers className={styles.infoItemIcon} /> {sessaoSelecionada.participantes} PARTICIPANTES
+                  <span className={styles.sessaoInfoItem}>
+                    <FaCalendarAlt aria-hidden="true" />
+                    {sessaoSelecionada.dataSessao}
                   </span>
                 </div>
-                <p className={`${styles.sessaoDescricao} ${modoEscuro ? styles.darkTextSecondary : ''}`}>
-                  {sessaoSelecionada.descricao}
-                </p>
+                <p className={styles.sessaoDescricao}>{sessaoSelecionada.descricao}</p>
               </div>
             </div>
-            
-            {/* Categorias de Mídias */}
-            <div className={styles.categoriasNavegacao}>
-              {categoriasUnicas.map((categoria: string) => (
+
+            <nav className={styles.categoriasNavegacao} aria-label="Categorias de mídia">
+              {categorias.map(cat => (
                 <button
-                  key={categoria}
-                  className={`${styles.categoriaButton} ${categoriaAtiva === categoria ? styles.ativa : ''} ${modoEscuro ? styles.darkCategoriaButton : ''}`}
-                  onClick={() => setCategoriaAtiva(categoria)}
+                  key={cat}
+                  className={`${styles.categoriaButton} ${categoriaAtiva === cat ? styles.ativa : ''} ${dark ? styles.darkCategoriaButton : ''}`}
+                  onClick={() => setCategoriaAtiva(cat)}
+                  aria-pressed={categoriaAtiva === cat}
                 >
-                  {categoria === 'todas' ? 'TODOS OS MATERIAIS' : categoria.toUpperCase()}
-                  {categoria !== 'todas' && ` (${sessaoSelecionada.fotos.filter(f => f.categoria === categoria).length})`}
+                  {cat === 'todas'
+                    ? 'Todos os materiais'
+                    : `${cat} (${sessaoSelecionada.fotos.filter(f => f.categoria === cat).length})`}
                 </button>
               ))}
-            </div>
+            </nav>
           </div>
 
-          {/* Galeria de Fotos e Vídeos */}
           <div className={styles.galeriaContainer}>
             {midiasFiltradas.length > 0 ? (
               <div className={styles.galeriaGrid}>
                 {midiasFiltradas.map(midia => (
-                  <div 
+                  <MidiaCard
                     key={midia.id}
-                    className={`${styles.midiaCard} ${midia.tipo === 'video' ? styles.videoCard : ''} ${modoEscuro ? styles.darkCard : ''}`}
-                    onClick={() => abrirVisualizador(midia)}
-                  >
-                    <div className={styles.midiaImagemContainer}>
-                      {midia.tipo === 'video' ? (
-                        <VideoComFallback
-                          src={getDriveLink(midia.url, 'video')}
-                          titulo={midia.titulo}
-                          className={styles.videoPreview}
-                          driveLink={midia.driveLink}
-                          modoEscuro={modoEscuro}
-                        />
-                      ) : (
-                        <ImagemComFallback
-                          src={getDriveLink(midia.url, 'foto')}
-                          alt={midia.titulo}
-                          className={styles.midiaImagem}
-                          driveLink={midia.driveLink}
-                          modoEscuro={modoEscuro}
-                        />
-                      )}
-                    </div>
-                    
-                    <div className={styles.midiaInfo}>
-                      <div className={`${styles.midiaTipo} ${modoEscuro ? styles.darkMidiaTipo : ''}`}>
-                        {midia.tipo === 'video' ? <FaVideo className={styles.midiaTipoIcon} /> : <FaImage className={styles.midiaTipoIcon} />}
-                        <span>{midia.tipo === 'video' ? 'VÍDEO' : 'FOTO'}</span>
-                      </div>
-                      <h4 className={`${styles.midiaTitulo} ${modoEscuro ? styles.darkText : ''}`}>{midia.titulo}</h4>
-                      <p className={`${styles.midiaDescricao} ${modoEscuro ? styles.darkTextSecondary : ''}`}>{midia.descricao}</p>
-                      <div className={styles.midiaMeta}>
-                        <span className={`${styles.midiaData} ${midia.tipo === 'video' && !modoEscuro ? styles.videoData : ''}`}>
-                          {midia.data}
-                        </span>
-                        <span className={`${styles.midiaCategoria} ${midia.tipo === 'video' && !modoEscuro ? styles.videoCategoria : ''}`}>
-                          {midia.categoria}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                    midia={midia}
+                    dark={dark}
+                    onClick={() => setMidiaSelecionada(midia)}
+                  />
                 ))}
               </div>
             ) : (
-              <div className={styles.noResults}>
-                <div className={`${styles.noResultsIcon} ${modoEscuro ? styles.darkNoResultsIcon : ''}`}>
-                  <FaSearch className={styles.noResultsIconSvg} />
+              <div className={styles.noResults} role="status">
+                <div className={styles.noResultsIcon} aria-hidden="true">
+                  <FaSearch />
                 </div>
-                <h3 className={modoEscuro ? styles.darkText : ''}>Nenhum material encontrado</h3>
-                <p className={modoEscuro ? styles.darkText : ''}>Tente selecionar outra categoria</p>
-                <button 
+                <h3>Nenhum material encontrado</h3>
+                <p>Tente selecionar outra categoria</p>
+                <button
                   className={styles.clearFiltersBtn}
                   onClick={() => setCategoriaAtiva('todas')}
                 >
-                  Mostrar Todos
+                  Mostrar todos
                 </button>
               </div>
             )}
@@ -747,78 +733,15 @@ export default function Fotos() {
         </main>
       )}
 
-      {/* Visualizador de Mídia em Tela Cheia */}
-      {visualizadorAtivo && midiaSelecionada && (
-        <div className={`${styles.visualizadorOverlay} ${modoEscuro ? styles.darkVisualizador : ''}`}>
-          <div className={styles.visualizadorContent}>
-            <button 
-              className={styles.fecharVisualizador}
-              onClick={fecharVisualizador}
-            >
-              <FaTimes className={styles.closeIcon} />
-            </button>
-            
-            <div className={styles.visualizadorNavegacao}>
-              <button 
-                className={styles.navegacaoButton}
-                onClick={() => navegarMidia('anterior')}
-              >
-                <FaChevronLeft className={styles.navIcon} />
-              </button>
-              
-              <div className={styles.visualizadorPrincipal}>
-                {midiaSelecionada.tipo === 'video' ? (
-                  <VideoComFallback
-                    src={getDriveLink(midiaSelecionada.url, 'video')}
-                    titulo={midiaSelecionada.titulo}
-                    className={styles.visualizadorVideo}
-                    driveLink={midiaSelecionada.driveLink}
-                    modoEscuro={modoEscuro}
-                  />
-                ) : (
-                  <ImagemComFallback
-                    src={getDriveLink(midiaSelecionada.url, 'foto')}
-                    alt={midiaSelecionada.titulo}
-                    className={styles.visualizadorImagem}
-                    driveLink={midiaSelecionada.driveLink}
-                    modoEscuro={modoEscuro}
-                  />
-                )}
-              </div>
-              
-              <button 
-                className={styles.navegacaoButton}
-                onClick={() => navegarMidia('proximo')}
-              >
-                <FaChevronRight className={styles.navIcon} />
-              </button>
-            </div>
-            
-            <div className={styles.visualizadorInfo}>
-              <h3 className={styles.visualizadorTitulo}>
-                {midiaSelecionada.titulo}
-                <span className={styles.midiaTipoBadge}>
-                  {midiaSelecionada.tipo === 'video' ? 'VÍDEO' : 'FOTO'}
-                </span>
-              </h3>
-              <p className={styles.visualizadorDescricao}>{midiaSelecionada.descricao}</p>
-              <div className={styles.visualizadorMeta}>
-                <span>{midiaSelecionada.data}</span>
-                <span>{midiaSelecionada.categoria}</span>
-                <span>Sessão: {sessaoSelecionada?.titulo}</span>
-              </div>
-              {midiaSelecionada.driveLink && (
-                <button 
-                  className={styles.visualizadorDriveButton}
-                  onClick={() => abrirDriveLink(midiaSelecionada.driveLink)}
-                >
-                  <FaGoogleDrive className={styles.visualizadorDriveIcon} />
-                  Abrir no Google Drive
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* ---- VISUALIZADOR ---- */}
+      {midiaSelecionada && (
+        <Visualizador
+          midia={midiaSelecionada}
+          sessaoTitulo={sessaoSelecionada?.titulo ?? ''}
+          dark={dark}
+          onFechar={() => setMidiaSelecionada(null)}
+          onNavegar={navegarMidia}
+        />
       )}
     </div>
   );
