@@ -2,39 +2,6 @@
   command = "npm run build"
   publish = "dist"
 
-# Headers para arquivos JavaScript
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Content-Type = "application/javascript"
-
-[[headers]]
-  for = "/*.mjs"
-  [headers.values]
-    Content-Type = "application/javascript"
-
-[[headers]]
-  for = "/*.ts"
-  [headers.values]
-    Content-Type = "application/javascript"
-
-[[headers]]
-  for = "/*.tsx"
-  [headers.values]
-    Content-Type = "application/javascript"
-
-# Headers para assets da pasta dist
-[[headers]]
-  for = "/assets/*.js"
-  [headers.values]
-    Content-Type = "application/javascript"
-
-[[headers]]
-  for = "/assets/*.mjs"
-  [headers.values]
-    Content-Type = "application/javascript"
-
-# Redirect para React Router (IMPORTANTE!)
 [[redirects]]
   from = "/*"
   to = "/index.html"
