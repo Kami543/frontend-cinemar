@@ -1,5 +1,6 @@
 # Define a pasta de saída do seu build (geralmente 'dist' para Vite ou 'build' para CRA)
 [build]
+  command = "npm run build" 
   publish = "dist"
 
 # CORREÇÃO DO ERRO DE MIME TYPE
