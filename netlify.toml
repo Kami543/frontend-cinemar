@@ -1,10 +1,8 @@
-# Define a pasta de saída do seu build (geralmente 'dist' para Vite ou 'build' para CRA)
 [build]
-  command = "npm run build" 
+  command = "npm run build"
   publish = "dist"
 
-# CORREÇÃO DO ERRO DE MIME TYPE
-# Força o tipo correto para arquivos JavaScript
+# Headers para arquivos JavaScript
 [[headers]]
   for = "/*.js"
   [headers.values]
@@ -15,8 +13,28 @@
   [headers.values]
     Content-Type = "application/javascript"
 
-# CORREÇÃO DO REACT ROUTER (tela branca ao recarregar)
-# Redireciona todas as rotas para o index.html
+[[headers]]
+  for = "/*.ts"
+  [headers.values]
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/*.tsx"
+  [headers.values]
+    Content-Type = "application/javascript"
+
+# Headers para assets da pasta dist
+[[headers]]
+  for = "/assets/*.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+
+[[headers]]
+  for = "/assets/*.mjs"
+  [headers.values]
+    Content-Type = "application/javascript"
+
+# Redirect para React Router (IMPORTANTE!)
 [[redirects]]
   from = "/*"
   to = "/index.html"
