@@ -1,51 +1,40 @@
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
+/* ── Base ── */
 .footer {
   position: relative;
   width: 100vw;
   background-color: #0a0a0a;
   color: #fff;
-  padding: 2rem 0 1rem;
+  padding: 2.5rem 0 1.25rem;
   animation: slideUp 0.5s ease-out;
-  left: 0;
-  right: 0;
-  margin: 0;
+  left: 0; right: 0; margin: 0;
   box-sizing: border-box;
   z-index: 100;
   flex-shrink: 0;
 }
 
-/* Container principal - logo à esquerda, conteúdo à direita */
+/* ── Layout principal ── */
 .footerContainer {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 40px;          /* mais fôlego no desktop */
   width: 100%;
-  min-height: 150px; /* Altura mínima para acomodar tudo */
+  min-height: 160px;
+  gap: 2rem;
 }
 
-/* Coluna da Logo (Esquerda) */
+/* ── Logo (esquerda) ── */
 .logoColumn {
   flex: 0 0 auto;
   display: flex;
@@ -56,24 +45,25 @@
 
 .logoLink {
   display: inline-block;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 1rem;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  padding: 8px;
+  margin: -8px -8px 1rem;
 }
 
-.logoLink:hover {
-  opacity: 0.8;
-  transform: scale(1.05);
-}
+.logoLink:hover  { opacity: 0.8; transform: scale(1.05); }
+.logoLink:active { opacity: 0.6; transform: scale(1.0); }
 
 .footerLogo {
-  height: 140px; /* Logo GRANDE aumentada */
+  height: 140px;
   width: auto;
   object-fit: contain;
   filter: brightness(0) invert(1);
   opacity: 0.9;
+  /* Evita que a logo quebre o layout em telas pequenas */
+  max-width: min(140px, 35vw);
 }
 
-/* Coluna do Conteúdo (Direita) */
+/* ── Conteúdo (direita) ── */
 .contentColumn {
   flex: 1;
   display: flex;
@@ -83,7 +73,7 @@
   animation: fadeIn 0.8s ease-out 0.4s both;
 }
 
-/* Links de Navegação */
+/* ── Links de navegação ── */
 .linksSection {
   margin-bottom: 1.5rem;
   width: 100%;
@@ -95,65 +85,73 @@
   display: flex;
   gap: 1.5rem;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .footerLink {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255,255,255,0.7);
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 400;
-  transition: all 0.3s ease;
-  padding: 0.2rem 0;
+  transition: color 0.2s ease;
+  /* Área de toque mínima 44px — bom para touch e não prejudica o desktop */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 4px;
 }
 
-.footerLink:hover {
-  color: #fff;
-  text-decoration: underline;
-}
+.footerLink:hover  { color: #fff; text-decoration: underline; }
+.footerLink:active { color: rgba(255,255,255,0.5); }
 
 .separator {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255,255,255,0.3);
   font-size: 0.9rem;
+  user-select: none;
 }
 
-/* Container dos Termos e Copyright (lado direito inferior) */
+/* ── Termos + Copyright ── */
 .termsCopyrightContainer {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.3rem;
-  margin-top: auto; /* Empurra para baixo */
+  margin-top: auto;
 }
 
-/* Container dos Termos */
 .termsContainer {
   display: flex;
   gap: 1rem;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   margin-bottom: 0.5rem;
 }
 
 .termsLink {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255,255,255,0.5);
   text-decoration: none;
   font-size: 0.75rem;
   font-weight: 300;
-  transition: all 0.3s ease;
+  transition: color 0.2s ease;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 4px;
 }
 
-.termsLink:hover {
-  color: #fff;
-  text-decoration: underline;
-}
+.termsLink:hover  { color: #fff; text-decoration: underline; }
+.termsLink:active { color: rgba(255,255,255,0.4); }
 
 .termsSeparator {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255,255,255,0.3);
   font-size: 0.7rem;
+  user-select: none;
 }
 
-/* Copyright - Texto pequeno */
 .copyright {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255,255,255,0.4);
   font-size: 0.7rem;
   font-weight: 300;
   letter-spacing: 0.3px;
@@ -161,150 +159,129 @@
   text-align: right;
 }
 
-/* Responsividade */
-@media (max-width: 768px) {
-  .footer {
-    padding: 1.5rem 0 0.8rem;
-  }
-  
+/* ════════════════════════════════
+   RESPONSIVO
+   Desktop  → ≥ 1024px  (padrão acima)
+   Notebook → 769–1023px
+   Tablet   → 601–768px
+   Mobile   → ≤ 600px
+   Pequeno  → ≤ 480px
+   Mini     → ≤ 360px
+   ════════════════════════════════ */
+
+/* Notebook / laptop menor */
+@media (max-width: 1023px) {
   .footerContainer {
-    padding: 0 15px;
-    min-height: 130px;
+    padding: 0 24px;
+    min-height: 140px;
   }
-  
-  .footerLogo {
-    height: 120px;
-  }
-  
-  .linksContainer {
-    gap: 1rem;
-  }
-  
-  .footerLink {
-    font-size: 0.85rem;
-  }
-  
-  .termsContainer {
-    gap: 0.8rem;
-  }
-  
-  .termsLink {
-    font-size: 0.7rem;
-  }
-  
-  .copyright {
-    font-size: 0.65rem;
-  }
+
+  .footerLogo { height: 120px; }
+
+  .linksContainer { gap: 1.25rem; }
 }
 
+/* Tablet */
+@media (max-width: 768px) {
+  .footer { padding: 2rem 0 1rem; }
+
+  .footerContainer {
+    padding: 0 20px;
+    min-height: 120px;
+    gap: 1.5rem;
+  }
+
+  .footerLogo { height: 100px; }
+
+  .linksContainer { gap: 1rem; }
+  .footerLink     { font-size: 0.875rem; }
+
+  .termsContainer { gap: 0.75rem; }
+  .termsLink      { font-size: 0.7rem; }
+  .copyright      { font-size: 0.65rem; }
+}
+
+/* Mobile — empilha o layout */
 @media (max-width: 600px) {
+  .footer { padding: 1.5rem 0 1.25rem; }
+
   .footerContainer {
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    min-height: unset;
+    padding: 0 20px;
+    gap: 1.25rem;
   }
-  
+
   .logoColumn {
     align-items: center;
     width: 100%;
   }
-  
+
+  .logoLink { margin: 0 auto; }
+
+  .footerLogo {
+    height: 90px;
+    max-width: 50vw;
+  }
+
   .contentColumn {
     align-items: center;
     text-align: center;
     width: 100%;
   }
-  
-  .linksSection {
-    justify-content: center;
-  }
-  
-  .termsCopyrightContainer {
-    align-items: center;
-  }
-  
-  .copyright {
-    text-align: center;
-  }
+
+  .linksSection     { justify-content: center; }
+  .linksContainer   { justify-content: center; gap: 0; }
+  .footerLink       { padding: 0 10px; font-size: 0.9rem; }
+
+  .termsCopyrightContainer { align-items: center; }
+  .termsContainer          { justify-content: center; }
+  .copyright               { text-align: center; }
 }
 
+/* Mobile pequeno */
 @media (max-width: 480px) {
-  .footer {
-    padding: 1.2rem 0 0.6rem;
-  }
-  
-  .footerLogo {
-    height: 100px;
-  }
-  
-  .linksContainer {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.8rem;
-  }
-  
-  .separator {
-    display: none;
-  }
-  
-  .footerLink {
-    font-size: 0.8rem;
-  }
-  
-  .termsContainer {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.5rem;
-  }
-  
-  .termsSeparator {
-    display: none;
-  }
-  
-  .termsLink {
-    font-size: 0.65rem;
-  }
-  
-  .copyright {
-    font-size: 0.6rem;
-  }
+  .footer { padding: 1.25rem 0 1rem; }
+
+  .footerContainer { padding: 0 16px; gap: 1rem; }
+
+  .footerLogo { height: 80px; }
+
+  .separator      { display: none; }
+  .termsSeparator { display: none; }
+
+  .footerLink { font-size: 0.85rem; padding: 0 8px; }
+  .termsLink  { font-size: 0.7rem; padding: 0 6px; }
+  .copyright  { font-size: 0.65rem; }
 }
 
-/* Light mode */
+/* Mini (≤360px — Galaxy A, iPhone SE) */
+@media (max-width: 360px) {
+  .footerLogo { height: 68px; }
+
+  .linksContainer {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .footerLink { padding: 2px 8px; font-size: 0.85rem; }
+  .termsLink  { font-size: 0.65rem; }
+  .copyright  { font-size: 0.6rem; }
+}
+
+/* ── Light mode ── */
 .footer.light {
   background-color: #fff;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(0,0,0,0.1);
 }
-
-.footer.light .footerLogo {
-  filter: brightness(0) invert(0);
-  opacity: 0.8;
-}
-
-.footer.light .footerLink {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.footer.light .footerLink:hover {
-  color: #000;
-}
-
-.footer.light .separator {
-  color: rgba(0, 0, 0, 0.3);
-}
-
-.footer.light .termsLink {
-  color: rgba(0, 0, 0, 0.5);
-}
-
-.footer.light .termsLink:hover {
-  color: #000;
-}
-
-.footer.light .termsSeparator {
-  color: rgba(0, 0, 0, 0.3);
-}
-
-.footer.light .copyright {
-  color: rgba(0, 0, 0, 0.4);
-}
+.footer.light .footerLogo         { filter: brightness(0) invert(0); opacity: 0.8; }
+.footer.light .footerLink         { color: rgba(0,0,0,0.6); }
+.footer.light .footerLink:hover   { color: #000; }
+.footer.light .footerLink:active  { color: rgba(0,0,0,0.4); }
+.footer.light .separator          { color: rgba(0,0,0,0.3); }
+.footer.light .termsLink          { color: rgba(0,0,0,0.5); }
+.footer.light .termsLink:hover    { color: #000; }
+.footer.light .termsSeparator     { color: rgba(0,0,0,0.3); }
+.footer.light .copyright          { color: rgba(0,0,0,0.4); }

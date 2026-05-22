@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { FaUser } from 'react-icons/fa';
 import image from '../../images/cinemar-logo.png';
@@ -6,137 +6,125 @@ import styles from '../../styles/Navbar.module.css';
 import Menu from './Menu';
 
 export default function Navbar() {
-  const [isMounted, setIsMounted] = useState(false);
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const burgerMenuRef = useRef<HTMLButtonElement>(null);
 
-  const handleLogin = () => {
-    console.log('Login clicked');
-    // Aqui você pode redirecionar para a página de login se necessário
-    // window.location.href = '/login';
+  // Verificar usuário logado
+  useEffect(() => {
+    const storedUser = localStorage.getItem('cinemar_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleLogin = () => navigate('/login');
+  const handleRegister = () => navigate('/register');
+  
+  const handleLogout = () => {
+    localStorage.removeItem('cinemar_user');
+    setUser(null);
+    navigate('/login');
   };
 
-  const handleRegister = () => {
-    console.log('Register clicked');
-    // Aqui você pode redirecionar para a página de cadastro se necessário
-    // window.location.href = '/register';
-  };
-
-  // REMOVA esta função - o Menu vai navegar sozinho
-  // const handleMenuItemClick = (path: string) => {
-  //   console.log(`Navigating to ${path}`);
-  //   navigate(path);
-  // };
-
-  const toggleMenu = () => {
-    console.log('Toggle menu clicked, current state:', isMenuOpen);
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const toggleMenu = () => setIsMenuOpen(prev => !prev);
 
   useEffect(() => {
-    setIsMounted(true);
-    
     document.body.style.paddingTop = '80px';
-    
-    return () => {
-      document.body.style.paddingTop = '0';
-    };
+    return () => { document.body.style.paddingTop = '0'; };
   }, []);
 
   useEffect(() => {
+    if (!isMenuOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      
-      if (
-        isMenuOpen && 
-        burgerMenuRef.current && 
-        !burgerMenuRef.current.contains(target)
-      ) {
-        setIsMenuOpen(false);
-      }
+      if (burgerMenuRef.current?.contains(e.target as HTMLElement)) return;
     };
-
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
 
   useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-    
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
+    document.body.style.overflow = isMenuOpen ? 'hidden' : 'auto';
+    return () => { document.body.style.overflow = 'auto'; };
   }, [isMenuOpen]);
 
   return (
     <>
-      <nav className={`${styles.navbar} ${isMounted ? styles.animated : ''}`}>
+      <nav
+        role="navigation"
+        aria-label="Principal"
+        className={styles.navbar}
+      >
         <div className={styles.container}>
-          {/* Burger Menu e texto "Menu" na ESQUERDA */}
-          <div className={styles.menuContainer} onClick={toggleMenu}>
-            <button 
+
+          {/* Burger */}
+          <div className={styles.menuContainer}>
+            <button
               ref={burgerMenuRef}
               className={`${styles.burgerMenu} ${isMenuOpen ? styles.open : ''}`}
-              onClick={(e) => {
-                e.stopPropagation(); // Previne duplo clique
-                toggleMenu();
-              }}
-              aria-label="Menu"
+              onClick={toggleMenu}
+              aria-label={isMenuOpen ? 'Fechar menu' : 'Abrir menu'}
               aria-expanded={isMenuOpen}
+              aria-controls="main-menu"
             >
-              <span className={styles.burgerLine}></span>
-              <span className={styles.burgerLine}></span>
-              <span className={styles.burgerLine}></span>
+              <span className={styles.burgerLine} />
+              <span className={styles.burgerLine} />
+              <span className={styles.burgerLine} />
             </button>
-            <span className={styles.menuText}>
-              Menu
-            </span>
+            <span className={styles.menuText}>Menu</span>
           </div>
 
-          {/* Logo no MEIO */}
-          <Link to="/" className={styles.brand} onClick={() => setIsMenuOpen(false)}>
-            <img
-              src={image}
-              alt="CineMar Logo"
-              className={styles.logoImage}
-            />
+          {/* Logo */}
+          <Link
+            to="/"
+            className={styles.brand}
+            aria-label="Ir para a página inicial"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <img src={image} alt="CineMar" className={styles.logoImage} />
           </Link>
 
-          {/* Botões de Auth na DIREITA */}
+          {/* Auth apenas - sem botão de sair */}
           <div className={styles.desktopNav}>
             <div className={styles.authButtons}>
-              <button 
-                className={styles.registerButton}
-                onClick={handleRegister}
-              >
-                Cadastrar
-              </button>
-              <button 
-                className={styles.loginButton}
-                onClick={handleLogin}
-              >
-                <FaUser className={styles.loginIcon} />
-                <span>Login</span>
-              </button>
+              {user ? (
+                <span className={styles.userGreeting}>
+                  {user.nome || user.email?.split('@')[0]}
+                </span>
+              ) : (
+                <>
+                  <button
+                    className={styles.registerButton}
+                    onClick={handleRegister}
+                  >
+                    Cadastrar
+                  </button>
+                  <button
+                    className={styles.loginButton}
+                    onClick={handleLogin}
+                    aria-label="Entrar"
+                  >
+                    <FaUser />
+                    <span>Entrar</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Componente Menu - REMOVA a prop onMenuItemClick */}
-          <Menu 
-            isOpen={isMenuOpen}
-            onClose={() => setIsMenuOpen(false)}
-            onLogin={handleLogin}
-            onRegister={handleRegister}
-            logo={image}
-          />
         </div>
       </nav>
+
+      <Menu
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        onLogout={handleLogout}
+        user={user}
+        logo={image}
+      />
     </>
   );
 }

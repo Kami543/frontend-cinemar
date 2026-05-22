@@ -1,13 +1,21 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaTimes } from 'react-icons/fa';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { FaSignOutAlt, FaUser, FaMoon, FaSun } from 'react-icons/fa';
 import styles from '../../styles/Menu.module.css';
+import { useTheme } from '../context/ThemeContext';
 
 interface MenuProps {
   isOpen: boolean;
   onClose: () => void;
   onLogin: () => void;
   onRegister: () => void;
+  onLogout?: () => void;
+  user?: {
+    id: number;
+    email: string;
+    nome: string;
+    role: string;
+  } | null;
   logo: string;
 }
 
@@ -16,27 +24,61 @@ export default function Menu({
   onClose, 
   onLogin, 
   onRegister, 
-  logo 
+  onLogout, 
+  user,
+  logo
 }: MenuProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme(); // ✅ usando contexto global
   const [isClosing, setIsClosing] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  
+  const menuContentRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
   const menuItems = [
-    { id: 1, label: 'Sessões', path: '/sessions' },
-    { id: 2, label: 'Filmes', path: '/filmes' },
-    { id: 3, label: 'Playlists', path: '/playlists' },
-    { id: 4, label: 'Fotos', path: '/fotos' },
-    { id: 5, label: 'Contatos', path: '/contact' },
-    { id: 6, label: 'Sobre', path: '/about' },
-    { id: 7, label: 'Eventos', path: '/eventos' },
-    { id: 8, label: 'Podcasts', path: '/podcasts' },
-    { id: 9, label: 'Membros', path: '/members' },
+    { id: 1,  label: 'Sessões',     path: '/sessions'    },
+    { id: 2,  label: 'Filmes',      path: '/filmes'      },
+    { id: 3,  label: 'Playlists',   path: '/playlists'   },
+    { id: 4,  label: 'Fotos',       path: '/fotos'       },
+    { id: 5,  label: 'Contatos',    path: '/contact'     },
+    { id: 6,  label: 'Sobre',       path: '/about'       },
+    { id: 7,  label: 'Eventos',     path: '/eventos'     },
+    { id: 8,  label: 'Podcasts',    path: '/podcasts'    },
+    { id: 9,  label: 'Membros',     path: '/members'     },
     { id: 10, label: 'Localização', path: '/localizacao' },
   ];
 
-  // Previne scroll do body quando menu está aberto
+  useEffect(() => {
+    if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      const t = setTimeout(() => menuContentRef.current?.focus(), 50);
+      return () => clearTimeout(t);
+    } else {
+      previousFocusRef.current?.focus();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { closeMenuWithAnimation(); return; }
+      if (e.key === 'Tab') {
+        const focusable = menuContentRef.current?.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable?.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -44,139 +86,133 @@ export default function Menu({
       document.body.style.width = '100%';
       setIsClosing(false);
     } else {
-      // Aguarda a animação terminar antes de restaurar o scroll
-      const timer = setTimeout(() => {
+      const t = setTimeout(() => {
         document.body.style.overflow = 'auto';
         document.body.style.position = 'static';
       }, 300);
-      
-      return () => clearTimeout(timer);
+      return () => clearTimeout(t);
     }
-    
     return () => {
       document.body.style.overflow = 'auto';
       document.body.style.position = 'static';
     };
   }, [isOpen]);
 
-  // Fecha o menu com animação
-  const closeMenuWithAnimation = () => {
+  const closeMenuWithAnimation = useCallback(() => {
     if (isClosing) return;
-    
     setIsClosing(true);
     onClose();
-  };
+  }, [isClosing, onClose]);
 
   const handleMenuItemClick = (path: string) => {
-    // Verifica se já está na página atual
-    if (location.pathname === path) {
-      closeMenuWithAnimation();
-      return;
-    }
-    
-    // Fecha o menu com animação
+    if (location.pathname === path) { closeMenuWithAnimation(); return; }
     closeMenuWithAnimation();
-    
-    // Navega imediatamente (sem delay)
     navigate(path);
-    
-    // Para dispositivos móveis, focar no conteúdo principal após navegação
-    setTimeout(() => {
-      const mainContent = document.querySelector('main, [role="main"]');
-      if (mainContent && mainContent instanceof HTMLElement) {
-        mainContent.focus();
-      }
-    }, 50);
   };
 
   const handleAuthClick = (action: () => void) => {
     closeMenuWithAnimation();
-    
-    // Pequeno delay para garantir que o foco não se perca
-    setTimeout(() => {
-      action();
-    }, 50);
+    setTimeout(() => action(), 50);
   };
 
-  // Prevenir fechamento acidental ao clicar nos botões
-  const handleButtonMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleLogoutClick = () => {
+    if (onLogout) {
+      closeMenuWithAnimation();
+      setTimeout(() => onLogout(), 50);
+    }
   };
 
-  const handleButtonTouchStart = (e: React.TouchEvent) => {
-    e.stopPropagation();
-  };
+  const stop = (e: React.SyntheticEvent) => e.stopPropagation();
 
   return (
-    <div 
+    <div
       className={`${styles.menuOverlay} ${isOpen ? styles.open : ''}`}
       onClick={closeMenuWithAnimation}
       role="dialog"
       aria-modal="true"
       aria-label="Menu de navegação"
-      ref={menuRef}
     >
-      <div 
-        className={styles.menuContent}
-        onClick={(e) => e.stopPropagation()}
-        onMouseDown={(e) => e.stopPropagation()}
-        onTouchStart={(e) => e.stopPropagation()}
+      <div
+        className={`${styles.menuContent} ${theme === 'dark' ? styles.dark : ''}`}
+        ref={menuContentRef}
+        tabIndex={-1}
+        onClick={stop}
+        onMouseDown={stop}
+        onTouchStart={stop}
       >
-        <button 
+        <button
           className={styles.closeButton}
           onClick={closeMenuWithAnimation}
           aria-label="Fechar menu"
-          onMouseDown={handleButtonMouseDown}
-          onTouchStart={handleButtonTouchStart}
         >
-          <FaTimes />
+          ✕
         </button>
-        
+
         <div className={styles.menuBody}>
-          <nav className={styles.menuNavigation} aria-label="Menu principal">
+          <nav className={styles.menuNavigation}>
             <ul className={styles.menuList}>
-              {menuItems.map((item) => (
-                <li key={item.id} className={styles.menuListItem}>
-                  <button 
-                    className={`${styles.menuItemButton} ${
-                      location.pathname === item.path ? styles.active : ''
-                    }`}
-                    onClick={() => handleMenuItemClick(item.path)}
-                    onMouseDown={handleButtonMouseDown}
-                    onTouchStart={handleButtonTouchStart}
-                    aria-current={location.pathname === item.path ? 'page' : undefined}
-                  >
-                    <span className={styles.menuItemLabel}>{item.label}</span>
-                    <span className={styles.menuArrow}>&gt;</span>
-                  </button>
-                </li>
-              ))}
+              {menuItems.map(item => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <li key={item.id}>
+                    <button
+                      className={`${styles.menuItem} ${isActive ? styles.active : ''}`}
+                      onClick={() => handleMenuItemClick(item.path)}
+                    >
+                      {item.label}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </nav>
-          
-          <div className={styles.menuAuthSection}>
-            <p className={styles.menuInfo}>
-              Para acessar todas as funcionalidades do site, faça login ou crie uma conta.
-            </p>
-            
-            <div className={styles.menuAuthButtons}>
-              <button 
-                className={styles.menuLoginButton}
-                onClick={() => handleAuthClick(onLogin)}
-                onMouseDown={handleButtonMouseDown}
-                onTouchStart={handleButtonTouchStart}
-              >
-                <span>Login</span>
-              </button>
-              <button 
-                className={styles.menuRegisterButton}
-                onClick={() => handleAuthClick(onRegister)}
-                onMouseDown={handleButtonMouseDown}
-                onTouchStart={handleButtonTouchStart}
-              >
-                Cadastrar
-              </button>
-            </div>
+
+          {/* Botão de tema */}
+          <button
+            className={styles.themeButton}
+            onClick={toggleTheme}
+          >
+            {theme === 'light' ? <FaMoon /> : <FaSun />}
+            <span>{theme === 'light' ? 'Escuro' : 'Claro'}</span>
+          </button>
+
+          {/* Área do usuário */}
+          <div className={styles.userArea}>
+            {user ? (
+              <>
+                <div className={styles.userSimple}>
+                  <FaUser className={styles.userIcon} />
+                  <div>
+                    <div className={styles.userSimpleName}>{user.nome}</div>
+                    <div className={styles.userSimpleRole}>
+                      {user.role === 'admin' ? 'Admin' : 'Membro'}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  className={styles.logoutButton}
+                  onClick={handleLogoutClick}
+                >
+                  <FaSignOutAlt />
+                  Sair
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className={styles.loginButton}
+                  onClick={() => handleAuthClick(onLogin)}
+                >
+                  Entrar
+                </button>
+                <button
+                  className={styles.registerButton}
+                  onClick={() => handleAuthClick(onRegister)}
+                >
+                  Cadastrar
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

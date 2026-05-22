@@ -1,15 +1,18 @@
+/* index.css - Versão Mobile-First Otimizada */
+
+/* Reset base com melhorias mobile */
 html, body {
   width: 100%;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: hidden; 
-  /* Adicionando para suporte a temas */
+  overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight no mobile */
 }
 
-/* Variáveis CSS globais para consistência */
+/* Variáveis CSS Mobile-First */
 :root {
   /* Cores comuns */
   --primary-red: #dc2626;
@@ -27,39 +30,128 @@ html, body {
   --gray-800: #1f2937;
   --gray-900: #111827;
   
-  /* Tamanhos comuns */
-  --container-max-width: 1400px;
-  --header-height: 80px;
-  --border-radius: 0; /* Para manter o estilo retangular */
+  /* Larguras mobile-first (default para mobile) */
+  --container-max-width: 100%;
+  --container-padding-mobile: 16px;
+  --container-padding-small-mobile: 12px;
   
-  /* Transições */
+  /* Alturas responsivas */
+  --header-height-mobile: 60px;
+  --header-height-tablet: 70px;
+  --header-height-desktop: 80px;
+  
+  /* Espaçamentos mobile-first */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  
+  /* Bordas */
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 8px;
+  
+  /* Transições suaves */
   --transition-fast: 150ms;
-  --transition-normal: 300ms;
-  --transition-slow: 500ms;
+  --transition-normal: 250ms;
+  
+  /* Sombras leves para mobile */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Reset mais consistente */
+/* Tablet */
+@media (min-width: 768px) {
+  :root {
+    --container-max-width: 720px;
+    --container-padding-mobile: 24px;
+    --spacing-md: 16px;
+    --spacing-lg: 20px;
+    --spacing-xl: 24px;
+  }
+}
+
+/* Desktop pequeno */
+@media (min-width: 1024px) {
+  :root {
+    --container-max-width: 960px;
+    --container-padding-mobile: 32px;
+  }
+}
+
+/* Desktop grande */
+@media (min-width: 1280px) {
+  :root {
+    --container-max-width: 1200px;
+  }
+}
+
+/* Desktop extra grande */
+@media (min-width: 1536px) {
+  :root {
+    --container-max-width: 1400px;
+  }
+}
+
+/* Reset consistente */
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
-/* Scrollbar personalizada para navegadores baseados em WebKit */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Container principal mobile */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow-x: hidden;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--gray-100);
+/* CONTAINER GLOBAL MOBILE-FIRST */
+.global-container,
+.container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--container-padding-mobile);
+  box-sizing: border-box;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--gray-300);
-  border-radius: 4px;
+/* Wrapper para conteúdo full-width */
+.global-wrapper {
+  width: 100%;
+  background: inherit;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gray-400);
+.global-wrapper .global-container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--container-padding-mobile);
+}
+
+/* Scrollbar (escondida em mobile por padrão) */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--gray-100);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: var(--border-radius-sm);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+  }
 }
 
 /* Estilos de seleção */
@@ -68,8 +160,8 @@ html, body {
   color: var(--white);
 }
 
-/* Scroll suave */
-@media (prefers-reduced-motion: no-preference) {
+/* Scroll suave apenas em desktop */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
   }
@@ -81,7 +173,27 @@ html, body {
   outline-offset: 2px;
 }
 
-/* Estilos para telas de impressão */
+/* Touch targets maiores para mobile */
+button, 
+a, 
+[role="button"],
+input[type="submit"],
+input[type="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Ajustes de touch */
+@media (hover: none) and (pointer: coarse) {
+  button, 
+  a, 
+  [role="button"] {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Estilos para impressão */
 @media print {
   body {
     font-size: 12pt;
@@ -90,103 +202,91 @@ html, body {
     background: #fff;
   }
   
-  .sessions-page {
-    overflow: visible !important;
-  }
-  
   button, .theme-toggle, .share-menu, 
   .filter-buttons, .search-box {
     display: none !important;
   }
 }
 
-/* Evitar overflow em elementos de mídia */
+/* Imagens responsivas */
 img, video, iframe {
   max-width: 100%;
   height: auto;
+  display: block;
 }
 
-/* Melhorias para dispositivos móveis */
-@media (max-width: 768px) {
-  html {
-    -webkit-text-size-adjust: 100%;
-  }
-  
-  body {
-    font-size: 14px;
-  }
+/* Ajustes de fonte mobile */
+html {
+  -webkit-text-size-adjust: 100%;
+  font-size: 16px;
 }
 
-/* Suporte para modo escuro do sistema */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --background: var(--black);
-    --text-primary: var(--white);
-  }
+body {
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Container principal */
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  /* Garante que o tema seja aplicado globalmente */
-  transition: background-color var(--transition-normal) ease, 
-              color var(--transition-normal) ease;
-}
-
-/* Classe para a página de sessões */
-.sessions-page {
+/* Classes de página - garantem consistência */
+.page-container {
   flex: 1;
   width: 100%;
   overflow-x: hidden;
-  /* Herda as transições do tema */
-  transition: inherit;
+  padding-top: var(--header-height-mobile);
 }
 
-/* Classes utilitárias para o tema */
-.theme-light {
-  background-color: var(--white);
-  color: var(--gray-900);
+/* Para quando a navbar é fixed */
+.page-container.with-navbar {
+  padding-top: var(--header-height-mobile);
 }
 
-.theme-dark {
-  background-color: var(--black);
-  color: var(--gray-100);
-}
-
-/* Container com largura máxima */
-.container {
-  width: 100%;
-  padding: 0 1.5rem;
-}
-
-.container-full {
-  width: 100%;
-  padding: 0; /* Remove padding se quiser bordas grudadas */
-}
-@media (max-width: 768px) {
-  .container {
-    padding: 0 1rem;
+/* Ajuste responsivo do padding-top */
+@media (min-width: 768px) {
+  .page-container,
+  .page-container.with-navbar {
+    padding-top: var(--header-height-tablet);
   }
 }
 
-/* Classes para texto truncado */
+@media (min-width: 1024px) {
+  .page-container,
+  .page-container.with-navbar {
+    padding-top: var(--header-height-desktop);
+  }
+}
+
+/* Classes utilitárias mobile */
+.container-fluid {
+  width: 100%;
+  padding: 0;
+}
+
+.container-limited {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--container-padding-mobile);
+  box-sizing: border-box;
+}
+
+/* Texto truncado com ellipsis */
 .text-truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Classes para imagens responsivas */
-.img-responsive {
-  width: 100%;
-  height: auto;
-  display: block;
+/* Texto com quebra de palavras */
+.text-break {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
-/* Classes para flexbox utilitário */
+/* Flexbox utilities mobile */
 .flex-center {
   display: flex;
   align-items: center;
@@ -199,7 +299,45 @@ img, video, iframe {
   justify-content: space-between;
 }
 
-/* Classes para acessibilidade */
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Grid utilities mobile */
+.grid-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+}
+
+@media (min-width: 640px) {
+  .grid-sm-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .grid-md-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .grid-md-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-lg-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .grid-lg-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Acessibilidade - Screen Reader Only */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -212,26 +350,14 @@ img, video, iframe {
   border: 0;
 }
 
-/* Suporte para telas muito grandes */
-@media (min-width: 1920px) {
-  :root {
-    --container-max-width: 2000px; /* Aumente se usar .container */
-  }
-}
-
-/* Previne zoom em inputs em iOS */
-input, textarea, select {
+/* Previne zoom em inputs em iOS (font-size mínimo 16px) */
+input, 
+textarea, 
+select {
   font-size: 16px;
 }
 
-/* Melhora a renderização de fontes */
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-/* Loading Spinner */
+/* Loading Spinner otimizado mobile */
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -247,13 +373,21 @@ body {
 
 .loading-spinner {
   text-align: center;
+  padding: var(--spacing-lg);
 }
 
 .spinner-container {
   position: relative;
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 20px;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+  .spinner-container {
+    width: 60px;
+    height: 60px;
+  }
 }
 
 .spinner-ring {
@@ -295,13 +429,228 @@ body {
 }
 
 .loading-text {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: #dc2626;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+}
+
+/* Garantia para todas as páginas */
+main, 
+.main-content,
+[class*="Page"],
+[class*="page"] {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Reset de margens */
+h1, h2, h3, h4, h5, h6,
+p, ul, ol, figure,
+blockquote, dl, dd {
+  margin: 0;
+}
+
+/* Listas sem estilos */
+ul, ol {
+  padding: 0;
+  list-style: none;
+}
+
+/* Modo escuro do sistema */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: var(--black);
+    --text-primary: var(--white);
+  }
+}
+
+/* Classes de tema */
+.theme-light {
+  background-color: var(--white);
+  color: var(--gray-900);
+}
+
+.theme-dark {
+  background-color: var(--black);
+  color: var(--gray-100);
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 767px) {
+  /* Evita overflow horizontal */
+  body, #root, .homePage {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+  }
+  
+  /* Ajusta espaçamentos */
+  .global-container,
+  .container {
+    padding: 0 var(--container-padding-mobile);
+  }
+  
+  /* Melhora touch targets */
+  button, 
+  .button,
+  .categoryFilterBtn,
+  .primaryButton,
+  .secondaryButton {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+  
+  /* Remove hover effects no mobile */
+  .card:hover,
+  .categoryFilterBtn:hover,
+  .memberCard:hover {
+    transform: none;
+  }
+  
+  /* Simplifica sombras no mobile */
+  .card,
+  .categoryFilterBtn.active {
+    box-shadow: var(--shadow-sm);
+  }
+  
+  /* Ajusta fontes */
+  h1 {
+    font-size: 1.75rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+  }
+  
+  /* Melhora scrolling */
+  .categoriesNavigation {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  
+  .categoriesNavigation::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .categoryFilters {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding-bottom: 4px;
+  }
+  
+  .categoryFilterBtn {
+    flex-shrink: 0;
+  }
+}
+
+/* Otimizações para telas muito pequenas */
+@media (max-width: 480px) {
+  :root {
+    --container-padding-mobile: 12px;
+    --spacing-md: 10px;
+    --spacing-lg: 14px;
+    --spacing-xl: 18px;
+  }
+  
+  body {
+    font-size: 14px;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 1.3rem;
+  }
+  
+  .global-container,
+  .container {
+    padding: 0 var(--container-padding-mobile);
+  }
+}
+
+/* Otimizações para tablets */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .grid-tablet-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+  }
+  
+  .grid-tablet-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-lg);
+  }
+}
+
+/* Suporte para notch e safe areas em iOS */
+@supports (padding: max(0px)) {
+  .global-container,
+  .container {
+    padding-left: max(var(--container-padding-mobile), env(safe-area-inset-left));
+    padding-right: max(var(--container-padding-mobile), env(safe-area-inset-right));
+  }
+  
+  .heroHeader {
+    padding-top: max(2rem, env(safe-area-inset-top));
+  }
+}
+
+/* Performance improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* Tema claro (padrão) */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --border-color: #e0e0e0;
 }
 
 /* Tema escuro */
-.theme-dark .loading-overlay {
-  background: #000000;
+[data-theme="dark"] {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --border-color: #333333;
+}
+
+/* Aplicar cores globais */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Classes para componentes que precisam seguir o tema */
+.theme-bg {
+  background-color: var(--bg-secondary);
+}
+
+.theme-text {
+  color: var(--text-primary);
+}
+
+.theme-border {
+  border-color: var(--border-color);
 }

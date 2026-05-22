@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
+import {
   FaCalendarAlt, 
   FaClock, 
   FaMapMarkerAlt, 
@@ -17,8 +17,6 @@ import {
   FaHandshake,
   FaFire,
   FaTag,
-  FaSun,
-  FaMoon,
   FaPlay,
   FaComments,
   FaAngleRight,
@@ -27,6 +25,8 @@ import {
 } from 'react-icons/fa';
 import Corra from '../images/filmes/Corra.jpg';
 import AgenteSecreto from '../images/filmes/O-agente-secreto.jpg';
+import { useTheme } from '../components/context/ThemeContext';
+import LoadingScreen from '../components/common/LoadingScreen';
 import styles from '../styles/HomePage.module.css';
 
 interface Filme {
@@ -49,8 +49,7 @@ function HomePage() {
   const [ultimoFilme, setUltimoFilme] = useState<Filme | null>(null);
   const [proximoFilme, setProximoFilme] = useState<Filme | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-
+  const { theme } = useTheme();
   useEffect(() => {
     const loadData = () => {
       const filmesData: Filme[] = [
@@ -63,7 +62,7 @@ function HomePage() {
           genre: 'Terror/Suspense', 
           duration: '104 min', 
           rating: 4.8,
-          description: 'Chris, um jovem fotógrafo negro, visita a família de sua namorada branca pela primeira vez. O que começa como um fim de semana tenso se transforma em um pesadelo psicológico perturbador que revela preconceitos e tensões raciais profundamente enraizadas na sociedade. Uma obra-prima do terror social que desafia convenções e provoca reflexões urgentes sobre identidade e relações interraciais.',
+          description: 'Chris, um jovem fotógrafo negro, visita a família de sua namorada branca pela primeira vez. O que começa como um fim de semana tenso se transforma em um pesadelo psicológico perturbador que revela preconceitos e tensões raciais profundamente enraizadas na sociedade.',
           date: '23 de Novembro, 2024',
           status: 'Realizado',
           highlight: false,
@@ -78,7 +77,7 @@ function HomePage() {
           genre: 'Thriller Político/Drama', 
           duration: '158 min', 
           rating: 4.4,
-          description: 'Durante a ditadura militar brasileira, o ex-professor Armando retorna a Recife em busca de refúgio, mas se vê perseguido por um passado político violento e envolto em uma teia de corrupção e segredos. O filme explora as cicatrizes políticas do Brasil através de uma narrativa tensa que mistura drama pessoal com crítica social, questionando os limites entre memória, esquecimento e justiça.',
+          description: 'Durante a ditadura militar brasileira, o ex-professor Armando retorna a Recife em busca de refúgio, mas se vê perseguido por um passado político violento e envolto em uma teia de corrupção e segredos.',
           date: '6 de Novembro, 2025',
           status: 'Próximo',
           highlight: true,
@@ -105,19 +104,11 @@ function HomePage() {
     setTimeout(loadData, 500);
   }, []);
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
   if (isLoading) {
-    return (
-      <div className={`${styles.homePage} ${isDarkMode ? styles.dark : ''}`}>
-        <div className={styles.loadingContainer}>
-          <p>Carregando...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
+
+  const isDarkMode = theme === 'dark';
 
   return (
     <div className={`${styles.homePage} ${isDarkMode ? styles.dark : ''}`}>
@@ -125,18 +116,6 @@ function HomePage() {
       <header className={styles.heroHeader}>
         <div className={styles.container}>
           <div className={styles.heroContent}>
-            {/* Tema Toggle */}
-            <div className={styles.heroHeaderTop}>
-              <button 
-                className={styles.themeToggle}
-                onClick={toggleTheme}
-                aria-label={isDarkMode ? "Alternar para tema claro" : "Alternar para tema escuro"}
-              >
-                {isDarkMode ? <FaSun /> : <FaMoon />}
-                <span>{isDarkMode ? "Tema Claro" : "Tema Escuro"}</span>
-              </button>
-            </div>
-            
             <div className={styles.heroMain}>
               <h1 className={styles.heroTitle}>
                 <FaQuoteRight className={styles.titleIcon} />
@@ -266,7 +245,7 @@ function HomePage() {
                   </div>
                   
                   <div className={styles.cardActionsFooter}>
-                    <Link to="/sobre-nos" className={styles.primaryButton}>
+                    <Link to="/about" className={styles.primaryButton}>
                       CONHEÇA NOSSA HISTÓRIA <FaArrowRight />
                     </Link>
                   </div>
@@ -333,8 +312,8 @@ function HomePage() {
                       )}
                       
                       <div className={styles.filmeActions}>
-                        <Link to={`/filmes?id=${ultimoFilme.id}`} className={styles.primaryButton}>
-                          <FaPlay className={styles.buttonIcon} /> ASSISTIR DEBATE
+                        <Link to={`/filmes`} className={styles.primaryButton}>
+                          <FaPlay className={styles.buttonIcon} /> VER DETALHES
                         </Link>
                         <Link to="/materiais" className={styles.secondaryButton}>
                           <FaComments className={styles.buttonIcon} /> MATERIAIS
@@ -504,7 +483,7 @@ function HomePage() {
                   <Link to="/localizacao" className={styles.primaryButton}>
                     <FaMap className={styles.buttonIcon} /> COMO CHEGAR
                   </Link>
-                  <Link to="/contato" className={styles.secondaryButton}>
+                  <Link to="/contact" className={styles.secondaryButton}>
                     <FaComments className={styles.buttonIcon} /> CONTATAR
                   </Link>
                 </div>

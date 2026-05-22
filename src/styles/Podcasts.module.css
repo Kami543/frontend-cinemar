@@ -1177,3 +1177,377 @@
     justify-content: space-between;
   }
 }
+
+/* Adicione estas classes ao final do arquivo Podcasts.module.css */
+
+/* ===== BACK LINK ===== */
+.backLink {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.backLink:hover {
+  color: white;
+}
+
+/* ===== HEADER VERMELHO PADRÃO ===== */
+.heroHeader {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.podcastsPage.darkMode .heroHeader {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+/* Remover botão de tema */
+.themeControls {
+  display: none;
+}
+
+/* ===== BOTÃO FLUTUANTE ===== */
+.floatingAddBtn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #dc2626;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.floatingAddBtn:hover {
+  background: #b91c1c;
+  transform: scale(1.05);
+}
+
+.podcastsPage.darkMode .floatingAddBtn {
+  background: #f87171;
+  color: #1e293b;
+}
+
+/* ===== BOTÕES DE EDIÇÃO ===== */
+.editIconBtn,
+.addIconBtn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  margin-left: auto;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+}
+
+.editIconBtn:hover,
+.addIconBtn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.darkMode .editIconBtn,
+.darkMode .addIconBtn {
+  border-color: #475569;
+  color: #94a3b8;
+}
+
+.editForm {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.darkMode .editForm {
+  background: #334155;
+}
+
+.editInput,
+.editTextarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  font-family: inherit;
+  background: white;
+}
+
+.darkMode .editInput,
+.darkMode .editTextarea {
+  background: #1e293b;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+.editActions,
+.editActionsInline {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.editInline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.editInline .editInput {
+  flex: 1;
+  margin-bottom: 0;
+  min-width: 120px;
+}
+
+.saveBtn,
+.cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.saveBtn {
+  background: #10b981;
+  color: white;
+}
+
+.saveBtn:hover {
+  background: #059669;
+}
+
+.cancelBtn {
+  background: #e5e7eb;
+  color: #4b5563;
+}
+
+.cancelBtn:hover {
+  background: #d1d5db;
+}
+
+.darkMode .cancelBtn {
+  background: #475569;
+  color: #cbd5e1;
+}
+
+/* ===== BOTÕES DE CARD ===== */
+.itemActions {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.itemActionsInline {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+.editCardBtn,
+.deleteCardBtn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0.25rem 0.375rem;
+  font-size: 0.65rem;
+  transition: all 0.2s;
+}
+
+.editCardBtn:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.deleteCardBtn:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: white;
+}
+
+/* ===== TAG WRAPPER ===== */
+.tagWrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #dc2626;
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+}
+
+.tagWrapper .tag {
+  background: transparent;
+  padding: 0;
+  margin: 0;
+}
+
+.tagWrapper .tag:hover {
+  transform: none;
+  background: transparent;
+}
+
+.tagActions {
+  display: flex;
+  gap: 0.125rem;
+}
+
+.tagActions button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 0.125rem 0.25rem;
+  font-size: 0.6rem;
+}
+
+.tagActions button:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.editInputSmall {
+  width: 120px;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 0.7rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #4b5563;
+}
+
+.darkMode .checkboxLabel {
+  color: #94a3b8;
+}
+
+/* ===== MODAL ===== */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 500px;
+  animation: modalSlideIn 0.2s ease;
+}
+
+.darkMode .modalContent {
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+.modalContent h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.darkMode .modalContent h3 {
+  color: #f1f5f9;
+}
+
+@keyframes modalSlideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 768px) {
+  .floatingAddBtn {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+  
+  .editInline {
+    flex-direction: column;
+  }
+  
+  .editInline .editInput {
+    width: 100%;
+  }
+  
+  .itemActions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  
+  .tagWrapper {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .floatingAddBtn {
+    bottom: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    font-size: 0.875rem;
+  }
+  
+  .modalContent {
+    padding: 1rem;
+  }
+  
+  .editActions {
+    flex-direction: column;
+  }
+  
+  .saveBtn,
+  .cancelBtn {
+    justify-content: center;
+  }
+}

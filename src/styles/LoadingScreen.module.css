@@ -1,0 +1,37 @@
+/* LoadingScreen.module.css - apenas texto */
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  min-height: 200px;
+}
+
+.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #ffffff;
+}
+
+:global(.dark) .fullscreen,
+[data-theme="dark"] .fullscreen {
+  background: #0f172a;
+}
+
+.message {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.875rem;
+  color: #6b7280;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+:global(.dark) .message,
+[data-theme="dark"] .message {
+  color: #94a3b8;
+}

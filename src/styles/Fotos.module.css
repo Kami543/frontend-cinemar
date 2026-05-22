@@ -1,4 +1,4 @@
-/* Fotos.module.css — refatorado */
+/* Fotos.module.css — completo com admin */
 
 /* ===== VARIÁVEIS ===== */
 .fotosContainer {
@@ -166,6 +166,370 @@
   font-size: 13px;
 }
 
+/* ===== ADMIN BAR ===== */
+.adminBar {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  border-bottom: 1px solid #fcd34d;
+}
+
+.darkMode .adminBar {
+  background: linear-gradient(135deg, #451a03 0%, #78350f 100%);
+  border-bottom-color: #b45309;
+}
+
+.adminBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: rgba(220, 38, 38, 0.15);
+  border-radius: 20px;
+  color: #dc2626;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.darkMode .adminBadge {
+  background: rgba(220, 38, 38, 0.25);
+  color: #f87171;
+}
+
+.addButton,
+.editSessaoButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #dc2626;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  min-height: 40px;
+}
+
+.addButton:hover,
+.editSessaoButton:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+/* ===== FORMULÁRIO ===== */
+.formOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.formContainer {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+.darkMode .formContainer {
+  background: #1e293b;
+  border: 1px solid #334155;
+}
+
+.formHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 16px 16px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.darkMode .formHeader {
+  background: #0f172a;
+  border-bottom-color: #334155;
+}
+
+.formHeader h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.darkMode .formHeader h3 {
+  color: #f1f5f9;
+}
+
+.formClose {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.formClose:hover {
+  background: #e5e7eb;
+  color: #dc2626;
+}
+
+.formBody {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.formGroup label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.darkMode .formGroup label {
+  color: #94a3b8;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  padding: 0.625rem 0.75rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  background: white;
+  color: #111827;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.darkMode .formGroup input,
+.darkMode .formGroup select,
+.darkMode .formGroup textarea {
+  background: #334155;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+.formGroup small {
+  font-size: 0.65rem;
+  color: #6b7280;
+}
+
+.darkMode .formGroup small {
+  color: #94a3b8;
+}
+
+.formFooter {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: #f9fafb;
+  border-radius: 0 0 16px 16px;
+  position: sticky;
+  bottom: 0;
+}
+
+.darkMode .formFooter {
+  background: #0f172a;
+  border-top-color: #334155;
+}
+
+.cancelBtn {
+  padding: 0.625rem 1.25rem;
+  background: transparent;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #6b7280;
+}
+
+.cancelBtn:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.submitBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: #dc2626;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submitBtn:hover {
+  background: #b91c1c;
+}
+
+/* ===== CARD ADMIN ACTIONS ===== */
+.cardAdminActions {
+  display: flex;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+.cardEditBtn,
+.cardDeleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--muted);
+}
+
+.cardEditBtn:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.cardDeleteBtn:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: white;
+}
+
+/* ===== MIDIA ADMIN ACTIONS ===== */
+.midiaAdminActions {
+  display: flex;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+  justify-content: flex-end;
+}
+
+.midiaEditBtn,
+.midiaDeleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.midiaEditBtn:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.midiaDeleteBtn:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: white;
+}
+
+.addMidiaButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.addMidiaButton:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
 /* ===== FILTROS ===== */
 .filtersSection {
   background: var(--surface);
@@ -325,6 +689,7 @@
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .sessaoCard:hover {
@@ -586,6 +951,7 @@
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .midiaCard:hover {
@@ -626,57 +992,6 @@
   height: 100%;
   border: none;
   display: block;
-}
-
-.videoOverlay,
-.midiaOverlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity var(--t);
-}
-
-.videoOverlay {
-  background: rgba(59, 130, 246, 0.88);
-}
-
-.midiaOverlay {
-  background: rgba(0, 0, 0, 0.65);
-}
-
-.videoCard:hover .videoOverlay,
-.midiaCard:hover .midiaOverlay {
-  opacity: 1;
-}
-
-.playText {
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  margin-top: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.overlayIcon {
-  color: white;
-  background: var(--red);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid rgba(255,255,255,0.8);
-  font-size: 1rem;
-}
-
-.videoCard .overlayIcon {
-  background: #3b82f6;
 }
 
 .midiaInfo {
@@ -799,11 +1114,6 @@
 .darkMode .visualizadorContent {
   background: #1e293b;
   border: 1px solid #334155;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 .fecharVisualizador {
@@ -952,6 +1262,74 @@
   flex-wrap: wrap;
 }
 
+.visualizadorDriveButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #4285f4;
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--t), transform var(--t);
+  margin-top: 12px;
+}
+
+.visualizadorDriveButton:hover {
+  background: #3367d6;
+  transform: translateY(-1px);
+}
+
+/* ===== FALLBACK MÍDIA ===== */
+.fallbackImage,
+.fallbackVideo {
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--surface);
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.fallbackIcon {
+  font-size: 2rem;
+  color: var(--muted);
+}
+
+.fallbackText {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.driveButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--t), transform var(--t);
+}
+
+.driveButton:hover {
+  background: #3367d6;
+  transform: translateY(-1px);
+}
+
 /* ===== ESTADO VAZIO ===== */
 .noResults {
   text-align: center;
@@ -1006,114 +1384,10 @@
   transform: translateY(-1px);
 }
 
-/* ===== FALLBACK MÍDIA ===== */
-.fallbackImage,
-.fallbackVideo {
-  width: 100%;
-  height: 100%;
-  min-height: 180px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: var(--surface);
-  text-align: center;
-  padding: 1.5rem;
-}
-
-.fallbackIcon {
-  font-size: 2rem;
-  color: var(--muted);
-}
-
-.fallbackText {
-  font-size: 13px;
-  color: var(--muted);
-  margin: 0;
-}
-
-.driveButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: #4285f4;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background var(--t), transform var(--t);
-}
-
-.driveButton:hover {
-  background: #3367d6;
-  transform: translateY(-1px);
-}
-
-.imageContainer,
-.videoContainerWrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.driveOverlayButton {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 30px;
-  height: 30px;
-  background: rgba(0, 0, 0, 0.65);
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background var(--t), transform var(--t);
-  opacity: 0;
-  z-index: 10;
-}
-
-.imageContainer:hover .driveOverlayButton,
-.videoContainerWrapper:hover .driveOverlayButton {
-  opacity: 1;
-}
-
-.driveOverlayButton:hover {
-  background: #4285f4;
-  transform: scale(1.1);
-}
-
-.driveOverlayIcon {
-  color: white;
-  font-size: 0.875rem;
-}
-
-.visualizadorDriveButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: #4285f4;
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background var(--t), transform var(--t);
-  margin-top: 12px;
-}
-
-.visualizadorDriveButton:hover {
-  background: #3367d6;
-  transform: translateY(-1px);
-}
+/* ===== UTILITÁRIOS ===== */
+.breadcrumb { display: flex; align-items: center; }
+.allEvents { animation: fadeIn 250ms ease; }
+iframe { max-width: 100%; display: block; }
 
 /* ===== ANIMAÇÕES ===== */
 @keyframes fadeIn {
@@ -1135,6 +1409,9 @@
   .galeriaGrid { grid-template-columns: 1fr; }
   .sessaoHeaderTop { flex-direction: column; align-items: flex-start; }
   .sessaoTitulo { font-size: 1.375rem; }
+  .formRow { grid-template-columns: 1fr; }
+  .adminBar { flex-direction: column; align-items: stretch; text-align: center; }
+  .addButton, .editSessaoButton { justify-content: center; }
 
   .categoriasNavegacao {
     overflow-x: auto;
@@ -1156,6 +1433,8 @@
   .filtersSection { padding: 1rem; }
   .heroTitle { font-size: 1.5rem; }
   .heroHeaderTop { gap: 0.5rem; }
+  .formBody { padding: 1rem; }
+  .formContainer { max-width: 95%; }
 
   .sessaoCardHeader {
     flex-direction: column;
@@ -1171,8 +1450,93 @@
 
   .visualizadorDriveButton { width: 100%; justify-content: center; }
 }
+/* Adicione estas classes ao final do arquivo Fotos.module.css */
 
-/* ===== UTILITÁRIOS ===== */
-.breadcrumb { display: flex; align-items: center; }
-.allEvents { animation: fadeIn 250ms ease; }
-iframe { max-width: 100%; display: block; }
+/* ===== BACK LINK ===== */
+.backLink {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.backLink:hover {
+  color: white;
+  text-decoration: none;
+}
+
+/* ===== HEADER VERMELHO PADRÃO ===== */
+.heroHeader {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.fotosContainer.darkMode .heroHeader {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+/* ===== BOTÃO FLUTUANTE ===== */
+.floatingAddBtn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #dc2626;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+
+.floatingAddBtn:hover {
+  background: #b91c1c;
+  transform: scale(1.05);
+}
+
+.fotosContainer.darkMode .floatingAddBtn {
+  background: #f87171;
+  color: #1e293b;
+}
+
+.fotosContainer.darkMode .floatingAddBtn:hover {
+  background: #fca5a5;
+}
+
+/* ===== REMOVER ADMIN BAR ===== */
+.adminBar {
+  display: none;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 768px) {
+  .floatingAddBtn {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .floatingAddBtn {
+    bottom: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    font-size: 0.875rem;
+  }
+}

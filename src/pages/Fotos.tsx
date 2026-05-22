@@ -9,11 +9,23 @@ import {
   FaTimes,
   FaVideo,
   FaImage,
-  FaSun,
-  FaMoon,
   FaGoogleDrive,
   FaRegImages,
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaSave,
+  FaUserShield,
+  FaCamera,
+  FaLink,
+  FaTag,
+  FaCalendar,
+  FaInfoCircle,
+  FaYoutube,
+  FaVimeo,
 } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { useTheme } from '../components/context/ThemeContext';
 import styles from '../styles/Fotos.module.css';
 
 /* =========================================================
@@ -51,40 +63,10 @@ function getDriveEmbedUrl(url: string, tipo: 'foto' | 'video'): string {
   return id ? `https://drive.google.com/file/d/${id}/preview` : url;
 }
 
-function usePrefersDark(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
-
-function useDarkMode(): [boolean, () => void] {
-  const [dark, setDark] = useState<boolean>(() => {
-    try {
-      const saved = localStorage.getItem('modoEscuro');
-      return saved !== null ? JSON.parse(saved) : usePrefersDark();
-    } catch {
-      return false;
-    }
-  });
-
-  const toggle = useCallback(() => {
-    setDark(prev => {
-      const next = !prev;
-      localStorage.setItem('modoEscuro', JSON.stringify(next));
-      return next;
-    });
-  }, []);
-
-  useEffect(() => {
-    document.body.classList.toggle('dark-mode', dark);
-  }, [dark]);
-
-  return [dark, toggle];
-}
-
 /* =========================================================
-   DADOS
+   DADOS INICIAIS
    ======================================================= */
-const SESSOES: Sessao[] = [
+const SESSOES_INICIAIS: Sessao[] = [
   {
     id: 6,
     titulo: 'O AGENTE SECRETO',
@@ -148,7 +130,7 @@ const SESSOES: Sessao[] = [
       'Documentário sobre a trajetória de Walter Salles no cinema nacional, com debate sobre linguagem cinematográfica e memória visual brasileira.',
     fotos: [
       {
-        id: 1,
+        id: 1001,
         url: 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=800&q=80',
         titulo: 'Abertura da sessão',
         descricao: 'Momento inicial do debate sobre Walter Salles',
@@ -157,7 +139,7 @@ const SESSOES: Sessao[] = [
         tipo: 'foto',
       },
       {
-        id: 2,
+        id: 1002,
         url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800&q=80',
         titulo: 'Mediação',
         descricao: 'Mediação do debate pelos coordenadores',
@@ -256,10 +238,16 @@ function SessaoCard({
   sessao,
   dark,
   onClick,
+  isAdmin,
+  onEdit,
+  onDelete,
 }: {
   sessao: Sessao;
   dark: boolean;
   onClick: () => void;
+  isAdmin: boolean;
+  onEdit: (e: React.MouseEvent) => void;
+  onDelete: (e: React.MouseEvent) => void;
 }) {
   const fotos = sessao.fotos.filter(f => f.tipo === 'foto').length;
   const videos = sessao.fotos.filter(f => f.tipo === 'video').length;
@@ -271,7 +259,6 @@ function SessaoCard({
       role="button"
       tabIndex={0}
       onKeyDown={e => e.key === 'Enter' && onClick()}
-      aria-label={`Ver galeria de ${sessao.titulo}`}
     >
       <div className={styles.sessaoCardHeader}>
         <h3 className={styles.sessaoCardTitulo}>{sessao.titulo}</h3>
@@ -299,9 +286,13 @@ function SessaoCard({
       </div>
 
       <div className={styles.sessaoCardFooter}>
-        <button className={styles.verFotosButton} tabIndex={-1}>
-          Ver galeria completa
-        </button>
+        <button className={styles.verFotosButton}>Ver galeria completa</button>
+        {isAdmin && (
+          <div className={styles.cardAdminActions}>
+            <button onClick={onEdit} className={styles.cardEditBtn}><FaEdit /></button>
+            <button onClick={onDelete} className={styles.cardDeleteBtn}><FaTrash /></button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -314,10 +305,16 @@ function MidiaCard({
   midia,
   dark,
   onClick,
+  isAdmin,
+  onEdit,
+  onDelete,
 }: {
   midia: Foto;
   dark: boolean;
   onClick: () => void;
+  isAdmin: boolean;
+  onEdit: (e: React.MouseEvent) => void;
+  onDelete: (e: React.MouseEvent) => void;
 }) {
   const isVideo = midia.tipo === 'video';
 
@@ -328,7 +325,6 @@ function MidiaCard({
       role="button"
       tabIndex={0}
       onKeyDown={e => e.key === 'Enter' && onClick()}
-      aria-label={`Abrir ${midia.tipo}: ${midia.titulo}`}
     >
       <div className={styles.midiaImagemContainer}>
         {isVideo ? (
@@ -349,6 +345,12 @@ function MidiaCard({
           <span className={styles.midiaData}>{midia.data}</span>
           <span className={styles.midiaCategoria}>{midia.categoria}</span>
         </div>
+        {isAdmin && (
+          <div className={styles.midiaAdminActions}>
+            <button onClick={onEdit} className={styles.midiaEditBtn}><FaEdit /></button>
+            <button onClick={onDelete} className={styles.midiaDeleteBtn}><FaTrash /></button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -383,54 +385,26 @@ function Visualizador({
   }, [onFechar, onNavegar]);
 
   return (
-    <div
-      className={`${styles.visualizadorOverlay} ${dark ? styles.darkVisualizador : ''}`}
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Visualizando: ${midia.titulo}`}
-      onClick={e => e.target === e.currentTarget && onFechar()}
-    >
+    <div className={styles.visualizadorOverlay} onClick={e => e.target === e.currentTarget && onFechar()}>
       <div className={styles.visualizadorContent}>
-        <button
-          className={styles.fecharVisualizador}
-          onClick={onFechar}
-          aria-label="Fechar visualizador"
-        >
+        <button className={styles.fecharVisualizador} onClick={onFechar}>
           <FaTimes />
         </button>
 
         <div className={styles.visualizadorNavegacao}>
-          <button
-            className={styles.navegacaoButton}
-            onClick={() => onNavegar('anterior')}
-            aria-label="Mídia anterior"
-          >
+          <button className={styles.navegacaoButton} onClick={() => onNavegar('anterior')}>
             <FaChevronLeft />
           </button>
 
           <div className={styles.visualizadorPrincipal}>
             {isVideo ? (
-              <div className={styles.videoContainer}>
-                <VideoComFallback
-                  midia={midia}
-                  dark={dark}
-                  className={styles.visualizadorVideo}
-                />
-              </div>
+              <VideoComFallback midia={midia} dark={dark} className={styles.visualizadorVideo} />
             ) : (
-              <ImagemComFallback
-                midia={midia}
-                dark={dark}
-                className={styles.visualizadorImagem}
-              />
+              <ImagemComFallback midia={midia} dark={dark} className={styles.visualizadorImagem} />
             )}
           </div>
 
-          <button
-            className={styles.navegacaoButton}
-            onClick={() => onNavegar('proximo')}
-            aria-label="Próxima mídia"
-          >
+          <button className={styles.navegacaoButton} onClick={() => onNavegar('proximo')}>
             <FaChevronRight />
           </button>
         </div>
@@ -447,10 +421,7 @@ function Visualizador({
             <span>Sessão: {sessaoTitulo}</span>
           </div>
           {midia.driveLink && (
-            <button
-              className={styles.visualizadorDriveButton}
-              onClick={() => window.open(midia.driveLink, '_blank')}
-            >
+            <button className={styles.visualizadorDriveButton} onClick={() => window.open(midia.driveLink, '_blank')}>
               <FaGoogleDrive />
               Abrir no Google Drive
             </button>
@@ -465,37 +436,249 @@ function Visualizador({
    COMPONENTE PRINCIPAL
    ======================================================= */
 export default function Fotos() {
-  const [dark, toggleDark] = useDarkMode();
-  const [themeChanging, setThemeChanging] = useState(false);
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
+  const [sessoes, setSessoes] = useState<Sessao[]>([]);
   const [sessaoSelecionada, setSessaoSelecionada] = useState<Sessao | null>(null);
   const [busca, setBusca] = useState('');
   const [filtroAno, setFiltroAno] = useState('todos');
   const [categoriaAtiva, setCategoriaAtiva] = useState('todas');
   const [midiaSelecionada, setMidiaSelecionada] = useState<Foto | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [showSessaoForm, setShowSessaoForm] = useState(false);
+  const [editingSessao, setEditingSessao] = useState<Sessao | null>(null);
+  const [editingMidia, setEditingMidia] = useState<{ sessaoId: number; midia: Foto } | null>(null);
 
-  /* Lock de scroll quando visualizador está aberto */
+  // Estado do formulário de Sessão
+  const [sessaoForm, setSessaoForm] = useState<Partial<Sessao>>({
+    titulo: '',
+    diretor: '',
+    ano: new Date().getFullYear(),
+    dataSessao: '',
+    participantes: 0,
+    descricao: '',
+    fotos: []
+  });
+
+  // Estado do formulário de Mídia
+  const [midiaForm, setMidiaForm] = useState<Partial<Foto>>({
+    url: '',
+    titulo: '',
+    descricao: '',
+    data: '',
+    categoria: '',
+    tipo: 'foto',
+    driveLink: ''
+  });
+
+  // Carregar dados do localStorage
+  useEffect(() => {
+    const storedSessoes = localStorage.getItem('cinemar_sessoes');
+    if (storedSessoes) {
+      setSessoes(JSON.parse(storedSessoes));
+    } else {
+      setSessoes(SESSOES_INICIAIS);
+    }
+  }, []);
+
+  // Salvar dados no localStorage
+  useEffect(() => {
+    if (sessoes.length > 0) {
+      localStorage.setItem('cinemar_sessoes', JSON.stringify(sessoes));
+    }
+  }, [sessoes]);
+
+  // Verificar usuário logado
+  useEffect(() => {
+    const storedUser = localStorage.getItem('cinemar_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const isAdmin = user?.role === 'admin';
+
   useEffect(() => {
     document.body.style.overflow = midiaSelecionada ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [midiaSelecionada]);
 
-  /* Resetar categoria ao trocar de sessão */
   useEffect(() => {
     setCategoriaAtiva('todas');
   }, [sessaoSelecionada]);
 
-  const handleToggleDark = () => {
-    setThemeChanging(true);
-    toggleDark();
-    setTimeout(() => setThemeChanging(false), 450);
+  // ===== CRUD SESSÕES =====
+  const handleAddSessao = () => {
+    if (!sessaoForm.titulo || !sessaoForm.diretor || !sessaoForm.dataSessao) {
+      alert('Preencha todos os campos obrigatórios!');
+      return;
+    }
+
+    const newSessao: Sessao = {
+      id: Date.now(),
+      titulo: sessaoForm.titulo!,
+      diretor: sessaoForm.diretor!,
+      ano: sessaoForm.ano || new Date().getFullYear(),
+      dataSessao: sessaoForm.dataSessao!,
+      participantes: sessaoForm.participantes || 0,
+      descricao: sessaoForm.descricao || '',
+      fotos: []
+    };
+
+    setSessoes([newSessao, ...sessoes]);
+    resetSessaoForm();
+    setShowSessaoForm(false);
+  };
+
+  const handleEditSessao = () => {
+    if (!editingSessao) return;
+
+    const updatedSessoes = sessoes.map(s =>
+      s.id === editingSessao.id ? { ...s, ...sessaoForm } : s
+    );
+
+    setSessoes(updatedSessoes);
+    resetSessaoForm();
+    setShowSessaoForm(false);
+    setEditingSessao(null);
+    if (sessaoSelecionada?.id === editingSessao.id) {
+      setSessaoSelecionada({ ...editingSessao, ...sessaoForm });
+    }
+  };
+
+  const handleDeleteSessao = (id: number) => {
+    if (confirm('Tem certeza que deseja excluir esta sessão e todas as suas fotos/vídeos?')) {
+      setSessoes(sessoes.filter(s => s.id !== id));
+      if (sessaoSelecionada?.id === id) setSessaoSelecionada(null);
+    }
+  };
+
+  const openEditSessao = (sessao: Sessao, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSessaoForm({
+      titulo: sessao.titulo,
+      diretor: sessao.diretor,
+      ano: sessao.ano,
+      dataSessao: sessao.dataSessao,
+      participantes: sessao.participantes,
+      descricao: sessao.descricao,
+    });
+    setEditingSessao(sessao);
+    setShowSessaoForm(true);
+  };
+
+  const resetSessaoForm = () => {
+    setSessaoForm({
+      titulo: '',
+      diretor: '',
+      ano: new Date().getFullYear(),
+      dataSessao: '',
+      participantes: 0,
+      descricao: '',
+      fotos: []
+    });
+    setEditingSessao(null);
+  };
+
+  // ===== CRUD MÍDIAS =====
+  const handleAddMidia = () => {
+    if (!sessaoSelecionada) return;
+    if (!midiaForm.url || !midiaForm.titulo || !midiaForm.categoria) {
+      alert('Preencha URL, título e categoria!');
+      return;
+    }
+
+    const newMidia: Foto = {
+      id: Date.now(),
+      url: midiaForm.url!,
+      titulo: midiaForm.titulo!,
+      descricao: midiaForm.descricao || '',
+      data: midiaForm.data || new Date().toLocaleDateString('pt-BR'),
+      categoria: midiaForm.categoria!,
+      tipo: midiaForm.tipo || 'foto',
+      driveLink: midiaForm.driveLink
+    };
+
+    const updatedSessoes = sessoes.map(s =>
+      s.id === sessaoSelecionada.id ? { ...s, fotos: [...s.fotos, newMidia] } : s
+    );
+
+    setSessoes(updatedSessoes);
+    setSessaoSelecionada({ ...sessaoSelecionada, fotos: [...sessaoSelecionada.fotos, newMidia] });
+    resetMidiaForm();
+    setShowForm(false);
+  };
+
+  const handleEditMidia = () => {
+    if (!sessaoSelecionada || !editingMidia) return;
+
+    const updatedFotos = sessaoSelecionada.fotos.map(f =>
+      f.id === editingMidia.midia.id ? { ...f, ...midiaForm } : f
+    );
+
+    const updatedSessoes = sessoes.map(s =>
+      s.id === sessaoSelecionada.id ? { ...s, fotos: updatedFotos } : s
+    );
+
+    setSessoes(updatedSessoes);
+    setSessaoSelecionada({ ...sessaoSelecionada, fotos: updatedFotos });
+    resetMidiaForm();
+    setShowForm(false);
+    setEditingMidia(null);
+  };
+
+  const handleDeleteMidia = (sessaoId: number, midiaId: number) => {
+    if (confirm('Tem certeza que deseja excluir esta mídia?')) {
+      const updatedSessoes = sessoes.map(s =>
+        s.id === sessaoId ? { ...s, fotos: s.fotos.filter(f => f.id !== midiaId) } : s
+      );
+
+      setSessoes(updatedSessoes);
+      if (sessaoSelecionada?.id === sessaoId) {
+        setSessaoSelecionada({
+          ...sessaoSelecionada,
+          fotos: sessaoSelecionada.fotos.filter(f => f.id !== midiaId)
+        });
+      }
+      if (midiaSelecionada?.id === midiaId) setMidiaSelecionada(null);
+    }
+  };
+
+  const openEditMidia = (sessaoId: number, midia: Foto, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMidiaForm({
+      url: midia.url,
+      titulo: midia.titulo,
+      descricao: midia.descricao,
+      data: midia.data,
+      categoria: midia.categoria,
+      tipo: midia.tipo,
+      driveLink: midia.driveLink
+    });
+    setEditingMidia({ sessaoId, midia });
+    setShowForm(true);
+  };
+
+  const resetMidiaForm = () => {
+    setMidiaForm({
+      url: '',
+      titulo: '',
+      descricao: '',
+      data: '',
+      categoria: '',
+      tipo: 'foto',
+      driveLink: ''
+    });
+    setEditingMidia(null);
   };
 
   /* Filtros da lista de sessões */
   const anosUnicos = ['todos', ...Array.from(
-    new Set(SESSOES.map(s => s.dataSessao.split('/')[2] ?? ''))
+    new Set(sessoes.map(s => s.dataSessao.split('/')[2] ?? ''))
   ).filter(Boolean)];
 
-  const sessoesFiltradas = SESSOES.filter(s => {
+  const sessoesFiltradas = sessoes.filter(s => {
     const q = busca.toLowerCase();
     const matchBusca = !q ||
       s.titulo.toLowerCase().includes(q) ||
@@ -529,39 +712,16 @@ export default function Fotos() {
     [midiaSelecionada, midiasFiltradas]
   );
 
-  /* Rótulo do botão de voltar */
-  const labelVoltar = sessaoSelecionada ? 'Voltar para sessões' : 'Voltar para início';
-
   return (
-    <div className={`${styles.fotosContainer} ${dark ? styles.darkMode : ''}`}>
+    <div className={`${styles.fotosContainer} ${isDarkMode ? styles.darkMode : ''}`}>
 
       {/* ---- HEADER ---- */}
-      <header className={`${styles.heroHeader} ${dark ? styles.darkHeader : ''}`}>
+      <header className={styles.heroHeader}>
         <div className={styles.heroHeaderContent}>
           <div className={styles.heroHeaderTop}>
-            <div className={styles.breadcrumb}>
-              <button
-                className={styles.voltarInicioButton}
-                onClick={() => sessaoSelecionada ? setSessaoSelecionada(null) : window.history.back()}
-                aria-label={labelVoltar}
-              >
-                <FaArrowLeft />
-                {labelVoltar}
-              </button>
-            </div>
-
-            <div className={styles.themeControls}>
-              <button
-                className={`${styles.themeToggle} ${themeChanging ? styles.themeChanging : ''}`}
-                onClick={handleToggleDark}
-                aria-label={dark ? 'Alternar para modo claro' : 'Alternar para modo escuro'}
-              >
-                {dark ? <FaSun /> : <FaMoon />}
-                <span className={styles.themeLabel}>
-                  {dark ? 'Modo claro' : 'Modo escuro'}
-                </span>
-              </button>
-            </div>
+            <Link to="/" className={styles.backLink}>
+              ← Voltar para Início
+            </Link>
           </div>
 
           <div className={styles.heroMain}>
@@ -577,6 +737,215 @@ export default function Fotos() {
         </div>
       </header>
 
+      {/* Botão flutuante de adicionar (apenas admin) */}
+      {isAdmin && !sessaoSelecionada && (
+        <button
+          className={styles.floatingAddBtn}
+          onClick={() => setShowSessaoForm(true)}
+          title="Adicionar sessão"
+        >
+          <FaPlus />
+        </button>
+      )}
+
+      {isAdmin && sessaoSelecionada && (
+        <button
+          className={styles.floatingAddBtn}
+          onClick={() => { resetMidiaForm(); setShowForm(true); }}
+          title="Adicionar mídia"
+        >
+          <FaPlus />
+        </button>
+      )}
+
+      {/* Formulário de Sessão */}
+      {showSessaoForm && isAdmin && (
+        <div className={styles.formOverlay}>
+          <div className={styles.formContainer}>
+            <div className={styles.formHeader}>
+              <h3>{editingSessao ? 'Editar Sessão' : 'Nova Sessão'}</h3>
+              <button onClick={() => { setShowSessaoForm(false); resetSessaoForm(); }} className={styles.formClose}>
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className={styles.formBody}>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Título *</label>
+                  <input
+                    type="text"
+                    value={sessaoForm.titulo}
+                    onChange={(e) => setSessaoForm({ ...sessaoForm, titulo: e.target.value })}
+                    placeholder="Nome da sessão"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Diretor *</label>
+                  <input
+                    type="text"
+                    value={sessaoForm.diretor}
+                    onChange={(e) => setSessaoForm({ ...sessaoForm, diretor: e.target.value })}
+                    placeholder="Diretor do filme"
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Ano</label>
+                  <input
+                    type="number"
+                    value={sessaoForm.ano}
+                    onChange={(e) => setSessaoForm({ ...sessaoForm, ano: parseInt(e.target.value) })}
+                    placeholder="2024"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Data da Sessão *</label>
+                  <input
+                    type="text"
+                    value={sessaoForm.dataSessao}
+                    onChange={(e) => setSessaoForm({ ...sessaoForm, dataSessao: e.target.value })}
+                    placeholder="DD/MM/AAAA"
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Participantes</label>
+                  <input
+                    type="number"
+                    value={sessaoForm.participantes}
+                    onChange={(e) => setSessaoForm({ ...sessaoForm, participantes: parseInt(e.target.value) })}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Descrição *</label>
+                <textarea
+                  value={sessaoForm.descricao}
+                  onChange={(e) => setSessaoForm({ ...sessaoForm, descricao: e.target.value })}
+                  placeholder="Descrição da sessão..."
+                  rows={4}
+                />
+              </div>
+            </div>
+
+            <div className={styles.formFooter}>
+              <button className={styles.cancelBtn} onClick={() => { setShowSessaoForm(false); resetSessaoForm(); }}>
+                Cancelar
+              </button>
+              <button className={styles.submitBtn} onClick={editingSessao ? handleEditSessao : handleAddSessao}>
+                <FaSave /> {editingSessao ? 'Salvar Alterações' : 'Adicionar Sessão'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Formulário de Mídia */}
+      {showForm && isAdmin && sessaoSelecionada && (
+        <div className={styles.formOverlay}>
+          <div className={styles.formContainer}>
+            <div className={styles.formHeader}>
+              <h3>{editingMidia ? 'Editar Mídia' : 'Adicionar Mídia'}</h3>
+              <button onClick={() => { setShowForm(false); resetMidiaForm(); }} className={styles.formClose}>
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className={styles.formBody}>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Tipo *</label>
+                  <select
+                    value={midiaForm.tipo}
+                    onChange={(e) => setMidiaForm({ ...midiaForm, tipo: e.target.value as 'foto' | 'video' })}
+                  >
+                    <option value="foto">Foto</option>
+                    <option value="video">Vídeo</option>
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Categoria *</label>
+                  <input
+                    type="text"
+                    value={midiaForm.categoria}
+                    onChange={(e) => setMidiaForm({ ...midiaForm, categoria: e.target.value })}
+                    placeholder="Debate, Apresentação, Bastidores..."
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>URL *</label>
+                <input
+                  type="text"
+                  value={midiaForm.url}
+                  onChange={(e) => setMidiaForm({ ...midiaForm, url: e.target.value })}
+                  placeholder="Link da imagem ou vídeo"
+                />
+                <small>Use link direto do Google Drive ou URL da imagem</small>
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Título *</label>
+                  <input
+                    type="text"
+                    value={midiaForm.titulo}
+                    onChange={(e) => setMidiaForm({ ...midiaForm, titulo: e.target.value })}
+                    placeholder="Título da mídia"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Data</label>
+                  <input
+                    type="text"
+                    value={midiaForm.data}
+                    onChange={(e) => setMidiaForm({ ...midiaForm, data: e.target.value })}
+                    placeholder="DD/MM/AAAA"
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Descrição</label>
+                <textarea
+                  value={midiaForm.descricao}
+                  onChange={(e) => setMidiaForm({ ...midiaForm, descricao: e.target.value })}
+                  placeholder="Descrição da mídia..."
+                  rows={3}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Link do Google Drive (opcional)</label>
+                <input
+                  type="text"
+                  value={midiaForm.driveLink}
+                  onChange={(e) => setMidiaForm({ ...midiaForm, driveLink: e.target.value })}
+                  placeholder="https://drive.google.com/file/d/.../view"
+                />
+              </div>
+            </div>
+
+            <div className={styles.formFooter}>
+              <button className={styles.cancelBtn} onClick={() => { setShowForm(false); resetMidiaForm(); }}>
+                Cancelar
+              </button>
+              <button className={styles.submitBtn} onClick={editingMidia ? handleEditMidia : handleAddMidia}>
+                <FaSave /> {editingMidia ? 'Salvar Alterações' : 'Adicionar Mídia'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ---- LISTA DE SESSÕES ---- */}
       {!sessaoSelecionada ? (
         <>
@@ -584,14 +953,13 @@ export default function Fotos() {
             <div className={styles.filtersContent}>
               <div className={styles.searchContainer}>
                 <div className={styles.searchBox}>
-                  <FaSearch className={styles.searchIcon} aria-hidden="true" />
+                  <FaSearch className={styles.searchIcon} />
                   <input
                     type="search"
                     placeholder="Buscar por título, diretor ou descrição…"
                     value={busca}
                     onChange={e => setBusca(e.target.value)}
                     className={styles.searchInput}
-                    aria-label="Buscar sessões"
                   />
                 </div>
 
@@ -599,13 +967,12 @@ export default function Fotos() {
                   <span>Filtrar por ano:</span>
                 </div>
 
-                <div className={styles.tipoFilters} role="group" aria-label="Filtros de ano">
+                <div className={styles.tipoFilters}>
                   {anosUnicos.map(ano => (
                     <button
                       key={ano}
                       className={`${styles.tipoFilterBtn} ${filtroAno === ano ? styles.active : ''}`}
                       onClick={() => setFiltroAno(ano)}
-                      aria-pressed={filtroAno === ano}
                     >
                       {ano === 'todos' ? 'Todos os anos' : `Ano ${ano}`}
                     </button>
@@ -619,7 +986,7 @@ export default function Fotos() {
             <div className={styles.allEvents}>
               <div className={styles.sectionHeader}>
                 <h2 className={styles.selecaoTitulo}>
-                  <FaCalendarAlt className={styles.sectionTitleIcon} aria-hidden="true" />
+                  <FaCalendarAlt className={styles.sectionTitleIcon} />
                   Todas as sessões
                   <span className={styles.eventosCount}>{sessoesFiltradas.length}</span>
                 </h2>
@@ -629,10 +996,8 @@ export default function Fotos() {
               </div>
 
               {sessoesFiltradas.length === 0 ? (
-                <div className={styles.noResults} role="status">
-                  <div className={styles.noResultsIcon} aria-hidden="true">
-                    <FaSearch />
-                  </div>
+                <div className={styles.noResults}>
+                  <div className={styles.noResultsIcon}><FaSearch /></div>
                   <h3>Nenhuma sessão encontrada</h3>
                   <p>Tente alterar os filtros ou o termo de busca</p>
                   <button
@@ -648,8 +1013,11 @@ export default function Fotos() {
                     <SessaoCard
                       key={sessao.id}
                       sessao={sessao}
-                      dark={dark}
+                      dark={isDarkMode}
                       onClick={() => setSessaoSelecionada(sessao)}
+                      isAdmin={isAdmin}
+                      onEdit={(e) => openEditSessao(sessao, e)}
+                      onDelete={(e) => { e.stopPropagation(); handleDeleteSessao(sessao.id); }}
                     />
                   ))}
                 </div>
@@ -658,10 +1026,9 @@ export default function Fotos() {
           </main>
         </>
       ) : (
-
         /* ---- GALERIA DA SESSÃO ---- */
         <main className={styles.mainContent}>
-          <div className={`${styles.sessaoHeader} ${dark ? styles.darkCard : ''}`}>
+          <div className={`${styles.sessaoHeader} ${isDarkMode ? styles.darkCard : ''}`}>
             <div className={styles.sessaoInfo}>
               <div className={styles.sessaoHeaderTop}>
                 <h2 className={styles.sessaoTitulo}>{sessaoSelecionada.titulo}</h2>
@@ -674,11 +1041,11 @@ export default function Fotos() {
               <div className={styles.sessaoDetalhes}>
                 <div className={styles.sessaoInfoLinha}>
                   <span className={styles.sessaoInfoItem}>
-                    <FaFilm aria-hidden="true" />
+                    <FaFilm />
                     {sessaoSelecionada.diretor} · {sessaoSelecionada.ano}
                   </span>
                   <span className={styles.sessaoInfoItem}>
-                    <FaCalendarAlt aria-hidden="true" />
+                    <FaCalendarAlt />
                     {sessaoSelecionada.dataSessao}
                   </span>
                 </div>
@@ -686,13 +1053,12 @@ export default function Fotos() {
               </div>
             </div>
 
-            <nav className={styles.categoriasNavegacao} aria-label="Categorias de mídia">
+            <nav className={styles.categoriasNavegacao}>
               {categorias.map(cat => (
                 <button
                   key={cat}
-                  className={`${styles.categoriaButton} ${categoriaAtiva === cat ? styles.ativa : ''} ${dark ? styles.darkCategoriaButton : ''}`}
+                  className={`${styles.categoriaButton} ${categoriaAtiva === cat ? styles.ativa : ''}`}
                   onClick={() => setCategoriaAtiva(cat)}
-                  aria-pressed={categoriaAtiva === cat}
                 >
                   {cat === 'todas'
                     ? 'Todos os materiais'
@@ -709,24 +1075,30 @@ export default function Fotos() {
                   <MidiaCard
                     key={midia.id}
                     midia={midia}
-                    dark={dark}
+                    dark={isDarkMode}
                     onClick={() => setMidiaSelecionada(midia)}
+                    isAdmin={isAdmin}
+                    onEdit={(e) => openEditMidia(sessaoSelecionada.id, midia, e)}
+                    onDelete={(e) => { e.stopPropagation(); handleDeleteMidia(sessaoSelecionada.id, midia.id); }}
                   />
                 ))}
               </div>
             ) : (
-              <div className={styles.noResults} role="status">
-                <div className={styles.noResultsIcon} aria-hidden="true">
-                  <FaSearch />
-                </div>
+              <div className={styles.noResults}>
+                <div className={styles.noResultsIcon}><FaSearch /></div>
                 <h3>Nenhum material encontrado</h3>
                 <p>Tente selecionar outra categoria</p>
-                <button
-                  className={styles.clearFiltersBtn}
-                  onClick={() => setCategoriaAtiva('todas')}
-                >
+                <button className={styles.clearFiltersBtn} onClick={() => setCategoriaAtiva('todas')}>
                   Mostrar todos
                 </button>
+                {isAdmin && (
+                  <button
+                    className={styles.addMidiaButton}
+                    onClick={() => { resetMidiaForm(); setShowForm(true); }}
+                  >
+                    <FaPlus /> Adicionar primeira mídia
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -738,7 +1110,7 @@ export default function Fotos() {
         <Visualizador
           midia={midiaSelecionada}
           sessaoTitulo={sessaoSelecionada?.titulo ?? ''}
-          dark={dark}
+          dark={isDarkMode}
           onFechar={() => setMidiaSelecionada(null)}
           onNavegar={navegarMidia}
         />
