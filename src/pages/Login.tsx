@@ -3,50 +3,26 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FiEye, FiEyeOff, FiAlertCircle, FiArrowLeft, FiFilm, FiHeadphones, FiCamera, FiUsers } from 'react-icons/fi';
 import logoImage from '../images/cinemar-logo.png';
 import styles from '../styles/Auth.module.css';
-
-// ✅ Dados de login pré-definidos para teste
-const USUARIOS_TESTE = [
-  {
-    id: 1,
-    email: 'admin@cinemar.com',
-    password: 'admin123',
-    nome: 'Administrador',
-    role: 'admin'
-  },
-  {
-    id: 2,
-    email: 'usuario@cinemar.com',
-    password: 'usuario123',
-    nome: 'Usuário Comum',
-    role: 'user'
-  }
-];
+import { useAuth } from '../hooks/useAuth';
 
 export default function Login() {
-  const navigate    = useNavigate();
-  const emailId     = useId();
-  const passwordId  = useId();
+  const navigate   = useNavigate();
+  const emailId    = useId();
+  const passwordId = useId();
+  const { login, isLoading } = useAuth();
 
   const [form, setForm]          = useState({ email: '', password: '' });
   const [errors, setErrors]      = useState<Record<string, string>>({});
   const [showPwd, setShowPwd]    = useState(false);
-  const [loading, setLoading]    = useState(false);
   const [globalError, setGlobal] = useState('');
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.email.trim())                                       e.email    = 'E-mail obrigatório';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))    e.email    = 'E-mail inválido';
-    if (!form.password)                                           e.password = 'Senha obrigatória';
-    else if (form.password.length < 6)                            e.password = 'Mínimo 6 caracteres';
+    if (!form.email.trim())                                      e.email    = 'E-mail obrigatório';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))   e.email    = 'E-mail inválido';
+    if (!form.password)                                          e.password = 'Senha obrigatória';
+    else if (form.password.length < 6)                           e.password = 'Mínimo 6 caracteres';
     return e;
-  };
-
-  // ✅ Função para autenticar o usuário
-  const autenticarUsuario = (email: string, password: string) => {
-    return USUARIOS_TESTE.find(
-      user => user.email === email && user.password === password
-    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,41 +31,15 @@ export default function Login() {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
-    setLoading(true);
-    
-    try {
-      // ✅ Simula um pequeno delay de rede (opcional)
-      await new Promise(r => setTimeout(r, 800));
-      
-      // ✅ Verifica se o usuário existe nos dados de teste
-      const usuario = autenticarUsuario(form.email, form.password);
-      
-      if (usuario) {
-        // ✅ Salva os dados do usuário no localStorage (opcional)
-        localStorage.setItem('cinemar_user', JSON.stringify({
-          id: usuario.id,
-          email: usuario.email,
-          nome: usuario.nome,
-          role: usuario.role
-        }));
-        
-        // ✅ Redireciona para a página inicial
-        navigate('/');
-      } else {
-        setGlobal('E-mail ou senha incorretos. Tente novamente.');
-      }
-    } catch {
-      setGlobal('Erro ao fazer login. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  // ✅ Função para preencher automaticamente os dados de teste (útil para desenvolvimento)
-  const preencherUsuario = (email: string, password: string) => {
-    setForm({ email, password });
-    setErrors({});
-    setGlobal('');
+    try {
+      await login({ email: form.email, password: form.password });
+      navigate('/');
+    } catch (err: any) {
+      const msg = err.response?.data?.message;
+      // Backend retorna string ou array de strings
+      setGlobal(Array.isArray(msg) ? msg.join(', ') : (msg ?? 'E-mail ou senha incorretos.'));
+    }
   };
 
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,10 +48,10 @@ export default function Login() {
   };
 
   const features = [
-    { icon: <FiFilm />, text: 'Participe das sessões quinzenais' },
+    { icon: <FiFilm />,       text: 'Participe das sessões quinzenais' },
     { icon: <FiHeadphones />, text: 'Acesso aos podcasts do cineclube' },
-    { icon: <FiCamera />, text: 'Galeria de fotos das sessões' },
-    { icon: <FiUsers />, text: 'Comunidade de Camocim e região' },
+    { icon: <FiCamera />,     text: 'Galeria de fotos das sessões' },
+    { icon: <FiUsers />,      text: 'Comunidade de Camocim e região' },
   ];
 
   return (
@@ -110,11 +60,7 @@ export default function Login() {
       {/* ── Painel esquerdo ── */}
       <div className={styles.sidePanel} aria-hidden="true">
         <div className={styles.sidePanelContent}>
-          <img
-            src={logoImage}
-            alt=""
-            className={styles.sideLogo}
-          />
+          <img src={logoImage} alt="" className={styles.sideLogo} />
           <div className={styles.sideDivider} />
           <p className={styles.sideTagline}>
             Cinema comunitário em Camocim.<br />
@@ -148,27 +94,6 @@ export default function Login() {
               {globalError}
             </div>
           )}
-
-          {/* ✅ Botões de acesso rápido para teste (opcional - remova se não quiser) */}
-          <div className={styles.testUsers}>
-            <p className={styles.testUsersTitle}>🔐 Contas de teste:</p>
-            <div className={styles.testUsersButtons}>
-              <button
-                type="button"
-                className={styles.testUserBtn}
-                onClick={() => preencherUsuario('admin@cinemar.com', 'admin123')}
-              >
-                Admin
-              </button>
-              <button
-                type="button"
-                className={styles.testUserBtn}
-                onClick={() => preencherUsuario('usuario@cinemar.com', 'usuario123')}
-              >
-                Usuário
-              </button>
-            </div>
-          </div>
 
           <form onSubmit={handleSubmit} noValidate aria-label="Formulário de login">
             <div className={styles.fieldGroup}>
@@ -234,10 +159,10 @@ export default function Login() {
             <button
               type="submit"
               className={styles.submitButton}
-              disabled={loading}
-              aria-busy={loading}
+              disabled={isLoading}
+              aria-busy={isLoading}
             >
-              {loading
+              {isLoading
                 ? <><div className={styles.spinner} aria-hidden="true" /> Entrando…</>
                 : 'Entrar'
               }
@@ -265,7 +190,6 @@ export default function Login() {
 
         </div>
       </main>
-
     </div>
   );
 }

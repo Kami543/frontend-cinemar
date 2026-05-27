@@ -1,4 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+// frontend/src/pages/Fotos.tsx
+
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import {
   FaArrowLeft,
   FaCalendarAlt,
@@ -23,133 +26,17 @@ import {
   FaInfoCircle,
   FaYoutube,
   FaVimeo,
+  FaSpinner,
+  FaExclamationTriangle,
+  FaUsers,
+  FaClock,
+  FaStar,
 } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
 import { useTheme } from '../components/context/ThemeContext';
 import styles from '../styles/Fotos.module.css';
-
-/* =========================================================
-   TIPOS
-   ======================================================= */
-interface Foto {
-  id: number;
-  url: string;
-  titulo: string;
-  descricao: string;
-  data: string;
-  categoria: string;
-  tipo: 'foto' | 'video';
-  driveLink?: string;
-}
-
-interface Sessao {
-  id: number;
-  titulo: string;
-  diretor: string;
-  ano: number;
-  dataSessao: string;
-  participantes: number;
-  descricao: string;
-  fotos: Foto[];
-}
-
-/* =========================================================
-   UTILITÁRIOS
-   ======================================================= */
-function getDriveEmbedUrl(url: string, tipo: 'foto' | 'video'): string {
-  if (tipo !== 'video') return url;
-  const match = url.match(/\/d\/([^/]+)/) ?? url.match(/id=([^&]+)/);
-  const id = match?.[1];
-  return id ? `https://drive.google.com/file/d/${id}/preview` : url;
-}
-
-/* =========================================================
-   DADOS INICIAIS
-   ======================================================= */
-const SESSOES_INICIAIS: Sessao[] = [
-  {
-    id: 6,
-    titulo: 'O AGENTE SECRETO',
-    diretor: 'Kleber Mendonça Filho',
-    ano: 2025,
-    dataSessao: '06/11/2024',
-    participantes: 68,
-    descricao:
-      'Sessão especial de pré-estreia com debate sobre o novo filme de Kleber Mendonça Filho, abordando temas como ditadura, identidade nacional e cinema contemporâneo brasileiro.',
-    fotos: [
-      {
-        id: 1,
-        url: 'https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t1&sz=w1000',
-        driveLink: 'https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t1/view',
-        titulo: 'Debate completo — parte 1',
-        descricao: 'Momentos iniciais do debate sobre O Agente Secreto',
-        data: '06/11/2024',
-        categoria: 'Debate',
-        tipo: 'foto',
-      },
-      {
-        id: 2,
-        url: 'https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t2&sz=w1000',
-        driveLink: 'https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t2/view',
-        titulo: 'Apresentação do filme',
-        descricao: 'Introdução à obra de Kleber Mendonça Filho',
-        data: '06/11/2024',
-        categoria: 'Apresentação',
-        tipo: 'foto',
-      },
-      {
-        id: 101,
-        url: 'https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t7/preview',
-        driveLink: 'https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t7/view',
-        titulo: 'Debate completo — gravação integral',
-        descricao: 'Gravação completa da sessão de debate (2h 15min)',
-        data: '06/11/2024',
-        categoria: 'Debate',
-        tipo: 'video',
-      },
-      {
-        id: 201,
-        url: 'https://drive.google.com/thumbnail?id=1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t10&sz=w1000',
-        driveLink: 'https://drive.google.com/file/d/1QTWlJfQqI9F2G7J8FQ3JYqMkLqP8V2t10/view',
-        titulo: 'Preparação do espaço',
-        descricao: 'Organização antes do início da sessão',
-        data: '06/11/2024',
-        categoria: 'Bastidores',
-        tipo: 'foto',
-      },
-    ],
-  },
-  {
-    id: 1,
-    titulo: 'AINDA ESTOU AQUI',
-    diretor: 'Walter Salles',
-    ano: 2024,
-    dataSessao: '05/10/2024',
-    participantes: 42,
-    descricao:
-      'Documentário sobre a trajetória de Walter Salles no cinema nacional, com debate sobre linguagem cinematográfica e memória visual brasileira.',
-    fotos: [
-      {
-        id: 1001,
-        url: 'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=800&q=80',
-        titulo: 'Abertura da sessão',
-        descricao: 'Momento inicial do debate sobre Walter Salles',
-        data: '05/10/2024',
-        categoria: 'Debate',
-        tipo: 'foto',
-      },
-      {
-        id: 1002,
-        url: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800&q=80',
-        titulo: 'Mediação',
-        descricao: 'Mediação do debate pelos coordenadores',
-        data: '05/10/2024',
-        categoria: 'Debate',
-        tipo: 'foto',
-      },
-    ],
-  },
-];
+import { useSessoes } from '../hooks/useSessions';
+import type { Sessao, Foto } from '../services/sessoes.service';
+import PlaceholderImage from '../images/Fallback.png';
 
 /* =========================================================
    COMPONENTE: IMAGEM COM FALLBACK
@@ -166,6 +53,7 @@ function ImagemComFallback({ midia, dark, className }: MidiaProps) {
   const abrirDrive = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (midia.driveLink) window.open(midia.driveLink, '_blank');
+    else if (midia.url.includes('drive.google.com')) window.open(midia.url, '_blank');
   };
 
   if (erro) {
@@ -173,7 +61,7 @@ function ImagemComFallback({ midia, dark, className }: MidiaProps) {
       <div className={`${styles.fallbackImage} ${dark ? styles.darkFallback : ''}`}>
         <FaRegImages className={styles.fallbackIcon} />
         <p className={styles.fallbackText}>Imagem indisponível</p>
-        {midia.driveLink && (
+        {(midia.driveLink || midia.url.includes('drive.google.com')) && (
           <button className={styles.driveButton} onClick={abrirDrive}>
             <FaGoogleDrive />
             Ver no Google Drive
@@ -197,11 +85,22 @@ function ImagemComFallback({ midia, dark, className }: MidiaProps) {
 
 function VideoComFallback({ midia, dark, className }: MidiaProps) {
   const [erro, setErro] = useState(false);
-  const src = getDriveEmbedUrl(midia.url, 'video');
+  
+  const getEmbedUrl = (url: string) => {
+    if (url.includes('drive.google.com')) {
+      const match = url.match(/\/d\/([^/]+)/) || url.match(/id=([^&]+)/);
+      const id = match?.[1];
+      if (id) return `https://drive.google.com/file/d/${id}/preview`;
+    }
+    return url;
+  };
+
+  const src = getEmbedUrl(midia.url);
 
   const abrirDrive = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (midia.driveLink) window.open(midia.driveLink, '_blank');
+    else if (midia.url) window.open(midia.url, '_blank');
   };
 
   if (erro) {
@@ -209,7 +108,7 @@ function VideoComFallback({ midia, dark, className }: MidiaProps) {
       <div className={`${styles.fallbackVideo} ${dark ? styles.darkFallback : ''}`}>
         <FaVideo className={styles.fallbackIcon} />
         <p className={styles.fallbackText}>Vídeo indisponível</p>
-        {midia.driveLink && (
+        {(midia.driveLink || midia.url) && (
           <button className={styles.driveButton} onClick={abrirDrive}>
             <FaGoogleDrive />
             Assistir no Google Drive
@@ -249,8 +148,18 @@ function SessaoCard({
   onEdit: (e: React.MouseEvent) => void;
   onDelete: (e: React.MouseEvent) => void;
 }) {
-  const fotos = sessao.fotos.filter(f => f.tipo === 'foto').length;
-  const videos = sessao.fotos.filter(f => f.tipo === 'video').length;
+  const fotosCount = sessao.fotos?.filter(f => f.tipo === 'foto').length || 0;
+  const videosCount = sessao.fotos?.filter(f => f.tipo === 'video').length || 0;
+  const status = useMemo(() => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const dataSessao = new Date(sessao.dataSessao);
+    dataSessao.setHours(0, 0, 0, 0);
+    
+    if (dataSessao > hoje) return { label: 'Agendada', color: '#3b82f6' };
+    if (dataSessao.toDateString() === hoje.toDateString()) return { label: 'Hoje!', color: '#f59e0b' };
+    return { label: 'Realizada', color: '#10b981' };
+  }, [sessao.dataSessao]);
 
   return (
     <div
@@ -262,26 +171,36 @@ function SessaoCard({
     >
       <div className={styles.sessaoCardHeader}>
         <h3 className={styles.sessaoCardTitulo}>{sessao.titulo}</h3>
-        <span className={styles.sessaoCardStatus}>{sessao.participantes} participantes</span>
+        <span className={styles.sessaoCardStatus} style={{ backgroundColor: status.color }}>
+          {status.label}
+        </span>
       </div>
 
       <div className={styles.sessaoCardContent}>
         <div className={styles.eventoCardMeta}>
           <span className={styles.metaItem}>
             <FaCalendarAlt className={styles.metaItemIcon} />
-            {sessao.dataSessao}
+            {new Date(sessao.dataSessao).toLocaleDateString('pt-BR')}
           </span>
           <span className={styles.metaItem}>
             <FaFilm className={styles.metaItemIcon} />
             {sessao.diretor}
+          </span>
+          <span className={styles.metaItem}>
+            <FaUsers className={styles.metaItemIcon} />
+            {sessao.participantes || 0} participantes
           </span>
         </div>
 
         <p className={styles.eventoCardDescricao}>{sessao.descricao}</p>
 
         <div className={styles.sessaoCardStats}>
-          <span className={styles.statItem}>{fotos} foto{fotos !== 1 ? 's' : ''}</span>
-          <span className={styles.statItem}>{videos} vídeo{videos !== 1 ? 's' : ''}</span>
+          <span className={styles.statItem}>
+            <FaImage /> {fotosCount} foto{fotosCount !== 1 ? 's' : ''}
+          </span>
+          <span className={styles.statItem}>
+            <FaVideo /> {videosCount} vídeo{videosCount !== 1 ? 's' : ''}
+          </span>
         </div>
       </div>
 
@@ -332,18 +251,21 @@ function MidiaCard({
         ) : (
           <ImagemComFallback midia={midia} dark={dark} className={styles.midiaImagem} />
         )}
+        <div className={styles.midiaTipoBadge}>
+          {isVideo ? <FaVideo /> : <FaImage />}
+        </div>
       </div>
 
       <div className={styles.midiaInfo}>
-        <div className={styles.midiaTipo}>
-          {isVideo ? <FaVideo /> : <FaImage />}
-          <span>{isVideo ? 'Vídeo' : 'Foto'}</span>
-        </div>
         <h4 className={styles.midiaTitulo}>{midia.titulo}</h4>
         <p className={styles.midiaDescricao}>{midia.descricao}</p>
         <div className={styles.midiaMeta}>
-          <span className={styles.midiaData}>{midia.data}</span>
-          <span className={styles.midiaCategoria}>{midia.categoria}</span>
+          <span className={styles.midiaData}>
+            <FaCalendarAlt /> {new Date(midia.data).toLocaleDateString('pt-BR')}
+          </span>
+          <span className={styles.midiaCategoria}>
+            <FaTag /> {midia.categoria}
+          </span>
         </div>
         {isAdmin && (
           <div className={styles.midiaAdminActions}>
@@ -412,16 +334,21 @@ function Visualizador({
         <div className={styles.visualizadorInfo}>
           <h3 className={styles.visualizadorTitulo}>
             {midia.titulo}
-            <span className={styles.midiaTipoBadge}>{isVideo ? 'Vídeo' : 'Foto'}</span>
+            <span className={styles.midiaTipoBadgeVisualizador}>
+              {isVideo ? 'Vídeo' : 'Foto'}
+            </span>
           </h3>
           <p className={styles.visualizadorDescricao}>{midia.descricao}</p>
           <div className={styles.visualizadorMeta}>
-            <span>{midia.data}</span>
-            <span>{midia.categoria}</span>
-            <span>Sessão: {sessaoTitulo}</span>
+            <span><FaCalendarAlt /> {new Date(midia.data).toLocaleDateString('pt-BR')}</span>
+            <span><FaTag /> {midia.categoria}</span>
+            <span><FaFilm /> Sessão: {sessaoTitulo}</span>
           </div>
-          {midia.driveLink && (
-            <button className={styles.visualizadorDriveButton} onClick={() => window.open(midia.driveLink, '_blank')}>
+          {(midia.driveLink || midia.url.includes('drive.google.com')) && (
+            <button 
+              className={styles.visualizadorDriveButton} 
+              onClick={() => window.open(midia.driveLink || midia.url, '_blank')}
+            >
               <FaGoogleDrive />
               Abrir no Google Drive
             </button>
@@ -438,56 +365,43 @@ function Visualizador({
 export default function Fotos() {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
-  const [sessoes, setSessoes] = useState<Sessao[]>([]);
+  const [searchParams] = useSearchParams();
+  const [user, setUser] = useState<any>(null);
   const [sessaoSelecionada, setSessaoSelecionada] = useState<Sessao | null>(null);
   const [busca, setBusca] = useState('');
-  const [filtroAno, setFiltroAno] = useState('todos');
+  const [filtroAno, setFiltroAno] = useState<string>('todos');
   const [categoriaAtiva, setCategoriaAtiva] = useState('todas');
   const [midiaSelecionada, setMidiaSelecionada] = useState<Foto | null>(null);
-  const [user, setUser] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [showSessaoForm, setShowSessaoForm] = useState(false);
   const [editingSessao, setEditingSessao] = useState<Sessao | null>(null);
-  const [editingMidia, setEditingMidia] = useState<{ sessaoId: number; midia: Foto } | null>(null);
+  const [editingMidia, setEditingMidia] = useState<{ sessaoId: string; midia: Foto } | null>(null);
+  const [filmeDestaque, setFilmeDestaque] = useState<{ id: string; titulo: string } | null>(null);
 
-  // Estado do formulário de Sessão
-  const [sessaoForm, setSessaoForm] = useState<Partial<Sessao>>({
-    titulo: '',
-    diretor: '',
-    ano: new Date().getFullYear(),
-    dataSessao: '',
-    participantes: 0,
-    descricao: '',
-    fotos: []
-  });
+  // Parâmetros da URL para filmes
+  const filmeId = searchParams.get('filmeId');
+  const filmeTitulo = searchParams.get('titulo');
+  const tipo = searchParams.get('tipo');
+  const fotoId = searchParams.get('fotoId');
 
-  // Estado do formulário de Mídia
-  const [midiaForm, setMidiaForm] = useState<Partial<Foto>>({
-    url: '',
-    titulo: '',
-    descricao: '',
-    data: '',
-    categoria: '',
-    tipo: 'foto',
-    driveLink: ''
-  });
-
-  // Carregar dados do localStorage
-  useEffect(() => {
-    const storedSessoes = localStorage.getItem('cinemar_sessoes');
-    if (storedSessoes) {
-      setSessoes(JSON.parse(storedSessoes));
-    } else {
-      setSessoes(SESSOES_INICIAIS);
-    }
-  }, []);
-
-  // Salvar dados no localStorage
-  useEffect(() => {
-    if (sessoes.length > 0) {
-      localStorage.setItem('cinemar_sessoes', JSON.stringify(sessoes));
-    }
-  }, [sessoes]);
+  // Hook de sessões
+  const {
+    sessoes,
+    isLoading,
+    error,
+    toast,
+    stats,
+    createSessao,
+    updateSessao,
+    removeSessao,
+    addFoto,
+    removeFoto,
+    setSearch,
+    setAno,
+    resetFilters,
+    refetch,
+    getFotosBySessao,
+  } = useSessoes({ initialLimit: 100 });
 
   // Verificar usuário logado
   useEffect(() => {
@@ -499,46 +413,131 @@ export default function Fotos() {
 
   const isAdmin = user?.role === 'admin';
 
-  useEffect(() => {
-    document.body.style.overflow = midiaSelecionada ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [midiaSelecionada]);
+  // Estado do formulário de Sessão
+  const [sessaoForm, setSessaoForm] = useState<Partial<Omit<Sessao, 'id' | 'createdAt' | 'updatedAt'>>>({
+    titulo: '',
+    diretor: '',
+    ano: new Date().getFullYear(),
+    dataSessao: '',
+    participantes: 0,
+    descricao: '',
+  });
 
-  useEffect(() => {
-    setCategoriaAtiva('todas');
-  }, [sessaoSelecionada]);
+  // Estado do formulário de Mídia
+  const [midiaForm, setMidiaForm] = useState<Partial<Omit<Foto, 'id' | 'createdAt' | 'sessaoId'>>>({
+    url: '',
+    titulo: '',
+    descricao: '',
+    data: new Date().toISOString().split('T')[0],
+    categoria: '',
+    tipo: 'foto',
+    driveLink: ''
+  });
 
-  // ===== CRUD SESSÕES =====
-  const handleAddSessao = () => {
-    if (!sessaoForm.titulo || !sessaoForm.diretor || !sessaoForm.dataSessao) {
+  // Se veio de um filme, destacar e filtrar
+  useEffect(() => {
+    if (filmeId && tipo === 'filme') {
+      setFilmeDestaque({ id: filmeId, titulo: filmeTitulo || 'Filme' });
+      // Buscar na lista de sessões por um título que contenha o nome do filme
+      const sessaoDoFilme = sessoes.find(s => 
+        s.titulo.toLowerCase().includes(filmeTitulo?.toLowerCase() || '')
+      );
+      if (sessaoDoFilme) {
+        setSessaoSelecionada(sessaoDoFilme);
+      }
+    }
+  }, [filmeId, filmeTitulo, tipo, sessoes]);
+
+  // Se tem fotoId, abrir o visualizador
+  useEffect(() => {
+    if (fotoId && sessaoSelecionada) {
+      const fotos = getFotosBySessao(sessaoSelecionada.id);
+      const foto = fotos.find(f => f.id === fotoId);
+      if (foto) {
+        setMidiaSelecionada(foto);
+      }
+    }
+  }, [fotoId, sessaoSelecionada, getFotosBySessao]);
+
+  // Filtro de busca com debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(busca);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [busca, setSearch]);
+
+  // Filtro de ano
+  useEffect(() => {
+    setAno(filtroAno === 'todos' ? undefined : parseInt(filtroAno));
+  }, [filtroAno, setAno]);
+
+  // Anos únicos para filtro
+  const anosUnicos = useMemo(() => {
+    const anos = sessoes.map(s => new Date(s.dataSessao).getFullYear());
+    return ['todos', ...Array.from(new Set(anos)).sort((a, b) => b - a)];
+  }, [sessoes]);
+
+  // Categorias únicas da sessão selecionada
+  const categorias = useMemo(() => {
+    if (!sessaoSelecionada) return [];
+    const fotos = getFotosBySessao(sessaoSelecionada.id);
+    return ['todas', ...Array.from(new Set(fotos.map(f => f.categoria)))];
+  }, [sessaoSelecionada, getFotosBySessao]);
+
+  // Mídias filtradas da sessão selecionada
+  const midiasFiltradas = useMemo(() => {
+    if (!sessaoSelecionada) return [];
+    const fotos = getFotosBySessao(sessaoSelecionada.id);
+    if (categoriaAtiva === 'todas') return fotos;
+    return fotos.filter(f => f.categoria === categoriaAtiva);
+  }, [sessaoSelecionada, categoriaAtiva, getFotosBySessao]);
+
+  // Navegação no visualizador
+  const navegarMidia = useCallback(
+    (dir: 'anterior' | 'proximo') => {
+      if (!midiaSelecionada) return;
+      const idx = midiasFiltradas.findIndex(f => f.id === midiaSelecionada.id);
+      const next = dir === 'anterior'
+        ? midiasFiltradas[idx > 0 ? idx - 1 : midiasFiltradas.length - 1]
+        : midiasFiltradas[idx < midiasFiltradas.length - 1 ? idx + 1 : 0];
+      if (next) setMidiaSelecionada(next);
+    },
+    [midiaSelecionada, midiasFiltradas]
+  );
+
+  // CRUD Sessões
+  const handleAddSessao = async () => {
+    if (!sessaoForm.titulo || !sessaoForm.diretor || !sessaoForm.dataSessao || !sessaoForm.descricao) {
       alert('Preencha todos os campos obrigatórios!');
       return;
     }
 
-    const newSessao: Sessao = {
-      id: Date.now(),
+    await createSessao({
       titulo: sessaoForm.titulo!,
       diretor: sessaoForm.diretor!,
       ano: sessaoForm.ano || new Date().getFullYear(),
       dataSessao: sessaoForm.dataSessao!,
+      descricao: sessaoForm.descricao!,
       participantes: sessaoForm.participantes || 0,
-      descricao: sessaoForm.descricao || '',
-      fotos: []
-    };
+    });
 
-    setSessoes([newSessao, ...sessoes]);
     resetSessaoForm();
     setShowSessaoForm(false);
   };
 
-  const handleEditSessao = () => {
+  const handleEditSessao = async () => {
     if (!editingSessao) return;
 
-    const updatedSessoes = sessoes.map(s =>
-      s.id === editingSessao.id ? { ...s, ...sessaoForm } : s
-    );
+    await updateSessao(editingSessao.id, {
+      titulo: sessaoForm.titulo,
+      diretor: sessaoForm.diretor,
+      ano: sessaoForm.ano,
+      dataSessao: sessaoForm.dataSessao,
+      descricao: sessaoForm.descricao,
+      participantes: sessaoForm.participantes,
+    });
 
-    setSessoes(updatedSessoes);
     resetSessaoForm();
     setShowSessaoForm(false);
     setEditingSessao(null);
@@ -547,9 +546,9 @@ export default function Fotos() {
     }
   };
 
-  const handleDeleteSessao = (id: number) => {
+  const handleDeleteSessao = async (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta sessão e todas as suas fotos/vídeos?')) {
-      setSessoes(sessoes.filter(s => s.id !== id));
+      await removeSessao(id);
       if (sessaoSelecionada?.id === id) setSessaoSelecionada(null);
     }
   };
@@ -576,76 +575,59 @@ export default function Fotos() {
       dataSessao: '',
       participantes: 0,
       descricao: '',
-      fotos: []
     });
     setEditingSessao(null);
   };
 
-  // ===== CRUD MÍDIAS =====
-  const handleAddMidia = () => {
+  // CRUD Mídias
+  const handleAddMidia = async () => {
     if (!sessaoSelecionada) return;
     if (!midiaForm.url || !midiaForm.titulo || !midiaForm.categoria) {
       alert('Preencha URL, título e categoria!');
       return;
     }
 
-    const newMidia: Foto = {
-      id: Date.now(),
+    await addFoto(sessaoSelecionada.id, {
       url: midiaForm.url!,
       titulo: midiaForm.titulo!,
       descricao: midiaForm.descricao || '',
-      data: midiaForm.data || new Date().toLocaleDateString('pt-BR'),
+      data: midiaForm.data || new Date().toISOString().split('T')[0],
       categoria: midiaForm.categoria!,
       tipo: midiaForm.tipo || 'foto',
-      driveLink: midiaForm.driveLink
-    };
+      driveLink: midiaForm.driveLink,
+    });
 
-    const updatedSessoes = sessoes.map(s =>
-      s.id === sessaoSelecionada.id ? { ...s, fotos: [...s.fotos, newMidia] } : s
-    );
-
-    setSessoes(updatedSessoes);
-    setSessaoSelecionada({ ...sessaoSelecionada, fotos: [...sessaoSelecionada.fotos, newMidia] });
     resetMidiaForm();
     setShowForm(false);
   };
 
-  const handleEditMidia = () => {
+  const handleEditMidia = async () => {
     if (!sessaoSelecionada || !editingMidia) return;
 
-    const updatedFotos = sessaoSelecionada.fotos.map(f =>
-      f.id === editingMidia.midia.id ? { ...f, ...midiaForm } : f
-    );
+    await removeFoto(sessaoSelecionada.id, editingMidia.midia.id);
+    await addFoto(sessaoSelecionada.id, {
+      url: midiaForm.url!,
+      titulo: midiaForm.titulo!,
+      descricao: midiaForm.descricao || '',
+      data: midiaForm.data || new Date().toISOString().split('T')[0],
+      categoria: midiaForm.categoria!,
+      tipo: midiaForm.tipo || 'foto',
+      driveLink: midiaForm.driveLink,
+    });
 
-    const updatedSessoes = sessoes.map(s =>
-      s.id === sessaoSelecionada.id ? { ...s, fotos: updatedFotos } : s
-    );
-
-    setSessoes(updatedSessoes);
-    setSessaoSelecionada({ ...sessaoSelecionada, fotos: updatedFotos });
     resetMidiaForm();
     setShowForm(false);
     setEditingMidia(null);
   };
 
-  const handleDeleteMidia = (sessaoId: number, midiaId: number) => {
+  const handleDeleteMidia = async (sessaoId: string, midiaId: string) => {
     if (confirm('Tem certeza que deseja excluir esta mídia?')) {
-      const updatedSessoes = sessoes.map(s =>
-        s.id === sessaoId ? { ...s, fotos: s.fotos.filter(f => f.id !== midiaId) } : s
-      );
-
-      setSessoes(updatedSessoes);
-      if (sessaoSelecionada?.id === sessaoId) {
-        setSessaoSelecionada({
-          ...sessaoSelecionada,
-          fotos: sessaoSelecionada.fotos.filter(f => f.id !== midiaId)
-        });
-      }
+      await removeFoto(sessaoId, midiaId);
       if (midiaSelecionada?.id === midiaId) setMidiaSelecionada(null);
     }
   };
 
-  const openEditMidia = (sessaoId: number, midia: Foto, e: React.MouseEvent) => {
+  const openEditMidia = (sessaoId: string, midia: Foto, e: React.MouseEvent) => {
     e.stopPropagation();
     setMidiaForm({
       url: midia.url,
@@ -665,7 +647,7 @@ export default function Fotos() {
       url: '',
       titulo: '',
       descricao: '',
-      data: '',
+      data: new Date().toISOString().split('T')[0],
       categoria: '',
       tipo: 'foto',
       driveLink: ''
@@ -673,44 +655,37 @@ export default function Fotos() {
     setEditingMidia(null);
   };
 
-  /* Filtros da lista de sessões */
-  const anosUnicos = ['todos', ...Array.from(
-    new Set(sessoes.map(s => s.dataSessao.split('/')[2] ?? ''))
-  ).filter(Boolean)];
+  const clearAllFilters = () => {
+    setBusca('');
+    setFiltroAno('todos');
+    resetFilters();
+  };
 
-  const sessoesFiltradas = sessoes.filter(s => {
-    const q = busca.toLowerCase();
-    const matchBusca = !q ||
-      s.titulo.toLowerCase().includes(q) ||
-      s.diretor.toLowerCase().includes(q) ||
-      s.descricao.toLowerCase().includes(q);
-    const matchAno = filtroAno === 'todos' || (s.dataSessao.split('/')[2] ?? '') === filtroAno;
-    return matchBusca && matchAno;
-  });
+  // Loading state
+  if (isLoading && sessoes.length === 0) {
+    return (
+      <div className={`${styles.fotosContainer} ${isDarkMode ? styles.darkMode : ''}`}>
+        <div className={styles.loadingContainer}>
+          <FaSpinner className={styles.loadingSpinner} />
+          <p>Carregando sessões...</p>
+        </div>
+      </div>
+    );
+  }
 
-  /* Filtros da galeria */
-  const categorias = sessaoSelecionada
-    ? ['todas', ...Array.from(new Set(sessaoSelecionada.fotos.map(f => f.categoria)))]
-    : [];
-
-  const midiasFiltradas = sessaoSelecionada
-    ? categoriaAtiva === 'todas'
-      ? sessaoSelecionada.fotos
-      : sessaoSelecionada.fotos.filter(f => f.categoria === categoriaAtiva)
-    : [];
-
-  /* Navegação no visualizador */
-  const navegarMidia = useCallback(
-    (dir: 'anterior' | 'proximo') => {
-      if (!midiaSelecionada) return;
-      const idx = midiasFiltradas.findIndex(f => f.id === midiaSelecionada.id);
-      const next = dir === 'anterior'
-        ? midiasFiltradas[idx > 0 ? idx - 1 : midiasFiltradas.length - 1]
-        : midiasFiltradas[idx < midiasFiltradas.length - 1 ? idx + 1 : 0];
-      if (next) setMidiaSelecionada(next);
-    },
-    [midiaSelecionada, midiasFiltradas]
-  );
+  // Error state
+  if (error && sessoes.length === 0) {
+    return (
+      <div className={`${styles.fotosContainer} ${isDarkMode ? styles.darkMode : ''}`}>
+        <div className={styles.errorContainer}>
+          <FaExclamationTriangle />
+          <h3>Erro ao carregar sessões</h3>
+          <p>{error}</p>
+          <button onClick={() => refetch()}>Tentar novamente</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${styles.fotosContainer} ${isDarkMode ? styles.darkMode : ''}`}>
@@ -722,17 +697,37 @@ export default function Fotos() {
             <Link to="/" className={styles.backLink}>
               ← Voltar para Início
             </Link>
+            {filmeDestaque && (
+              <Link to="/filmes" className={styles.backLink}>
+                ← Voltar para Catálogo de Filmes
+              </Link>
+            )}
           </div>
 
           <div className={styles.heroMain}>
             <h1 className={styles.heroTitle}>
-              {sessaoSelecionada ? sessaoSelecionada.titulo : 'Fotos e vídeos das sessões'}
+              {sessaoSelecionada 
+                ? sessaoSelecionada.titulo 
+                : filmeDestaque 
+                  ? `Fotos do filme: ${filmeDestaque.titulo}`
+                  : 'Fotos e vídeos das sessões'}
             </h1>
             <p className={styles.heroSubtitle}>
               {sessaoSelecionada
                 ? `Galeria da sessão · ${sessaoSelecionada.diretor}`
-                : 'Galeria completa dos debates do CineMar'}
+                : filmeDestaque
+                  ? `Galeria completa de fotos do filme ${filmeDestaque.titulo}`
+                  : 'Galeria completa dos debates do CineMar'}
             </p>
+            {stats && !sessaoSelecionada && !filmeDestaque && (
+              <div className={styles.heroStats}>
+                <span>{stats.totalSessoes} sessões</span>
+                <span>•</span>
+                <span>{stats.totalFotos} mídias</span>
+                <span>•</span>
+                <span>{stats.totalParticipantes} participantes</span>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -770,68 +765,70 @@ export default function Fotos() {
             </div>
 
             <div className={styles.formBody}>
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label>Título *</label>
-                  <input
-                    type="text"
-                    value={sessaoForm.titulo}
-                    onChange={(e) => setSessaoForm({ ...sessaoForm, titulo: e.target.value })}
-                    placeholder="Nome da sessão"
-                  />
+              <div className={styles.formSection}>
+                <h4 className={styles.formSectionTitle}>Informações da Sessão</h4>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Título *</label>
+                    <input
+                      type="text"
+                      value={sessaoForm.titulo}
+                      onChange={(e) => setSessaoForm({ ...sessaoForm, titulo: e.target.value })}
+                      placeholder="Nome da sessão"
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Diretor *</label>
+                    <input
+                      type="text"
+                      value={sessaoForm.diretor}
+                      onChange={(e) => setSessaoForm({ ...sessaoForm, diretor: e.target.value })}
+                      placeholder="Diretor do filme"
+                    />
+                  </div>
                 </div>
-                <div className={styles.formGroup}>
-                  <label>Diretor *</label>
-                  <input
-                    type="text"
-                    value={sessaoForm.diretor}
-                    onChange={(e) => setSessaoForm({ ...sessaoForm, diretor: e.target.value })}
-                    placeholder="Diretor do filme"
-                  />
-                </div>
-              </div>
 
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label>Ano</label>
-                  <input
-                    type="number"
-                    value={sessaoForm.ano}
-                    onChange={(e) => setSessaoForm({ ...sessaoForm, ano: parseInt(e.target.value) })}
-                    placeholder="2024"
-                  />
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Ano</label>
+                    <input
+                      type="number"
+                      value={sessaoForm.ano}
+                      onChange={(e) => setSessaoForm({ ...sessaoForm, ano: parseInt(e.target.value) })}
+                      placeholder="2024"
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Data da Sessão *</label>
+                    <input
+                      type="date"
+                      value={sessaoForm.dataSessao?.split('T')[0]}
+                      onChange={(e) => setSessaoForm({ ...sessaoForm, dataSessao: e.target.value })}
+                    />
+                  </div>
                 </div>
-                <div className={styles.formGroup}>
-                  <label>Data da Sessão *</label>
-                  <input
-                    type="text"
-                    value={sessaoForm.dataSessao}
-                    onChange={(e) => setSessaoForm({ ...sessaoForm, dataSessao: e.target.value })}
-                    placeholder="DD/MM/AAAA"
-                  />
-                </div>
-              </div>
 
-              <div className={styles.formRow}>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Participantes</label>
+                    <input
+                      type="number"
+                      value={sessaoForm.participantes}
+                      onChange={(e) => setSessaoForm({ ...sessaoForm, participantes: parseInt(e.target.value) })}
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
                 <div className={styles.formGroup}>
-                  <label>Participantes</label>
-                  <input
-                    type="number"
-                    value={sessaoForm.participantes}
-                    onChange={(e) => setSessaoForm({ ...sessaoForm, participantes: parseInt(e.target.value) })}
-                    placeholder="0"
+                  <label>Descrição *</label>
+                  <textarea
+                    value={sessaoForm.descricao}
+                    onChange={(e) => setSessaoForm({ ...sessaoForm, descricao: e.target.value })}
+                    placeholder="Descrição da sessão..."
+                    rows={4}
                   />
                 </div>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Descrição *</label>
-                <textarea
-                  value={sessaoForm.descricao}
-                  onChange={(e) => setSessaoForm({ ...sessaoForm, descricao: e.target.value })}
-                  placeholder="Descrição da sessão..."
-                  rows={4}
-                />
               </div>
             </div>
 
@@ -859,78 +856,80 @@ export default function Fotos() {
             </div>
 
             <div className={styles.formBody}>
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label>Tipo *</label>
-                  <select
-                    value={midiaForm.tipo}
-                    onChange={(e) => setMidiaForm({ ...midiaForm, tipo: e.target.value as 'foto' | 'video' })}
-                  >
-                    <option value="foto">Foto</option>
-                    <option value="video">Vídeo</option>
-                  </select>
+              <div className={styles.formSection}>
+                <h4 className={styles.formSectionTitle}>Informações da Mídia</h4>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Tipo *</label>
+                    <select
+                      value={midiaForm.tipo}
+                      onChange={(e) => setMidiaForm({ ...midiaForm, tipo: e.target.value as 'foto' | 'video' })}
+                    >
+                      <option value="foto">Foto</option>
+                      <option value="video">Vídeo</option>
+                    </select>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Categoria *</label>
+                    <input
+                      type="text"
+                      value={midiaForm.categoria}
+                      onChange={(e) => setMidiaForm({ ...midiaForm, categoria: e.target.value })}
+                      placeholder="Debate, Apresentação, Bastidores..."
+                    />
+                  </div>
                 </div>
+
                 <div className={styles.formGroup}>
-                  <label>Categoria *</label>
+                  <label>URL *</label>
                   <input
                     type="text"
-                    value={midiaForm.categoria}
-                    onChange={(e) => setMidiaForm({ ...midiaForm, categoria: e.target.value })}
-                    placeholder="Debate, Apresentação, Bastidores..."
+                    value={midiaForm.url}
+                    onChange={(e) => setMidiaForm({ ...midiaForm, url: e.target.value })}
+                    placeholder="Link da imagem ou vídeo"
+                  />
+                  <small>Use link direto do Google Drive ou URL da imagem</small>
+                </div>
+
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Título *</label>
+                    <input
+                      type="text"
+                      value={midiaForm.titulo}
+                      onChange={(e) => setMidiaForm({ ...midiaForm, titulo: e.target.value })}
+                      placeholder="Título da mídia"
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Data</label>
+                    <input
+                      type="date"
+                      value={midiaForm.data?.split('T')[0]}
+                      onChange={(e) => setMidiaForm({ ...midiaForm, data: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>Descrição</label>
+                  <textarea
+                    value={midiaForm.descricao}
+                    onChange={(e) => setMidiaForm({ ...midiaForm, descricao: e.target.value })}
+                    placeholder="Descrição da mídia..."
+                    rows={3}
                   />
                 </div>
-              </div>
 
-              <div className={styles.formGroup}>
-                <label>URL *</label>
-                <input
-                  type="text"
-                  value={midiaForm.url}
-                  onChange={(e) => setMidiaForm({ ...midiaForm, url: e.target.value })}
-                  placeholder="Link da imagem ou vídeo"
-                />
-                <small>Use link direto do Google Drive ou URL da imagem</small>
-              </div>
-
-              <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label>Título *</label>
+                  <label>Link do Google Drive (opcional)</label>
                   <input
                     type="text"
-                    value={midiaForm.titulo}
-                    onChange={(e) => setMidiaForm({ ...midiaForm, titulo: e.target.value })}
-                    placeholder="Título da mídia"
+                    value={midiaForm.driveLink}
+                    onChange={(e) => setMidiaForm({ ...midiaForm, driveLink: e.target.value })}
+                    placeholder="https://drive.google.com/file/d/.../view"
                   />
                 </div>
-                <div className={styles.formGroup}>
-                  <label>Data</label>
-                  <input
-                    type="text"
-                    value={midiaForm.data}
-                    onChange={(e) => setMidiaForm({ ...midiaForm, data: e.target.value })}
-                    placeholder="DD/MM/AAAA"
-                  />
-                </div>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Descrição</label>
-                <textarea
-                  value={midiaForm.descricao}
-                  onChange={(e) => setMidiaForm({ ...midiaForm, descricao: e.target.value })}
-                  placeholder="Descrição da mídia..."
-                  rows={3}
-                />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label>Link do Google Drive (opcional)</label>
-                <input
-                  type="text"
-                  value={midiaForm.driveLink}
-                  onChange={(e) => setMidiaForm({ ...midiaForm, driveLink: e.target.value })}
-                  placeholder="https://drive.google.com/file/d/.../view"
-                />
               </div>
             </div>
 
@@ -961,6 +960,11 @@ export default function Fotos() {
                     onChange={e => setBusca(e.target.value)}
                     className={styles.searchInput}
                   />
+                  {busca && (
+                    <button className={styles.clearSearch} onClick={() => setBusca('')}>
+                      <FaTimes />
+                    </button>
+                  )}
                 </div>
 
                 <div className={styles.filtersInfo}>
@@ -987,29 +991,39 @@ export default function Fotos() {
               <div className={styles.sectionHeader}>
                 <h2 className={styles.selecaoTitulo}>
                   <FaCalendarAlt className={styles.sectionTitleIcon} />
-                  Todas as sessões
-                  <span className={styles.eventosCount}>{sessoesFiltradas.length}</span>
+                  {filmeDestaque ? `Fotos do filme: ${filmeDestaque.titulo}` : 'Todas as sessões'}
+                  <span className={styles.eventosCount}>{sessoes.length}</span>
                 </h2>
                 <p className={styles.sectionSubtitle}>
-                  Selecione uma sessão para ver fotos, vídeos e momentos especiais
+                  {filmeDestaque 
+                    ? `Galeria de fotos do filme ${filmeDestaque.titulo}` 
+                    : 'Selecione uma sessão para ver fotos, vídeos e momentos especiais'}
                 </p>
               </div>
 
-              {sessoesFiltradas.length === 0 ? (
+              {sessoes.length === 0 ? (
                 <div className={styles.noResults}>
                   <div className={styles.noResultsIcon}><FaSearch /></div>
                   <h3>Nenhuma sessão encontrada</h3>
                   <p>Tente alterar os filtros ou o termo de busca</p>
                   <button
                     className={styles.clearFiltersBtn}
-                    onClick={() => { setFiltroAno('todos'); setBusca(''); }}
+                    onClick={clearAllFilters}
                   >
                     Limpar filtros
                   </button>
+                  {isAdmin && (
+                    <button
+                      className={styles.addSessaoButton}
+                      onClick={() => setShowSessaoForm(true)}
+                    >
+                      <FaPlus /> Criar primeira sessão
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className={styles.sessoesList}>
-                  {sessoesFiltradas.map(sessao => (
+                  {sessoes.map(sessao => (
                     <SessaoCard
                       key={sessao.id}
                       sessao={sessao}
@@ -1032,10 +1046,15 @@ export default function Fotos() {
             <div className={styles.sessaoInfo}>
               <div className={styles.sessaoHeaderTop}>
                 <h2 className={styles.sessaoTitulo}>{sessaoSelecionada.titulo}</h2>
-                <div className={styles.sessaoStats}>
-                  <span>{sessaoSelecionada.fotos.filter(f => f.tipo === 'foto').length} fotos</span>
-                  <span>{sessaoSelecionada.fotos.filter(f => f.tipo === 'video').length} vídeos</span>
-                </div>
+                <button 
+                  className={styles.voltarButton}
+                  onClick={() => {
+                    setSessaoSelecionada(null);
+                    setFilmeDestaque(null);
+                  }}
+                >
+                  ← Voltar para lista
+                </button>
               </div>
 
               <div className={styles.sessaoDetalhes}>
@@ -1046,26 +1065,41 @@ export default function Fotos() {
                   </span>
                   <span className={styles.sessaoInfoItem}>
                     <FaCalendarAlt />
-                    {sessaoSelecionada.dataSessao}
+                    {new Date(sessaoSelecionada.dataSessao).toLocaleDateString('pt-BR')}
+                  </span>
+                  <span className={styles.sessaoInfoItem}>
+                    <FaUsers />
+                    {sessaoSelecionada.participantes || 0} participantes
                   </span>
                 </div>
                 <p className={styles.sessaoDescricao}>{sessaoSelecionada.descricao}</p>
               </div>
+
+              <div className={styles.sessaoStats}>
+                <span className={styles.statBadge}>
+                  <FaImage /> {getFotosBySessao(sessaoSelecionada.id).filter(f => f.tipo === 'foto').length} fotos
+                </span>
+                <span className={styles.statBadge}>
+                  <FaVideo /> {getFotosBySessao(sessaoSelecionada.id).filter(f => f.tipo === 'video').length} vídeos
+                </span>
+              </div>
             </div>
 
-            <nav className={styles.categoriasNavegacao}>
-              {categorias.map(cat => (
-                <button
-                  key={cat}
-                  className={`${styles.categoriaButton} ${categoriaAtiva === cat ? styles.ativa : ''}`}
-                  onClick={() => setCategoriaAtiva(cat)}
-                >
-                  {cat === 'todas'
-                    ? 'Todos os materiais'
-                    : `${cat} (${sessaoSelecionada.fotos.filter(f => f.categoria === cat).length})`}
-                </button>
-              ))}
-            </nav>
+            {categorias.length > 1 && (
+              <nav className={styles.categoriasNavegacao}>
+                {categorias.map(cat => (
+                  <button
+                    key={cat}
+                    className={`${styles.categoriaButton} ${categoriaAtiva === cat ? styles.ativa : ''}`}
+                    onClick={() => setCategoriaAtiva(cat)}
+                  >
+                    {cat === 'todas'
+                      ? 'Todos os materiais'
+                      : `${cat} (${getFotosBySessao(sessaoSelecionada.id).filter(f => f.categoria === cat).length})`}
+                  </button>
+                ))}
+              </nav>
+            )}
           </div>
 
           <div className={styles.galeriaContainer}>
@@ -1106,14 +1140,24 @@ export default function Fotos() {
       )}
 
       {/* ---- VISUALIZADOR ---- */}
-      {midiaSelecionada && (
+      {midiaSelecionada && sessaoSelecionada && (
         <Visualizador
           midia={midiaSelecionada}
-          sessaoTitulo={sessaoSelecionada?.titulo ?? ''}
+          sessaoTitulo={sessaoSelecionada.titulo}
           dark={isDarkMode}
           onFechar={() => setMidiaSelecionada(null)}
           onNavegar={navegarMidia}
         />
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`${styles.toast} ${styles[`toast_${toast.type}`]}`}>
+          {toast.type === 'success' && <FaSave />}
+          {toast.type === 'error' && <FaExclamationTriangle />}
+          {toast.type === 'warn' && <FaExclamationTriangle />}
+          <span>{toast.msg}</span>
+        </div>
       )}
     </div>
   );

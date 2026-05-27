@@ -2174,3 +2174,836 @@
   }
 }
 
+/* Adicione estas classes ao final do arquivo Filmes.module.css */
+
+/* ===== LOADING STATES ===== */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  text-align: center;
+}
+
+.filmesContainer.dark .loadingContainer {
+  background: var(--dark-bg);
+}
+
+.loadingSpinner {
+  font-size: 2rem;
+  animation: spin 1s linear infinite;
+  color: var(--primary-red);
+  display: block;
+  margin: 0 auto 0.5rem auto;
+}
+
+.loadingContainer p {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  margin: 0;
+  text-align: center;
+}
+
+
+.filmesContainer.dark .loadingContainer p {
+  color: var(--dark-text-secondary);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ===== ERROR STATES ===== */
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+  text-align: center;
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+}
+
+.filmesContainer.dark .errorContainer {
+  background: var(--dark-bg);
+}
+
+.errorContainer svg {
+  font-size: 3rem;
+  color: var(--primary-red);
+}
+
+.errorContainer h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--gray-900);
+}
+
+.filmesContainer.dark .errorContainer h3 {
+  color: var(--dark-text);
+}
+
+.errorContainer p {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  max-width: 400px;
+}
+
+.filmesContainer.dark .errorContainer p {
+  color: var(--dark-text-secondary);
+}
+
+.errorContainer button {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary-red);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.errorContainer button:hover {
+  background: var(--primary-red-dark);
+  transform: translateY(-1px);
+}
+
+/* ===== TOAST NOTIFICATION ===== */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: white;
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: slideUp 0.3s ease;
+}
+
+.filmesContainer.dark .toast {
+  background: var(--dark-card);
+  border: 1px solid var(--dark-border);
+  color: var(--dark-text);
+}
+
+.toast_success {
+  background: #16a34a;
+  color: white;
+  border: none;
+}
+
+.toast_error {
+  background: #dc2626;
+  color: white;
+  border: none;
+}
+
+.toast_warn {
+  background: #f59e0b;
+  color: white;
+  border: none;
+}
+
+.toast_success svg,
+.toast_error svg,
+.toast_warn svg {
+  font-size: 1rem;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translate(-50%, 100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+/* ===== REFRESH INDICATOR ===== */
+.refreshingIndicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary-red), #fca5a5, var(--primary-red));
+  z-index: 1000;
+  animation: loading 1s linear infinite;
+}
+
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ===== HERO STATS ===== */
+.heroStats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.heroStats span {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+/* ===== NO FILME SELECTED ===== */
+.noFilmeSelected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.noFilmeSelected svg {
+  font-size: 3rem;
+  color: var(--gray-400);
+}
+
+.filmesContainer.dark .noFilmeSelected svg {
+  color: var(--dark-border);
+}
+
+.noFilmeSelected h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--gray-600);
+}
+
+.filmesContainer.dark .noFilmeSelected h3 {
+  color: var(--dark-text-secondary);
+}
+
+.noFilmeSelected p {
+  font-size: 0.875rem;
+  color: var(--gray-500);
+}
+
+.filmesContainer.dark .noFilmeSelected p {
+  color: var(--dark-text-secondary);
+}
+
+/* ===== BOTÃO DE LIMPAR FILTROS (estilo melhorado) ===== */
+.clearFiltersBtn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--primary-red);
+  background: transparent;
+  color: var(--primary-red);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.5rem;
+  border-radius: var(--border-radius-sm);
+}
+
+.clearFiltersBtn:hover {
+  background: var(--primary-red);
+  color: white;
+}
+
+/* ===== ADMIN DETAILS ACTIONS ===== */
+.adminDetailsActions {
+  display: flex;
+  gap: 0.375rem;
+}
+
+/* ===== DELETE ICON BUTTON STYLE ===== */
+.deleteIconButton {
+  border-color: #dc2626 !important;
+  color: #dc2626 !important;
+}
+
+.deleteIconButton:hover {
+  background: #dc2626 !important;
+  color: white !important;
+  border-color: #dc2626 !important;
+}
+
+/* ===== CONFIRMING DELETE ANIMATION ===== */
+.confirmingDelete {
+  border-color: #dc2626 !important;
+  background: rgba(220, 38, 38, 0.2) !important;
+  color: #dc2626 !important;
+  animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* ===== FILM STATS NO SIDEBAR ===== */
+.filmStats {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--gray-200);
+  font-size: 0.75rem;
+}
+
+.filmesContainer.dark .filmStats {
+  border-top-color: var(--dark-border);
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+.filmesContainer.dark .statItem {
+  color: var(--dark-text-secondary);
+}
+
+.statNumber {
+  font-weight: 700;
+  color: var(--primary-red);
+}
+
+.statDivider {
+  color: var(--gray-400);
+  font-weight: 300;
+}
+
+/* ===== RESPONSIVIDADE PARA ESTADOS ===== */
+@media (max-width: 768px) {
+  .loadingContainer,
+  .errorContainer {
+    min-height: 300px;
+    padding: 1.5rem;
+  }
+
+  .loadingSpinner {
+    font-size: 1.5rem;
+  }
+
+  .errorContainer svg {
+    font-size: 2rem;
+  }
+
+  .errorContainer h3 {
+    font-size: 1rem;
+  }
+
+  .toast {
+    bottom: 1rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .loadingContainer,
+  .errorContainer {
+    min-height: 250px;
+    padding: 1rem;
+  }
+
+  .heroStats {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .heroStats span {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.5rem;
+  }
+}
+
+/* ===== SEÇÃO DE FOTOS DO FILME ===== */
+.fotosSection {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.fotosGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.fotoItem {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid var(--gray-200);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: var(--gray-100);
+}
+
+.filmesContainer.dark .fotoItem {
+  border-color: var(--dark-border);
+  background: var(--dark-border);
+}
+
+.fotoItem:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-red);
+}
+
+.fotoItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.fotoItem:hover img {
+  transform: scale(1.05);
+}
+
+.principalBadge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  z-index: 2;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== SELEÇÃO DE ARQUIVOS NO FORMULÁRIO ===== */
+.fileInputArea {
+  margin-top: 0.5rem;
+}
+
+.fileInputLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.fileInputLabel:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.fileInputLabel svg {
+  font-size: 0.875rem;
+}
+
+.fileInputArea small {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.65rem;
+  color: var(--gray-500);
+}
+
+.filmesContainer.dark .fileInputArea small {
+  color: var(--dark-text-secondary);
+}
+
+.selectedFiles {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--gray-200);
+}
+
+.filmesContainer.dark .selectedFiles {
+  background: var(--dark-bg);
+  border-color: var(--dark-border);
+}
+
+.selectedFiles h5 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: var(--gray-700);
+}
+
+.filmesContainer.dark .selectedFiles h5 {
+  color: var(--dark-text);
+}
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--gray-200);
+}
+
+.filmesContainer.dark .fileItem {
+  background: var(--dark-card);
+  border-color: var(--dark-border);
+}
+
+.fileItem svg {
+  color: var(--primary-red);
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.fileName {
+  flex: 1;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filmesContainer.dark .fileName {
+  color: var(--dark-text);
+}
+
+.fileSize {
+  font-size: 0.65rem;
+  color: var(--gray-500);
+  font-family: monospace;
+}
+
+.fileItem button {
+  background: none;
+  border: none;
+  color: var(--gray-500);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.fileItem button:hover {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+/* ===== SPINNER INLINE ===== */
+.spinnerInline {
+  animation: spin 1s linear infinite;
+  font-size: 0.875rem;
+  margin-left: 0.5rem;
+}
+
+/* ===== RESPONSIVIDADE PARA FOTOS ===== */
+@media (max-width: 768px) {
+  .fotosGrid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .principalBadge {
+    font-size: 0.5rem;
+    padding: 0.125rem 0.375rem;
+    top: 0.25rem;
+    right: 0.25rem;
+  }
+  
+  .fileItem {
+    flex-wrap: wrap;
+  }
+  
+  .fileName {
+    white-space: normal;
+    word-break: break-all;
+  }
+}
+
+@media (max-width: 480px) {
+  .fotosGrid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .fileInputLabel {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.7rem;
+  }
+  
+  .fileItem {
+    padding: 0.375rem;
+  }
+  
+  .fileName {
+    font-size: 0.7rem;
+  }
+  
+  .fileSize {
+    font-size: 0.6rem;
+  }
+}
+
+/* ===== MODAL DE VISUALIZAÇÃO DE FOTO (opcional) ===== */
+.fotoModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.fotoModalContent {
+  max-width: 90vw;
+  max-height: 90vh;
+  position: relative;
+}
+
+.fotoModalContent img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: var(--border-radius);
+}
+
+.fotoModalClose {
+  position: absolute;
+  top: -2rem;
+  right: 0;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.fotoModalCaption {
+  position: absolute;
+  bottom: -2rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: white;
+  font-size: 0.875rem;
+  padding: 0.5rem;
+}
+
+/* ===== SEÇÃO DE FOTOS DO FILME COM LINK ===== */
+.fotosSection {
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.fotosSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.verTodasFotosBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.875rem;
+  background: transparent;
+  border: 1px solid var(--primary-red);
+  border-radius: 20px;
+  color: var(--primary-red);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.verTodasFotosBtn:hover {
+  background: var(--primary-red);
+  color: white;
+  transform: translateX(2px);
+}
+
+.fotosGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.75rem;
+}
+
+.fotoItem {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid var(--gray-200);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: var(--gray-100);
+}
+
+.filmesContainer.dark .fotoItem {
+  border-color: var(--dark-border);
+  background: var(--dark-border);
+}
+
+.fotoItem:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-red);
+}
+
+.fotoItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.fotoItem:hover img {
+  transform: scale(1.05);
+}
+
+.principalBadge {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.125rem 0.375rem;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+  z-index: 2;
+}
+
+.verMaisItem {
+  background: var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filmesContainer.dark .verMaisItem {
+  background: var(--dark-border);
+}
+
+.verMaisContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  color: var(--gray-500);
+}
+
+.filmesContainer.dark .verMaisContent {
+  color: var(--dark-text-secondary);
+}
+
+.verMaisContent span {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .fotosGrid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .fotosSectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .verTodasFotosBtn {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .fotosGrid {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  }
+  
+  .principalBadge {
+    font-size: 0.5rem;
+    padding: 0.1rem 0.25rem;
+  }
+  
+  .verMaisContent {
+    font-size: 1rem;
+  }
+  
+  .verMaisContent span {
+    font-size: 0.7rem;
+  }
+}

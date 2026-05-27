@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FiEye, FiEyeOff, FiAlertCircle, FiCheckCircle, FiArrowLeft, FiFilm, FiHeadphones, FiCamera, FiUsers } from 'react-icons/fi';
 import logoImage from '../images/cinemar-logo.png';
 import styles from '../styles/Auth.module.css';
+import { useAuth } from '../hooks/useAuth';
 
 function getStrength(pwd: string): 0 | 1 | 2 | 3 | 4 {
   if (!pwd) return 0;
@@ -18,12 +19,13 @@ const STRENGTH_LABEL = ['', 'Fraca', 'Razoável', 'Boa', 'Forte'];
 const STRENGTH_CLASS = ['', 's1', 's2', 's3', 's4'] as const;
 
 export default function Register() {
-  const navigate   = useNavigate();
-  const firstId    = useId();
-  const lastId     = useId();
-  const emailId    = useId();
-  const pwdId      = useId();
-  const confirmId  = useId();
+  const navigate  = useNavigate();
+  const firstId   = useId();
+  const lastId    = useId();
+  const emailId   = useId();
+  const pwdId     = useId();
+  const confirmId = useId();
+  const { register, isLoading } = useAuth();
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '',
@@ -32,7 +34,6 @@ export default function Register() {
   const [errors, setErrors]      = useState<Record<string, string>>({});
   const [showPwd, setShowPwd]    = useState(false);
   const [showConf, setShowConf]  = useState(false);
-  const [loading, setLoading]    = useState(false);
   const [success, setSuccess]    = useState(false);
   const [globalError, setGlobal] = useState('');
 
@@ -58,16 +59,19 @@ export default function Register() {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
-    setLoading(true);
+
     try {
-      // TODO: substituir pelo seu serviço de autenticação
-      await new Promise(r => setTimeout(r, 1400));
+      // Backend espera "nome" como campo único — junta firstName + lastName
+      await register({
+        email: form.email,
+        nome: `${form.firstName.trim()} ${form.lastName.trim()}`,
+        password: form.password,
+      });
       setSuccess(true);
-      setTimeout(() => navigate('/login'), 2500);
-    } catch {
-      setGlobal('Erro ao criar conta. Tente novamente.');
-    } finally {
-      setLoading(false);
+      setTimeout(() => navigate('/'), 2000);
+    } catch (err: any) {
+      const msg = err.response?.data?.message;
+      setGlobal(Array.isArray(msg) ? msg.join(', ') : (msg ?? 'Erro ao criar conta. Tente novamente.'));
     }
   };
 
@@ -78,11 +82,11 @@ export default function Register() {
   };
 
   const features = [
-    { icon: <FiFilm />, text: 'Participe das sessões quinzenais' },
+    { icon: <FiFilm />,       text: 'Participe das sessões quinzenais' },
     { icon: <FiHeadphones />, text: 'Acesso aos podcasts do cineclube' },
-    { icon: <FiCamera />, text: 'Galeria de fotos das sessões' },
-    { icon: <FiUsers />, text: 'Comunidade de Camocim e região' },
-];
+    { icon: <FiCamera />,     text: 'Galeria de fotos das sessões' },
+    { icon: <FiUsers />,      text: 'Comunidade de Camocim e região' },
+  ];
 
   return (
     <div className={styles.authPage}>
@@ -90,11 +94,7 @@ export default function Register() {
       {/* ── Painel esquerdo ── */}
       <div className={styles.sidePanel} aria-hidden="true">
         <div className={styles.sidePanelContent}>
-          <img
-            src={logoImage}
-            alt=""
-            className={styles.sideLogo}
-          />
+          <img src={logoImage} alt="" className={styles.sideLogo} />
           <div className={styles.sideDivider} />
           <p className={styles.sideTagline}>
             Junte-se ao CineMar e faça parte<br />
@@ -133,7 +133,7 @@ export default function Register() {
           {success && (
             <div className={styles.alertSuccess} role="status">
               <FiCheckCircle />
-              Conta criada com sucesso! Redirecionando para o login…
+              Conta criada! Redirecionando…
             </div>
           )}
 
@@ -319,10 +319,10 @@ export default function Register() {
             <button
               type="submit"
               className={styles.submitButton}
-              disabled={loading || success}
-              aria-busy={loading}
+              disabled={isLoading || success}
+              aria-busy={isLoading}
             >
-              {loading
+              {isLoading
                 ? <><div className={styles.spinner} aria-hidden="true" /> Criando conta…</>
                 : 'Criar conta'
               }
@@ -350,7 +350,6 @@ export default function Register() {
 
         </div>
       </main>
-
     </div>
   );
 }
