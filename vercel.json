@@ -1,0 +1,8 @@
+{
+    "rewrites": [
+      {
+        "source": "/api/(.*)",
+        "destination": "https://backend-cinemar.onrender.com/api/v1/$1"
+      }
+    ]
+  }
