@@ -13,7 +13,7 @@ export const UPLOADS_URL = `${API_BASE_URL}/uploads`;
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 15_000,
+  timeout: 60000, // ← MUDADO: 15 segundos para 60 segundos
 });
 
 // Função para obter URL completa da imagem
@@ -24,7 +24,6 @@ export const getImageUrl = (path: string | null | undefined): string => {
   // Se for apenas o nome do arquivo
   return `${UPLOADS_URL}/filmes/${path}`;
 };
-
 
 // Helpers de token
 export const getAccessToken = () => localStorage.getItem('cinemar_access_token');
@@ -39,6 +38,18 @@ export const clearTokens = () => {
   localStorage.removeItem('cinemar_access_token');
   localStorage.removeItem('cinemar_refresh_token');
   localStorage.removeItem('cinemar_user');
+};
+
+// Função para wake-up do backend (prevenir timeout na primeira requisição)
+export const wakeUpBackend = async (): Promise<void> => {
+  try {
+    // Requisição rápida para acordar o backend
+    await axios.get(`${API_URL}/filmes?limit=1`, { timeout: 30000 });
+    console.log('✅ Backend acordado com sucesso');
+  } catch (error) {
+    // Ignora erro - o backend pode já estar acordado
+    console.log('⚠️ Wake-up call falhou, mas continuando...');
+  }
 };
 
 // Request interceptor
@@ -69,6 +80,13 @@ api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    
+    // Se for timeout, tenta novamente uma vez
+    if (error.code === 'ECONNABORTED' && !originalRequest._retry) {
+      originalRequest._retry = true;
+      console.log('⏱️ Timeout, tentando novamente...');
+      return api(originalRequest);
+    }
     
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);

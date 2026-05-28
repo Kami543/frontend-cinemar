@@ -1,7 +1,9 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react'; // ← ADICIONADO
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
-import { ThemeProvider } from './components/context/ThemeContext'; // <-- Add this import
+import { ThemeProvider } from './components/context/ThemeContext';
+import { wakeUpBackend } from './services/api'; // ← ADICIONADO
 
 import HomePage  from './pages/Home';
 import Filmes    from './pages/Filmes';
@@ -66,8 +68,13 @@ function AppLayout() {
 }
 
 export default function App() {
+  // ← ADICIONADO: Acorda o backend quando o app iniciar
+  useEffect(() => {
+    wakeUpBackend();
+  }, []);
+
   return (
-    <ThemeProvider>  {/* <-- Add ThemeProvider here */}
+    <ThemeProvider>
       <Router>
         <AppLayout />
       </Router>

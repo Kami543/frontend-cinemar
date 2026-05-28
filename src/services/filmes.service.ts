@@ -1,5 +1,5 @@
 // frontend/src/services/filmes.service.ts
-import api, { getImageUrl } from './api';
+import api, { getImageUrl, wakeUpBackend } from './api';
 
 export interface FilmeFoto {
   id: string;
@@ -139,17 +139,55 @@ const processPaginatedFilmes = (data: PaginatedFilmes): PaginatedFilmes => {
   };
 };
 
+// Flag para controlar se o wake-up já foi feito
+let wakeUpDone = false;
+
+const ensureBackendIsAwake = async (): Promise<void> => {
+  if (!wakeUpDone) {
+    wakeUpDone = true;
+    await wakeUpBackend();
+  }
+};
+
 const FilmesService = {
   // Listar todos os filmes
-  async findAll(query?: FilmesQuery): Promise<PaginatedFilmes> {
-    const { data } = await api.get<PaginatedFilmes>('/filmes', { params: query });
-    return processPaginatedFilmes(data);
+  async findAll(query?: FilmesQuery, retryCount = 0): Promise<PaginatedFilmes> {
+    try {
+      // Primeira requisição? Acorda o backend
+      if (retryCount === 0) {
+        await ensureBackendIsAwake();
+      }
+      
+      const { data } = await api.get<PaginatedFilmes>('/filmes', { params: query });
+      return processPaginatedFilmes(data);
+    } catch (error: any) {
+      // Se for timeout e ainda tem tentativas, tenta de novo
+      if (error.code === 'ECONNABORTED' && retryCount < 2) {
+        console.log(`⏱️ Timeout na requisição, tentando novamente... (${retryCount + 1}/2)`);
+        // Espera 2 segundos e tenta de novo
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return this.findAll(query, retryCount + 1);
+      }
+      throw error;
+    }
   },
 
   // Buscar filme por ID
-  async findById(id: string): Promise<Filme> {
-    const { data } = await api.get<Filme>(`/filmes/${id}`);
-    return processFilmeImage(data);
+  async findById(id: string, retryCount = 0): Promise<Filme> {
+    try {
+      if (retryCount === 0) {
+        await ensureBackendIsAwake();
+      }
+      const { data } = await api.get<Filme>(`/filmes/${id}`);
+      return processFilmeImage(data);
+    } catch (error: any) {
+      if (error.code === 'ECONNABORTED' && retryCount < 2) {
+        console.log(`⏱️ Timeout na requisição, tentando novamente... (${retryCount + 1}/2)`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return this.findById(id, retryCount + 1);
+      }
+      throw error;
+    }
   },
 
   // Criar novo filme (com upload de fotos)
@@ -178,6 +216,7 @@ const FilmesService = {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 120000, // 2 minutos para upload de fotos
       });
       return processFilmeImage(data);
     } else {
@@ -214,6 +253,7 @@ const FilmesService = {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 120000, // 2 minutos para upload de fotos
       });
       return processFilmeImage(data);
     } else {
@@ -244,6 +284,7 @@ const FilmesService = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 120000,
     });
     return processFilmeImage(data);
   },
