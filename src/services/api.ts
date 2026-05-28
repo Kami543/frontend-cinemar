@@ -2,7 +2,10 @@
 import axios from 'axios';
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'https://backend-cinemar-6.onrender.com';
+// ✅ FORÇAR a URL correta diretamente (solução temporária)
+const API_BASE_URL = 'https://backend-cinemar-6.onrender.com';
+// const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'https://backend-cinemar-6.onrender.com';
+
 const API_VERSION = 'api/v1';
 
 // URLs separadas para API e Uploads
@@ -13,7 +16,7 @@ export const UPLOADS_URL = `${API_BASE_URL}/uploads`;
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 60000, // ← MUDADO: 15 segundos para 60 segundos
+  timeout: 60000,
 });
 
 // Função para obter URL completa da imagem
@@ -21,7 +24,6 @@ export const getImageUrl = (path: string | null | undefined): string => {
   if (!path) return '/images/fallback-poster.jpg';
   if (path.startsWith('http')) return path;
   if (path.startsWith('/uploads')) return `${API_BASE_URL}${path}`;
-  // Se for apenas o nome do arquivo
   return `${UPLOADS_URL}/filmes/${path}`;
 };
 
@@ -43,12 +45,12 @@ export const clearTokens = () => {
 // Função para wake-up do backend (prevenir timeout na primeira requisição)
 export const wakeUpBackend = async (): Promise<void> => {
   try {
+    console.log('🌐 Acordando backend em:', API_URL);
     // Requisição rápida para acordar o backend
     await axios.get(`${API_URL}/filmes?limit=1`, { timeout: 30000 });
     console.log('✅ Backend acordado com sucesso');
   } catch (error) {
-    // Ignora erro - o backend pode já estar acordado
-    console.log('⚠️ Wake-up call falhou, mas continuando...');
+    console.log('⚠️ Wake-up call falhou, mas continuando...', error);
   }
 };
 
