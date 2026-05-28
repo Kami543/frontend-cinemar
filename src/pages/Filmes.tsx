@@ -1,6 +1,7 @@
 // frontend/src/pages/Filmes.tsx
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom'; // ← ADICIONADO useNavigate
 import {
   FaCalendarAlt,
   FaClock,
@@ -37,7 +38,6 @@ import {
   FaImage,
   FaArrowRight,
 } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
 import styles from '../styles/Filmes.module.css';
 import { useTheme } from '../components/context/ThemeContext';
 import { useFilmes, type CreateFilmePayload, type UpdateFilmePayload } from '../hooks/useFilmes';
@@ -46,6 +46,7 @@ import { getPlaceholderImage } from '../utils/imageUtils';
 const PLACEHOLDER_IMAGE = getPlaceholderImage();
 
 export default function Filmes() {
+  const navigate = useNavigate(); // ← ADICIONADO: hook de navegação
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
 
@@ -160,14 +161,13 @@ export default function Filmes() {
     }
   }, [filmesFiltrados, selectedFilme]);
 
-  // Função para navegar para fotos - usando window.location para navegação completa
+  // ✅ FUNÇÃO CORRIGIDA: usando navigate do React Router em vez de window.location
   const navigateToFotos = (filmeId: string, filmeTitulo: string, fotoId?: string) => {
     let url = `/fotos?filmeId=${filmeId}&titulo=${encodeURIComponent(filmeTitulo)}&tipo=filme`;
     if (fotoId) {
       url += `&fotoId=${fotoId}`;
     }
-    // Usa window.location para forçar navegação completa
-    window.location.href = url;
+    navigate(url); // ← AGORA USA O REACT ROUTER - SEM RECARREGAR PÁGINA!
   };
 
   // Handlers de interação
@@ -216,9 +216,9 @@ export default function Filmes() {
 
   const handleGoToCineMarPlaylist = useCallback(() => {
     setLoadingPlaylist(true);
-    window.location.href = `/playlists?playlistId=${selectedFilme?.playlistId || selectedFilme?.id}`;
+    navigate(`/playlists?playlistId=${selectedFilme?.playlistId || selectedFilme?.id}`);
     setTimeout(() => setLoadingPlaylist(false), 500);
-  }, [selectedFilme]);
+  }, [selectedFilme, navigate]);
 
   const handleOpenExternalPlaylist = useCallback(() => {
     if (selectedFilme?.playlistLink) {
@@ -1161,7 +1161,7 @@ export default function Filmes() {
                     </div>
                   )}
 
-                  {/* SEÇÃO DE FOTOS DO FILME - COM CLICK PARA NAVEGAR */}
+                  {/* SEÇÃO DE FOTOS DO FILME - COM CLICK PARA NAVEGAR (CORRIGIDA) */}
                   <div className={styles.fotosSection}>
                     <div className={styles.fotosSectionHeader}>
                       <h3 className={styles.sectionTitle}>
