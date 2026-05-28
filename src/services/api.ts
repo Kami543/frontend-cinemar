@@ -2,7 +2,7 @@
 import axios from 'axios';
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'https://backend-cinemar-6.onrender.com';
 const API_VERSION = 'api/v1';
 
 // URLs separadas para API e Uploads
