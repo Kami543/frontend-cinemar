@@ -1,3 +1,4 @@
+// frontend/src/pages/Members.tsx
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -9,13 +10,28 @@ import {
   FaSearch, FaTimes, FaPlus,
   FaEdit, FaTrash, FaSave, FaCamera,
   FaSpinner, FaExclamationTriangle, FaCheck,
+  FaEye, FaImage, FaChevronLeft,
 } from 'react-icons/fa';
 import styles from '../styles/Members.module.css';
 import { useMembers } from '../hooks/useMembers';
 import type { CreateMemberPayload, UpdateMemberPayload } from '../services/members.service';
 import { useTheme } from '../components/context/ThemeContext';
 
-// Tipos de membros
+// ─── URL helper ───────────────────────────────────────────────────────────────
+// O backend serve os uploads em sua própria porta (ex: 3000).
+// Sem o prefixo, o browser tentaria buscar em localhost:5173 (Vite) e daria 404.
+const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+
+function buildMediaUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  // Já é URL absoluta — retorna como está
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  // Caminho relativo: garante barra inicial e prefixa com a origin do backend
+  const normalized = path.startsWith('/') ? path : `/${path}`;
+  return `${API_BASE}${normalized}`;
+}
+// ──────────────────────────────────────────────────────────────────────────────
+
 const TIPOS = [
   { value: 'todos',      label: 'Todos',         icon: FaUsers },
   { value: 'cofundador', label: 'Co-fundadores',  icon: FaStar },
@@ -28,7 +44,6 @@ export default function Members() {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
 
-  // Estados locais
   const [user, setUser] = useState<any>(null);
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
@@ -38,8 +53,9 @@ export default function Members() {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [imageRefreshKey, setImageRefreshKey] = useState(0);
 
-  // Formulário
   const [formData, setFormData] = useState<Partial<CreateMemberPayload>>({
     nome: '',
     cargo: '',
@@ -54,7 +70,6 @@ export default function Members() {
     tipo: 'apoiador',
   });
 
-  // Hook de membros
   const {
     members,
     isLoading,
@@ -64,12 +79,12 @@ export default function Members() {
     createMember,
     updateMember,
     removeMember,
+    uploadFoto,
     setSearch,
     setTipo,
     refetch,
   } = useMembers({ limit: 100 });
 
-  // Usuário logado
   useEffect(() => {
     const stored = localStorage.getItem('cinemar_user');
     if (stored) {
@@ -80,14 +95,11 @@ export default function Members() {
 
   const isAdmin = user?.role === 'admin';
 
-  // Filtros locais
   const membersFiltrados = useMemo(() => {
     let filtered = members;
-
     if (filtroTipo !== 'todos') {
       filtered = filtered.filter(m => m.tipo === filtroTipo);
     }
-
     if (searchTerm) {
       const lower = searchTerm.toLowerCase();
       filtered = filtered.filter(m =>
@@ -96,11 +108,9 @@ export default function Members() {
         m.bio.toLowerCase().includes(lower)
       );
     }
-
     return filtered;
   }, [members, filtroTipo, searchTerm]);
 
-  // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => { setSearch(searchTerm); }, 500);
     return () => clearTimeout(timer);
@@ -113,51 +123,35 @@ export default function Members() {
 
   const destaques = useMemo(() => members.filter(m => m.destaque), [members]);
 
-  // Imagem
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedMember && !showForm) setSelectedMember(null);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [selectedMember, showForm]);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { 
-      alert('Selecione um arquivo de imagem válido.'); 
-      return; 
-    }
-    if (file.size > 5 * 1024 * 1024) { 
-      alert('A imagem deve ter no máximo 5MB.'); 
-      return; 
-    }
+    if (!file.type.startsWith('image/')) { alert('Selecione um arquivo de imagem válido.'); return; }
+    if (file.size > 5 * 1024 * 1024) { alert('A imagem deve ter no máximo 5MB.'); return; }
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
   };
 
-  const uploadFoto = async (memberId: string, file: File) => {
-    const formData = new FormData();
-    formData.append('foto', file);
-    
-    try {
-      const response = await fetch(`/api/v1/members/${memberId}/foto`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('cinemar_token')}`,
-        },
-        body: formData,
-      });
-      
-      if (!response.ok) throw new Error('Erro ao fazer upload da foto');
-      
-      const updatedMember = await response.json();
-      return updatedMember;
-    } catch (error) {
-      console.error('Erro no upload:', error);
-      throw error;
-    }
-  };
-
-  // CRUD
   const handleAddMember = async () => {
-    if (!formData.nome || !formData.cargo || !formData.bio || !formData.email) {
-      alert('Preencha todos os campos obrigatórios!');
-      return;
+    const requiredFields = {
+      nome: 'Nome é obrigatório',
+      cargo: 'Cargo é obrigatório',
+      bio: 'Biografia é obrigatória',
+      email: 'Email é obrigatório',
+    };
+    for (const [field, message] of Object.entries(requiredFields)) {
+      if (!formData[field as keyof typeof formData]) { alert(message); return; }
     }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email!)) { alert('Email inválido'); return; }
 
     const payload: CreateMemberPayload = {
       nome: formData.nome!,
@@ -176,47 +170,57 @@ export default function Members() {
     const newMember = await createMember(payload);
     if (imageFile && newMember) {
       await uploadFoto(newMember.id, imageFile);
-      await refetch();
+      setImageRefreshKey(prev => prev + 1);
     }
-
     resetForm();
     setShowForm(false);
   };
 
   const handleEditMember = async () => {
     if (!selectedMember) return;
-
-    const payload: UpdateMemberPayload = {
-      nome: formData.nome,
-      cargo: formData.cargo,
-      bio: formData.bio,
-      formacao: formData.formacao,
-      email: formData.email,
-      telefone: formData.telefone,
-      responsabilidades: formData.responsabilidades,
-      experiencia: formData.experiencia,
-      redesSociais: formData.redesSociais,
-      destaque: formData.destaque,
-      tipo: formData.tipo,
-    };
-
-    await updateMember(selectedMember.id, payload);
-    if (imageFile) {
-      await uploadFoto(selectedMember.id, imageFile);
+    setIsUploading(true);
+    try {
+      const payload: UpdateMemberPayload = {
+        nome: formData.nome,
+        cargo: formData.cargo,
+        bio: formData.bio,
+        formacao: formData.formacao,
+        email: formData.email,
+        telefone: formData.telefone,
+        responsabilidades: formData.responsabilidades,
+        experiencia: formData.experiencia,
+        redesSociais: formData.redesSociais,
+        destaque: formData.destaque,
+        tipo: formData.tipo,
+      };
+      if (imageFile) {
+        await uploadFoto(selectedMember.id, imageFile);
+        setImageRefreshKey(prev => prev + 1);
+      }
+      await updateMember(selectedMember.id, payload);
       await refetch();
+      resetForm();
+      setShowForm(false);
+      setIsEditing(false);
+      setSelectedMember(null);
+    } catch (error) {
+      console.error('Erro ao editar membro:', error);
+      alert('Erro ao salvar as alterações. Tente novamente.');
+    } finally {
+      setIsUploading(false);
     }
-
-    resetForm();
-    setShowForm(false);
-    setIsEditing(false);
-    setSelectedMember(null);
   };
 
   const handleDeleteMember = async (id: string) => {
     if (confirmDelete === id) {
-      await removeMember(id);
-      setConfirmDelete(null);
-      if (selectedMember?.id === id) setSelectedMember(null);
+      setIsUploading(true);
+      try {
+        await removeMember(id);
+        setConfirmDelete(null);
+        if (selectedMember?.id === id) setSelectedMember(null);
+      } finally {
+        setIsUploading(false);
+      }
     } else {
       setConfirmDelete(id);
       setTimeout(() => setConfirmDelete(null), 3000);
@@ -240,7 +244,8 @@ export default function Members() {
       destaque: member.destaque,
       tipo: member.tipo,
     });
-    setImagePreview(member.foto || '');
+    // Usa a URL pública para o preview de edição
+    setImagePreview(buildMediaUrl(member.foto) || '');
     setImageFile(null);
     setSelectedMember(member);
     setIsEditing(true);
@@ -267,20 +272,12 @@ export default function Members() {
     setSelectedMember(null);
   };
 
-  // Helpers de formulário
-  const handleArrayFieldChange = (
-    field: 'responsabilidades' | 'experiencia',
-    value: string,
-  ) => {
+  const handleArrayFieldChange = (field: 'responsabilidades' | 'experiencia', value: string) => {
     const array = value.split(',').map(i => i.trim()).filter(Boolean);
     setFormData({ ...formData, [field]: array });
   };
 
-  const handleRedesSociaisChange = (
-    index: number,
-    field: 'plataforma' | 'username',
-    value: string,
-  ) => {
+  const handleRedesSociaisChange = (index: number, field: 'plataforma' | 'username', value: string) => {
     const redes = [...(formData.redesSociais || [])];
     if (!redes[index]) redes[index] = { plataforma: '', username: '' };
     redes[index][field] = value;
@@ -288,10 +285,7 @@ export default function Members() {
   };
 
   const addRedeSocial = () =>
-    setFormData({
-      ...formData,
-      redesSociais: [...(formData.redesSociais || []), { plataforma: '', username: '' }],
-    });
+    setFormData({ ...formData, redesSociais: [...(formData.redesSociais || []), { plataforma: '', username: '' }] });
 
   const removeRedeSocial = (index: number) => {
     const redes = [...(formData.redesSociais || [])];
@@ -299,9 +293,7 @@ export default function Members() {
     setFormData({ ...formData, redesSociais: redes });
   };
 
-  // Helpers de UI
-  const getTipoLabel = (tipo: string) =>
-    TIPOS.find(t => t.value === tipo)?.label ?? tipo;
+  const getTipoLabel = (tipo: string) => TIPOS.find(t => t.value === tipo)?.label ?? tipo;
 
   const getTipoIcon = (tipo: string) => {
     const Info = TIPOS.find(t => t.value === tipo);
@@ -309,13 +301,15 @@ export default function Members() {
     return <Icon aria-hidden="true" />;
   };
 
-  const clearFilters = () => {
-    setSearchTerm('');
-    setFiltroTipo('todos');
-    setTipo('');
+  const clearFilters = () => { setSearchTerm(''); setFiltroTipo('todos'); setTipo(''); };
+
+  // Helper de src com cache-bust — usa buildMediaUrl para garantir URL absoluta
+  const memberImgSrc = (foto: string | null | undefined) => {
+    const url = buildMediaUrl(foto);
+    if (!url) return undefined;
+    return `${url}?v=${imageRefreshKey}`;
   };
 
-  // Loading
   if (isLoading && members.length === 0) {
     return (
       <div className={`${styles.membersPage} ${isDarkMode ? styles.darkMode : ''}`}>
@@ -327,7 +321,6 @@ export default function Members() {
     );
   }
 
-  // Error
   if (error && members.length === 0) {
     return (
       <div className={`${styles.membersPage} ${isDarkMode ? styles.darkMode : ''}`}>
@@ -348,7 +341,9 @@ export default function Members() {
       <header className={styles.heroHeader}>
         <div className={styles.heroHeaderContent}>
           <div className={styles.heroHeaderTop}>
-            <Link to="/" className={styles.backLink}>← Voltar para Início</Link>
+            <Link to="/" className={styles.backLink}>
+              <FaChevronLeft aria-hidden="true" /> Voltar para Início
+            </Link>
           </div>
           <div className={styles.heroMain}>
             <h1 className={styles.heroTitle}>Equipe CineMar</h1>
@@ -358,7 +353,7 @@ export default function Members() {
             {stats && (
               <div className={styles.heroStats}>
                 <span>{stats.total} membros</span>
-                <span>•</span>
+                <span className={styles.heroStatsDivider}>•</span>
                 <span>{stats.destaques} destaques</span>
               </div>
             )}
@@ -372,6 +367,7 @@ export default function Members() {
           className={styles.floatingAddBtn}
           onClick={() => { resetForm(); setShowForm(true); }}
           title="Adicionar membro"
+          aria-label="Adicionar novo membro"
         >
           <FaPlus />
         </button>
@@ -379,13 +375,17 @@ export default function Members() {
 
       {/* Formulário */}
       {showForm && isAdmin && (
-        <div className={styles.formOverlay}>
+        <div
+          className={styles.formOverlay}
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowForm(false); resetForm(); } }}
+        >
           <div className={styles.formContainer}>
             <div className={styles.formHeader}>
               <h3>{isEditing ? 'Editar Membro' : 'Novo Membro'}</h3>
               <button
                 onClick={() => { setShowForm(false); resetForm(); }}
                 className={styles.formClose}
+                aria-label="Fechar formulário"
               >
                 <FaTimes />
               </button>
@@ -397,42 +397,22 @@ export default function Members() {
                 <h4 className={styles.formSectionTitle}>Identificação</h4>
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
-                    <label>Nome *</label>
-                    <input
-                      type="text"
-                      value={formData.nome}
-                      onChange={e => setFormData({ ...formData, nome: e.target.value })}
-                      placeholder="Nome completo"
-                    />
+                    <label>Nome <span className={styles.required}>*</span></label>
+                    <input type="text" value={formData.nome} onChange={e => setFormData({ ...formData, nome: e.target.value })} placeholder="Nome completo" />
                   </div>
                   <div className={styles.formGroup}>
-                    <label>Cargo *</label>
-                    <input
-                      type="text"
-                      value={formData.cargo}
-                      onChange={e => setFormData({ ...formData, cargo: e.target.value })}
-                      placeholder="Cargo ou função"
-                    />
+                    <label>Cargo <span className={styles.required}>*</span></label>
+                    <input type="text" value={formData.cargo} onChange={e => setFormData({ ...formData, cargo: e.target.value })} placeholder="Cargo ou função" />
                   </div>
                 </div>
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
-                    <label>Email *</label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={e => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="email@exemplo.com"
-                    />
+                    <label>Email <span className={styles.required}>*</span></label>
+                    <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="email@exemplo.com" />
                   </div>
                   <div className={styles.formGroup}>
                     <label>Telefone</label>
-                    <input
-                      type="text"
-                      value={formData.telefone}
-                      onChange={e => setFormData({ ...formData, telefone: e.target.value })}
-                      placeholder="(11) 99999-9999"
-                    />
+                    <input type="text" value={formData.telefone} onChange={e => setFormData({ ...formData, telefone: e.target.value })} placeholder="(11) 99999-9999" />
                   </div>
                 </div>
               </div>
@@ -442,11 +422,8 @@ export default function Members() {
                 <h4 className={styles.formSectionTitle}>Classificação</h4>
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
-                    <label>Tipo *</label>
-                    <select
-                      value={formData.tipo}
-                      onChange={e => setFormData({ ...formData, tipo: e.target.value })}
-                    >
+                    <label>Tipo <span className={styles.required}>*</span></label>
+                    <select value={formData.tipo} onChange={e => setFormData({ ...formData, tipo: e.target.value })}>
                       {TIPOS.filter(t => t.value !== 'todos').map(tipo => (
                         <option key={tipo.value} value={tipo.value}>{tipo.label}</option>
                       ))}
@@ -454,10 +431,7 @@ export default function Members() {
                   </div>
                   <div className={styles.formGroup}>
                     <label>Destaque</label>
-                    <select
-                      value={formData.destaque ? 'sim' : 'nao'}
-                      onChange={e => setFormData({ ...formData, destaque: e.target.value === 'sim' })}
-                    >
+                    <select value={formData.destaque ? 'sim' : 'nao'} onChange={e => setFormData({ ...formData, destaque: e.target.value === 'sim' })}>
                       <option value="nao">Não</option>
                       <option value="sim">Sim</option>
                     </select>
@@ -467,48 +441,58 @@ export default function Members() {
 
               {/* Foto */}
               <div className={styles.formSection}>
-                <h4 className={styles.formSectionTitle}>Foto</h4>
+                <h4 className={styles.formSectionTitle}>Foto do Perfil</h4>
                 <div className={styles.imageUploadContainer}>
-                  {imagePreview ? (
-                    <div className={styles.imagePreview}>
-                      <img src={imagePreview} alt="Preview" />
+                  <div className={styles.imagePreviewArea}>
+                    {isUploading ? (
+                      <div className={styles.imageUploading}>
+                        <FaSpinner className={styles.spinner} />
+                        <span>Enviando...</span>
+                      </div>
+                    ) : imagePreview ? (
+                      <div className={styles.imagePreview}>
+                        <img src={imagePreview} alt="Preview" />
+                      </div>
+                    ) : (
+                      <div className={styles.imagePlaceholder}>
+                        <FaImage aria-hidden="true" />
+                        <span>Sem foto</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.imageActions}>
+                    <label className={styles.uploadButton} aria-disabled={isUploading}>
+                      <FaCamera aria-hidden="true" />
+                      {imagePreview ? 'Trocar foto' : 'Selecionar foto'}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/jpg,image/webp"
+                        onChange={handleImageChange}
+                        style={{ display: 'none' }}
+                        disabled={isUploading}
+                      />
+                    </label>
+                    {imagePreview && !isUploading && (
                       <button
                         type="button"
                         className={styles.removeImageBtn}
                         onClick={() => { setImageFile(null); setImagePreview(''); }}
+                        aria-label="Remover foto"
                       >
-                        <FaTimes />
+                        <FaTrash aria-hidden="true" />
+                        Remover foto
                       </button>
-                    </div>
-                  ) : (
-                    <div className={styles.imagePlaceholder}>
-                      <FaUserGraduate />
-                      <span>Sem foto</span>
-                    </div>
-                  )}
-                  <label className={styles.uploadButton}>
-                    <FaCamera />
-                    {imagePreview ? 'Trocar foto' : 'Adicionar foto'}
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/jpg,image/webp"
-                      onChange={handleImageChange}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
+                    )}
+                    <p className={styles.imageHint}>JPG, PNG ou WebP · máx. 5MB</p>
+                  </div>
                 </div>
               </div>
 
               {/* Biografia */}
               <div className={styles.formSection}>
-                <h4 className={styles.formSectionTitle}>Biografia *</h4>
+                <h4 className={styles.formSectionTitle}>Biografia <span className={styles.required}>*</span></h4>
                 <div className={styles.formGroup}>
-                  <textarea
-                    value={formData.bio}
-                    onChange={e => setFormData({ ...formData, bio: e.target.value })}
-                    rows={4}
-                    placeholder="Conte um pouco sobre este membro..."
-                  />
+                  <textarea value={formData.bio} onChange={e => setFormData({ ...formData, bio: e.target.value })} rows={4} placeholder="Conte um pouco sobre este membro..." />
                 </div>
               </div>
 
@@ -516,13 +500,8 @@ export default function Members() {
               <div className={styles.formSection}>
                 <h4 className={styles.formSectionTitle}>Formação</h4>
                 <div className={styles.formGroup}>
-                  <textarea
-                    value={formData.formacao}
-                    onChange={e => setFormData({ ...formData, formacao: e.target.value })}
-                    rows={3}
-                    placeholder="Separe múltiplas formações com | (barra vertical)"
-                  />
-                  <small>Exemplo: Graduação em Cinema - USP | Mestrado em Comunicação - Unicamp</small>
+                  <textarea value={formData.formacao} onChange={e => setFormData({ ...formData, formacao: e.target.value })} rows={3} placeholder="Separe múltiplas formações com | (barra vertical)" />
+                  <span className={styles.fieldHint}>Exemplo: Graduação em Cinema - USP | Mestrado em Comunicação - Unicamp</span>
                 </div>
               </div>
 
@@ -530,22 +509,14 @@ export default function Members() {
               <div className={styles.formSection}>
                 <h4 className={styles.formSectionTitle}>Responsabilidades e Experiência</h4>
                 <div className={styles.formGroup}>
-                  <label>Responsabilidades (separar por vírgula)</label>
-                  <input
-                    type="text"
-                    value={formData.responsabilidades?.join(', ')}
-                    onChange={e => handleArrayFieldChange('responsabilidades', e.target.value)}
-                    placeholder="Curadoria de filmes, Organização de eventos..."
-                  />
+                  <label>Responsabilidades</label>
+                  <input type="text" value={formData.responsabilidades?.join(', ')} onChange={e => handleArrayFieldChange('responsabilidades', e.target.value)} placeholder="Curadoria de filmes, Organização de eventos..." />
+                  <span className={styles.fieldHint}>Separe cada item por vírgula</span>
                 </div>
-                <div className={`${styles.formGroup} ${styles.mt2}`}>
-                  <label>Experiência (separar por vírgula)</label>
-                  <input
-                    type="text"
-                    value={formData.experiencia?.join(', ')}
-                    onChange={e => handleArrayFieldChange('experiencia', e.target.value)}
-                    placeholder="Cineclube XYZ, Festival ABC..."
-                  />
+                <div className={styles.formGroup}>
+                  <label>Experiência</label>
+                  <input type="text" value={formData.experiencia?.join(', ')} onChange={e => handleArrayFieldChange('experiencia', e.target.value)} placeholder="Cineclube XYZ, Festival ABC..." />
+                  <span className={styles.fieldHint}>Separe cada item por vírgula</span>
                 </div>
               </div>
 
@@ -553,12 +524,10 @@ export default function Members() {
               <div className={styles.formSection}>
                 <h4 className={styles.formSectionTitle}>Redes Sociais</h4>
                 {(formData.redesSociais || []).map((rede, index) => (
-                  <div key={index} className={`${styles.formRow} ${styles.mt2}`}>
+                  <div key={index} className={styles.redesSociaisRow}>
                     <div className={styles.formGroup}>
-                      <select
-                        value={rede.plataforma}
-                        onChange={e => handleRedesSociaisChange(index, 'plataforma', e.target.value)}
-                      >
+                      <label>Plataforma</label>
+                      <select value={rede.plataforma} onChange={e => handleRedesSociaisChange(index, 'plataforma', e.target.value)}>
                         <option value="">Selecione</option>
                         <option value="facebook">Facebook</option>
                         <option value="instagram">Instagram</option>
@@ -567,44 +536,29 @@ export default function Members() {
                       </select>
                     </div>
                     <div className={styles.formGroup}>
-                      <input
-                        type="text"
-                        placeholder="Username ou @"
-                        value={rede.username}
-                        onChange={e => handleRedesSociaisChange(index, 'username', e.target.value)}
-                      />
+                      <label>Usuário</label>
+                      <input type="text" placeholder="@username" value={rede.username} onChange={e => handleRedesSociaisChange(index, 'username', e.target.value)} />
                     </div>
-                    <button
-                      type="button"
-                      className={styles.removeRedeBtn}
-                      onClick={() => removeRedeSocial(index)}
-                    >
-                      <FaTimes />
+                    <button type="button" className={styles.removeRedeBtn} onClick={() => removeRedeSocial(index)} aria-label="Remover rede social" title="Remover">
+                      <FaTimes aria-hidden="true" />
                     </button>
                   </div>
                 ))}
-                <button
-                  type="button"
-                  className={styles.addRedeBtn}
-                  onClick={addRedeSocial}
-                >
-                  <FaPlus /> Adicionar rede social
+                <button type="button" className={styles.addRedeBtn} onClick={addRedeSocial}>
+                  <FaPlus aria-hidden="true" /> Adicionar rede social
                 </button>
               </div>
             </div>
 
             <div className={styles.formFooter}>
-              <button
-                className={styles.cancelBtn}
-                onClick={() => { setShowForm(false); resetForm(); }}
-              >
+              <button className={styles.cancelBtn} onClick={() => { setShowForm(false); resetForm(); }} disabled={isUploading}>
                 Cancelar
               </button>
-              <button
-                className={styles.submitBtn}
-                onClick={isEditing ? handleEditMember : handleAddMember}
-              >
-                <FaSave /> {isEditing ? 'Salvar Alterações' : 'Adicionar Membro'}
+              <button className={styles.submitBtn} onClick={isEditing ? handleEditMember : handleAddMember} disabled={isUploading}>
+                {isUploading
+                  ? <><FaSpinner className={styles.spinnerInline} /> Salvando...</>
+                  : <><FaSave aria-hidden="true" /> {isEditing ? 'Salvar Alterações' : 'Adicionar Membro'}</>
+                }
               </button>
             </div>
           </div>
@@ -616,23 +570,24 @@ export default function Members() {
         <div className={styles.filtersContent}>
           <div className={styles.searchContainer}>
             <div className={styles.searchBox}>
-              <FaSearch className={styles.searchIcon} />
+              <FaSearch className={styles.searchIcon} aria-hidden="true" />
               <input
                 type="search"
                 className={styles.searchInput}
                 placeholder="Buscar membro..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
+                aria-label="Buscar membro"
               />
               {searchTerm && (
-                <button className={styles.clearSearch} onClick={() => setSearchTerm('')}>
-                  <FaTimes />
+                <button className={styles.clearSearch} onClick={() => setSearchTerm('')} aria-label="Limpar busca">
+                  <FaTimes aria-hidden="true" />
                 </button>
               )}
             </div>
-            <div className={styles.filtersInfo}>
-              <span>{membersFiltrados.length} membro(s) encontrado(s)</span>
-            </div>
+            <span className={styles.filtersInfo}>
+              {membersFiltrados.length} membro{membersFiltrados.length !== 1 ? 's' : ''} encontrado{membersFiltrados.length !== 1 ? 's' : ''}
+            </span>
           </div>
           <div className={styles.tipoFilters}>
             {TIPOS.map(tipo => {
@@ -659,7 +614,7 @@ export default function Members() {
           {filtroTipo === 'todos' && destaques.length > 0 && (
             <section className={styles.featuredSection}>
               <h2 className={styles.sectionTitle}>
-                <FaStar className={styles.sectionIcon} /> Co-fundadores
+                <FaStar className={styles.sectionIcon} aria-hidden="true" /> Co-fundadores
               </h2>
               <div className={styles.featuredGrid}>
                 {destaques.map(member => (
@@ -672,38 +627,40 @@ export default function Members() {
                       onKeyDown={e => e.key === 'Enter' && setSelectedMember(member)}
                     >
                       <div className={styles.featuredImage}>
-                        {member.foto
-                          ? <img src={member.foto} alt={member.nome} />
-                          : <div className={styles.featuredIcon}>{getTipoIcon(member.tipo)}</div>
-                        }
-                        <div className={styles.featuredTag}><FaAward /> Destaque</div>
+                        {member.foto ? (
+                          <img
+                            src={memberImgSrc(member.foto)}
+                            alt={member.nome}
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className={styles.featuredIconPlaceholder}>
+                            {getTipoIcon(member.tipo)}
+                          </div>
+                        )}
+                        <div className={styles.featuredTag}>
+                          <FaAward aria-hidden="true" /> Destaque
+                        </div>
                       </div>
                       <div className={styles.featuredContent}>
                         <h3 className={styles.featuredName}>{member.nome}</h3>
                         <p className={styles.featuredRole}>{member.cargo}</p>
-                        <p className={styles.featuredBio}>
-                          {member.bio.substring(0, 100)}...
-                        </p>
-                        <div className={styles.featuredButton}>
-                          Ver perfil completo →
-                        </div>
+                        <p className={styles.featuredBio}>{member.bio.substring(0, 100)}...</p>
+                        <div className={styles.featuredButton}>Ver perfil completo →</div>
                       </div>
                     </div>
                     {isAdmin && (
                       <div className={styles.cardAdminActions}>
-                        <button
-                          className={styles.cardEditBtn}
-                          onClick={() => openEditForm(member)}
-                          title="Editar"
-                        >
-                          <FaEdit />
+                        <button className={styles.cardEditBtn} onClick={() => openEditForm(member)} title="Editar membro" aria-label="Editar membro">
+                          <FaEdit aria-hidden="true" />
                         </button>
                         <button
-                          className={styles.cardDeleteBtn}
+                          className={`${styles.cardDeleteBtn} ${confirmDelete === member.id ? styles.cardDeleteBtnConfirm : ''}`}
                           onClick={() => handleDeleteMember(member.id)}
-                          title={confirmDelete === member.id ? 'Confirmar exclusão?' : 'Excluir'}
+                          title={confirmDelete === member.id ? 'Clique novamente para confirmar' : 'Excluir membro'}
+                          disabled={isUploading}
                         >
-                          {confirmDelete === member.id ? <FaTimes /> : <FaTrash />}
+                          <FaTrash aria-hidden="true" />
                         </button>
                       </div>
                     )}
@@ -716,33 +673,24 @@ export default function Members() {
           {/* Lista de Membros */}
           <section className={styles.membersSection}>
             <h2 className={styles.sectionTitle}>
-              <FaUsers className={styles.sectionIcon} />
+              <FaUsers className={styles.sectionIcon} aria-hidden="true" />
               {filtroTipo === 'todos' ? 'Membros' : getTipoLabel(filtroTipo)}
               <span className={styles.membersCount}>({membersFiltrados.length})</span>
             </h2>
 
             {membersFiltrados.length === 0 ? (
               <div className={styles.noResults}>
-                <div className={styles.noResultsIcon}><FaUsers /></div>
+                <div className={styles.noResultsIcon}><FaUsers aria-hidden="true" /></div>
                 <h3>Nenhum membro encontrado</h3>
-                <p>
-                  {searchTerm
-                    ? `Sem resultados para "${searchTerm}"`
-                    : 'Nenhum membro nesta categoria.'}
-                </p>
-                <button className={styles.clearFiltersBtn} onClick={clearFilters}>
-                  Limpar filtros
-                </button>
+                <p>{searchTerm ? `Sem resultados para "${searchTerm}"` : 'Nenhum membro nesta categoria.'}</p>
+                <button className={styles.clearFiltersBtn} onClick={clearFilters}>Limpar filtros</button>
               </div>
             ) : (
               <div className={styles.membersGrid}>
                 {membersFiltrados
                   .filter(m => !m.destaque || filtroTipo !== 'todos')
                   .map(member => (
-                    <div
-                      key={member.id}
-                      className={`${styles.memberCard} ${styles[member.tipo]}`}
-                    >
+                    <div key={member.id} className={`${styles.memberCard} ${styles[member.tipo]}`}>
                       <div
                         className={styles.memberCardClickable}
                         onClick={() => setSelectedMember(member)}
@@ -752,10 +700,15 @@ export default function Members() {
                       >
                         <div className={styles.memberCardHeader}>
                           <div className={styles.memberImage}>
-                            {member.foto
-                              ? <img src={member.foto} alt={member.nome} />
-                              : <div className={styles.memberIcon}>{getTipoIcon(member.tipo)}</div>
-                            }
+                            {member.foto ? (
+                              <img
+                                src={memberImgSrc(member.foto)}
+                                alt={member.nome}
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              />
+                            ) : (
+                              <div className={styles.memberIcon}>{getTipoIcon(member.tipo)}</div>
+                            )}
                           </div>
                           <div className={styles.memberHeaderInfo}>
                             <h3 className={styles.memberName}>{member.nome}</h3>
@@ -767,22 +720,18 @@ export default function Members() {
                         </div>
 
                         <div className={styles.memberCardContent}>
-                          <p className={styles.memberBio}>
-                            {member.bio.substring(0, 80)}...
-                          </p>
+                          <p className={styles.memberBio}>{member.bio.substring(0, 80)}...</p>
                           <div className={styles.memberDetails}>
                             {member.email && (
                               <div className={styles.detailItem}>
-                                <FaEnvelope className={styles.detailIcon} />
+                                <FaEnvelope className={styles.detailIcon} aria-hidden="true" />
                                 <span className={styles.detailText}>{member.email}</span>
                               </div>
                             )}
                             {member.formacao && (
                               <div className={styles.detailItem}>
-                                <FaGraduationCap className={styles.detailIcon} />
-                                <span className={styles.detailText}>
-                                  {member.formacao.split('|')[0].trim()}
-                                </span>
+                                <FaGraduationCap className={styles.detailIcon} aria-hidden="true" />
+                                <span className={styles.detailText}>{member.formacao.split('|')[0].trim()}</span>
                               </div>
                             )}
                           </div>
@@ -790,7 +739,7 @@ export default function Members() {
 
                         <div className={styles.memberCardFooter}>
                           <div className={styles.memberButton}>
-                            <span className={styles.buttonIcon}>👁</span>
+                            <FaEye className={styles.buttonIcon} aria-hidden="true" />
                             Ver detalhes
                           </div>
                         </div>
@@ -798,19 +747,16 @@ export default function Members() {
 
                       {isAdmin && (
                         <div className={styles.cardAdminActions}>
-                          <button
-                            className={styles.cardEditBtn}
-                            onClick={() => openEditForm(member)}
-                            title="Editar"
-                          >
-                            <FaEdit />
+                          <button className={styles.cardEditBtn} onClick={() => openEditForm(member)} title="Editar membro" aria-label="Editar membro">
+                            <FaEdit aria-hidden="true" />
                           </button>
                           <button
-                            className={styles.cardDeleteBtn}
+                            className={`${styles.cardDeleteBtn} ${confirmDelete === member.id ? styles.cardDeleteBtnConfirm : ''}`}
                             onClick={() => handleDeleteMember(member.id)}
-                            title={confirmDelete === member.id ? 'Confirmar?' : 'Excluir'}
+                            title={confirmDelete === member.id ? 'Clique novamente para confirmar' : 'Excluir membro'}
+                            disabled={isUploading}
                           >
-                            {confirmDelete === member.id ? <FaTimes /> : <FaTrash />}
+                            <FaTrash aria-hidden="true" />
                           </button>
                         </div>
                       )}
@@ -819,35 +765,24 @@ export default function Members() {
               </div>
             )}
           </section>
-
         </div>
       </main>
 
       {/* Modal de Detalhes */}
       {selectedMember && !showForm && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => setSelectedMember(null)}
-        >
-          <div
-            className={styles.modalContent}
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              className={styles.closeModal}
-              onClick={() => setSelectedMember(null)}
-            >
-              <FaTimes />
+        <div className={styles.modalOverlay} onClick={() => setSelectedMember(null)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Perfil de ${selectedMember.nome}`}>
+            <button className={styles.closeModal} onClick={() => setSelectedMember(null)} aria-label="Fechar">
+              <FaTimes aria-hidden="true" />
             </button>
 
             <div className={styles.modalHeader}>
               <div className={styles.modalImage}>
-                {selectedMember.foto
-                  ? <img src={selectedMember.foto} alt={selectedMember.nome} />
-                  : <div className={styles.modalImagePlaceholder}>
-                      {getTipoIcon(selectedMember.tipo)}
-                    </div>
-                }
+                {selectedMember.foto ? (
+                  <img src={memberImgSrc(selectedMember.foto)} alt={selectedMember.nome} />
+                ) : (
+                  <div className={styles.modalImagePlaceholder}>{getTipoIcon(selectedMember.tipo)}</div>
+                )}
               </div>
               <div className={styles.modalTitle}>
                 <div className={styles.modalTipoTag}>
@@ -858,17 +793,11 @@ export default function Members() {
               </div>
               {isAdmin && (
                 <div className={styles.modalAdminActions}>
-                  <button
-                    className={styles.modalEditBtn}
-                    onClick={() => { setSelectedMember(null); openEditForm(selectedMember); }}
-                  >
-                    <FaEdit />
+                  <button className={styles.modalEditBtn} onClick={() => { setSelectedMember(null); openEditForm(selectedMember); }} title="Editar membro" aria-label="Editar membro">
+                    <FaEdit aria-hidden="true" />
                   </button>
-                  <button
-                    className={styles.modalDeleteBtn}
-                    onClick={() => handleDeleteMember(selectedMember.id)}
-                  >
-                    <FaTrash />
+                  <button className={styles.modalDeleteBtn} onClick={() => handleDeleteMember(selectedMember.id)} title="Excluir membro" aria-label="Excluir membro">
+                    <FaTrash aria-hidden="true" />
                   </button>
                 </div>
               )}
@@ -876,17 +805,17 @@ export default function Members() {
 
             <div className={styles.modalBody}>
               <div className={styles.modalSection}>
-                <h3><FaBook /> Sobre</h3>
+                <h3><FaBook aria-hidden="true" /> Sobre</h3>
                 <p className={styles.modalBio}>{selectedMember.bio}</p>
               </div>
 
               {selectedMember.formacao && (
                 <div className={styles.modalSection}>
-                  <h3><FaGraduationCap /> Formação</h3>
+                  <h3><FaGraduationCap aria-hidden="true" /> Formação</h3>
                   <div className={styles.formacaoList}>
                     {selectedMember.formacao.split('|').map((item: string, i: number) => (
                       <div key={i} className={styles.formacaoItem}>
-                        <FaBook />
+                        <FaBook aria-hidden="true" />
                         <span>{item.trim()}</span>
                       </div>
                     ))}
@@ -896,11 +825,11 @@ export default function Members() {
 
               {selectedMember.experiencia?.length > 0 && (
                 <div className={styles.modalSection}>
-                  <h3><FaBriefcase /> Experiência</h3>
+                  <h3><FaBriefcase aria-hidden="true" /> Experiência</h3>
                   <div className={styles.experienciaList}>
                     {selectedMember.experiencia.map((exp: any, i: number) => (
                       <div key={i} className={styles.experienciaItem}>
-                        <FaBriefcase />
+                        <FaBriefcase aria-hidden="true" />
                         <span>{exp.texto || exp}</span>
                       </div>
                     ))}
@@ -910,11 +839,11 @@ export default function Members() {
 
               {selectedMember.responsabilidades?.length > 0 && (
                 <div className={styles.modalSection}>
-                  <h3><FaHeart /> Responsabilidades</h3>
+                  <h3><FaHeart aria-hidden="true" /> Responsabilidades</h3>
                   <div className={styles.responsibilitiesList}>
                     {selectedMember.responsabilidades.map((resp: any, i: number) => (
                       <div key={i} className={styles.responsibilityItem}>
-                        <FaHeart />
+                        <FaHeart aria-hidden="true" />
                         <span>{resp.texto || resp}</span>
                       </div>
                     ))}
@@ -926,14 +855,10 @@ export default function Members() {
                 <div>
                   <h3>Contato</h3>
                   {selectedMember.email && (
-                    <div className={styles.contactItem}>
-                      <FaEnvelope /> {selectedMember.email}
-                    </div>
+                    <div className={styles.contactItem}><FaEnvelope aria-hidden="true" /> {selectedMember.email}</div>
                   )}
                   {selectedMember.telefone && (
-                    <div className={styles.contactItem}>
-                      <FaPhone /> {selectedMember.telefone}
-                    </div>
+                    <div className={styles.contactItem}><FaPhone aria-hidden="true" /> {selectedMember.telefone}</div>
                   )}
                 </div>
                 {selectedMember.redesSociais?.length > 0 && (
@@ -942,21 +867,15 @@ export default function Members() {
                     <div className={styles.socialLinks}>
                       {selectedMember.redesSociais.map((rede: any, i: number) => {
                         const icons: Record<string, any> = {
-                          facebook:  FaFacebook,
+                          facebook: FaFacebook,
                           instagram: FaInstagram,
-                          youtube:   FaYoutube,
-                          linkedin:  FaLinkedin,
+                          youtube: FaYoutube,
+                          linkedin: FaLinkedin,
                         };
                         const Icon = icons[rede.plataforma] ?? FaUsers;
                         return (
-                          <a
-                            key={i}
-                            href={`https://${rede.plataforma}.com/${rede.username}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={`${rede.plataforma}: ${rede.username}`}
-                          >
-                            <Icon />
+                          <a key={i} href={`https://${rede.plataforma}.com/${rede.username}`} target="_blank" rel="noopener noreferrer" title={`${rede.plataforma}: ${rede.username}`} aria-label={`${rede.plataforma}: ${rede.username}`}>
+                            <Icon aria-hidden="true" />
                           </a>
                         );
                       })}
@@ -967,12 +886,7 @@ export default function Members() {
             </div>
 
             <div className={styles.modalFooter}>
-              <button
-                className={styles.modalCloseBtn}
-                onClick={() => setSelectedMember(null)}
-              >
-                Fechar
-              </button>
+              <button className={styles.modalCloseBtn} onClick={() => setSelectedMember(null)}>Fechar</button>
             </div>
           </div>
         </div>
@@ -980,14 +894,13 @@ export default function Members() {
 
       {/* Toast */}
       {toast && (
-        <div className={`${styles.toast} ${styles[`toast_${toast.type}`]}`}>
-          {toast.type === 'success' && <FaCheck />}
-          {toast.type === 'error'   && <FaExclamationTriangle />}
-          {toast.type === 'warn'    && <FaExclamationTriangle />}
+        <div className={`${styles.toast} ${styles[`toast_${toast.type}`]}`} role="alert" aria-live="polite">
+          {toast.type === 'success' && <FaCheck aria-hidden="true" />}
+          {toast.type === 'error'   && <FaExclamationTriangle aria-hidden="true" />}
+          {toast.type === 'warn'    && <FaExclamationTriangle aria-hidden="true" />}
           <span>{toast.msg}</span>
         </div>
       )}
-
     </div>
   );
 }

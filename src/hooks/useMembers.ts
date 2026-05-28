@@ -1,3 +1,4 @@
+// frontend/src/hooks/useMembers.ts
 import { useState, useEffect, useCallback } from 'react';
 import MembersService from '../services/members.service';
 import type { 
@@ -138,16 +139,40 @@ export function useMembers(initialQuery?: MembersQuery) {
 
   const uploadFoto = useCallback(async (id: string, file: File) => {
     try {
+      console.log('📸 Iniciando upload da foto para membro:', id);
+      console.log('📁 Arquivo:', file.name, file.size, file.type);
+      
       const updatedMember = await MembersService.uploadFoto(id, file);
-      await fetchMembers(true);
+      
+      console.log('✅ Upload concluído! Membro retornado:', updatedMember);
+      console.log('🖼️ URL da foto:', updatedMember.foto);
+      
+      // ATUALIZA O ESTADO LOCAL IMEDIATAMENTE
+      setState(prevState => {
+        const updatedMembers = prevState.members.map(member => 
+          member.id === id 
+            ? { ...member, foto: updatedMember.foto }
+            : member
+        );
+        
+        const newStats = calculateStats(updatedMembers);
+        
+        return {
+          ...prevState,
+          members: updatedMembers,
+          stats: newStats,
+        };
+      });
+      
       showToast(`Foto atualizada com sucesso!`);
       return updatedMember;
     } catch (err: any) {
+      console.error('❌ Erro no upload da foto:', err);
       const errorMsg = err.response?.data?.message ?? 'Erro ao fazer upload da foto.';
       showToast(errorMsg, 'error');
       throw err;
     }
-  }, [fetchMembers, showToast]);
+  }, [calculateStats, showToast]);
 
   const removeMember = useCallback(async (id: string) => {
     try {
@@ -191,6 +216,7 @@ export function useMembers(initialQuery?: MembersQuery) {
   }, []);
 
   const refetch = useCallback(() => {
+    console.log('🔄 Forçando refresh da lista de membros...');
     return fetchMembers(true);
   }, [fetchMembers]);
 

@@ -1,4 +1,4 @@
-/* Playlists.module.css - Header vermelho e ícones sempre visíveis */
+/* Playlists.module.css - Versão corrigida com tema funcionando */
 
 :root {
   --spotify-green: #1DB954;
@@ -40,7 +40,7 @@
   color: var(--spotify-light-text-primary);
 }
 
-/* ===== HEADER - VERMELHO PADRÃO (igual Filmes) ===== */
+/* ===== HEADER - VERMELHO PADRÃO ===== */
 .heroHeader {
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   color: white;
@@ -59,16 +59,6 @@
   bottom: 0;
   background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   pointer-events: none;
-}
-
-/* Header no modo escuro - também vermelho */
-.playlistsContainer.dark .heroHeader {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-}
-
-/* Header no modo claro - também vermelho */
-.playlistsContainer.light .heroHeader {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
 }
 
 .heroHeaderContent {
@@ -109,6 +99,15 @@
   margin: 0 auto;
   max-width: 600px;
   line-height: 1.5;
+}
+
+.heroStats {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* ===== BACK LINK ===== */
@@ -194,11 +193,6 @@
   background: rgba(0, 0, 0, 0.04);
   border-color: var(--spotify-light-border);
   color: var(--spotify-light-text-primary);
-}
-
-.playlistsContainer.light .statCard {
-  background: rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .searchInput:focus {
@@ -301,12 +295,6 @@
   margin: 0 0 8px 0;
 }
 
-.subtitle {
-  font-size: 0.875rem;
-  color: var(--spotify-text-secondary);
-  margin: 0;
-}
-
 .debateFilm {
   font-size: 0.875rem;
   color: var(--spotify-green);
@@ -336,16 +324,8 @@
   padding: 1.5rem 0;
 }
 
-/* ===== STATS GRID - COM ÍCONES (MAIS BONITO) ===== */
-.statsGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  padding: 1.5rem 0;
-}
-
 .statCard {
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 1rem 0.75rem;
   text-align: center;
@@ -364,7 +344,7 @@
 
 .statCard:hover {
   transform: translateY(-2px);
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(29, 185, 84, 0.1);
   border-color: var(--spotify-green);
 }
 
@@ -420,14 +400,14 @@
   transform: translateY(-2px);
 }
 
-/* ===== PLAYLIST NAV BUTTON - CORRIGIDO (ícones sempre visíveis) ===== */
+/* ===== PLAYLIST NAV BUTTON - CORRIGIDO (usa variáveis de tema) ===== */
 .playlistNavButton {
   width: 44px;
   height: 44px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  color: white;
+  color: var(--spotify-text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -448,11 +428,11 @@
   cursor: not-allowed;
 }
 
-/* Modo claro - ícones sempre visíveis (cor escura) */
+/* Modo claro - usando variáveis de tema */
 .playlistsContainer.light .playlistNavButton {
   background: rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.15);
-  color: #333;
+  color: var(--spotify-light-text-primary);
 }
 
 .playlistsContainer.light .playlistNavButton:hover:not(:disabled) {
@@ -486,6 +466,13 @@
   color: var(--spotify-text-secondary);
 }
 
+.playlistsContainer.light .cardEditBtn,
+.playlistsContainer.light .cardDeleteBtn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: var(--spotify-light-border);
+  color: var(--spotify-light-text-secondary);
+}
+
 .cardEditBtn:hover {
   background: #3b82f6;
   border-color: #3b82f6;
@@ -511,43 +498,6 @@
   50% { transform: scale(1.15); }
 }
 
-/* ===== THEME TAGS ===== */
-.themeTag {
-  padding: 6px 12px;
-  background: rgba(29, 185, 84, 0.12);
-  color: var(--spotify-green);
-  border-radius: 16px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-/* ===== DEBATE INFO ===== */
-.debateInfo {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  padding-top: 20px;
-  border-top: 1px solid var(--spotify-border);
-  margin-top: 8px;
-}
-
-.debateLabel {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin: 0 0 6px 0;
-  opacity: 0.6;
-}
-
-.debateValue {
-  font-size: 1rem;
-  font-weight: 700;
-  margin: 0;
-  display: flex;
-  align-items: center;
-}
-
 /* ===== HIGHLIGHT TRACKS ===== */
 .highlightTracksList {
   display: flex;
@@ -564,6 +514,10 @@
   border-radius: 8px;
   transition: var(--transition-fast);
   cursor: pointer;
+}
+
+.playlistsContainer.light .highlightTrackItem {
+  background: rgba(29, 185, 84, 0.1);
 }
 
 .highlightTrackItem:hover {
@@ -596,7 +550,7 @@
 }
 
 .playlistCard {
-  background: #1e1e1e;
+  background: var(--spotify-surface);
   border: 1px solid var(--spotify-border);
   border-radius: 14px;
   overflow: hidden;
@@ -605,13 +559,18 @@
 }
 
 .playlistsContainer.light .playlistCard {
-  background: #f5f3f0;
+  background: var(--spotify-light-surface);
   border-color: var(--spotify-light-border);
 }
 
 .playlistCard:hover {
   transform: translateY(-4px);
   border-color: var(--spotify-green);
+}
+
+.playlistCard.active {
+  border-color: var(--spotify-green);
+  box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.3);
 }
 
 .playlistCardImage {
@@ -655,25 +614,11 @@
   margin-bottom: 8px;
 }
 
-.playlistGenres {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.genreTag {
-  font-size: 0.65rem;
-  padding: 4px 8px;
-  background: rgba(29, 185, 84, 0.1);
-  color: var(--spotify-green);
-  border-radius: 4px;
-}
-
 .gridAdminActions {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
+  margin-top: 8px;
 }
 
 .gridEditBtn,
@@ -689,6 +634,13 @@
   cursor: pointer;
   transition: var(--transition-fast);
   color: var(--spotify-text-secondary);
+}
+
+.playlistsContainer.light .gridEditBtn,
+.playlistsContainer.light .gridDeleteBtn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: var(--spotify-light-border);
+  color: var(--spotify-light-text-secondary);
 }
 
 .gridEditBtn:hover {
@@ -741,6 +693,98 @@
   color: #000;
 }
 
+/* ===== LOADING & ERROR STATES ===== */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+  text-align: center;
+}
+
+.loadingSpinner {
+  font-size: 2.5rem;
+  animation: spin 1s linear infinite;
+  color: var(--spotify-green);
+  margin-bottom: 0.5rem;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+  text-align: center;
+}
+
+.errorContainer svg {
+  font-size: 3rem;
+  color: var(--spotify-green);
+}
+
+.errorContainer button {
+  padding: 0.5rem 1.5rem;
+  background: var(--spotify-green);
+  border: none;
+  border-radius: 24px;
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.errorContainer button:hover {
+  background: var(--spotify-green-hover);
+  transform: translateY(-2px);
+}
+
+.noResults {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  gap: 1rem;
+  background: var(--spotify-surface);
+  border-radius: 16px;
+  margin-top: 2rem;
+}
+
+.playlistsContainer.light .noResults {
+  background: var(--spotify-light-surface);
+}
+
+.noResults svg {
+  font-size: 2.5rem;
+  color: var(--spotify-text-tertiary);
+}
+
+.clearFiltersBtn {
+  padding: 0.5rem 1.5rem;
+  background: transparent;
+  border: 1px solid var(--spotify-green);
+  border-radius: 24px;
+  color: var(--spotify-green);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clearFiltersBtn:hover {
+  background: var(--spotify-green);
+  color: #000;
+}
+
 /* ===== RESPONSIVIDADE ===== */
 @media (max-width: 768px) {
   .heroHeader {
@@ -783,11 +827,6 @@
   
   .categoryFilters {
     justify-content: center;
-  }
-  
-  .debateInfo {
-    grid-template-columns: 1fr;
-    gap: 12px;
   }
   
   .playlistNavButton {
@@ -865,120 +904,4 @@
     height: 40px;
     font-size: 0.875rem;
   }
-}
-
-/* Adicione ao final do arquivo Playlists.module.css */
-
-/* Playlist card active */
-.playlistCard.active {
-  border-color: var(--spotify-green);
-  box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.3);
-}
-
-/* Loading container centralizado */
-.loadingContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  gap: 1rem;
-  text-align: center;
-}
-
-.loadingSpinner {
-  font-size: 2.5rem;
-  animation: spin 1s linear infinite;
-  color: var(--spotify-green);
-  margin-bottom: 0.5rem;
-}
-
-.loadingContainer p {
-  font-size: 0.9rem;
-  color: var(--spotify-text-secondary);
-}
-
-/* Error container */
-.errorContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  gap: 1rem;
-  text-align: center;
-}
-
-.errorContainer svg {
-  font-size: 3rem;
-  color: var(--spotify-green);
-}
-
-.errorContainer h3 {
-  font-size: 1.2rem;
-  margin: 0;
-}
-
-.errorContainer p {
-  color: var(--spotify-text-secondary);
-}
-
-.errorContainer button {
-  padding: 0.5rem 1.5rem;
-  background: var(--spotify-green);
-  border: none;
-  border-radius: 24px;
-  color: #000;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.errorContainer button:hover {
-  background: var(--spotify-green-hover);
-  transform: translateY(-2px);
-}
-
-/* No results */
-.noResults {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  text-align: center;
-  gap: 1rem;
-  background: var(--spotify-surface);
-  border-radius: 16px;
-  margin-top: 2rem;
-}
-
-.noResults svg {
-  font-size: 2.5rem;
-  color: var(--spotify-text-tertiary);
-}
-
-.noResults p {
-  color: var(--spotify-text-secondary);
-}
-
-.clearFiltersBtn {
-  padding: 0.5rem 1.5rem;
-  background: transparent;
-  border: 1px solid var(--spotify-green);
-  border-radius: 24px;
-  color: var(--spotify-green);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.clearFiltersBtn:hover {
-  background: var(--spotify-green);
-  color: #000;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }

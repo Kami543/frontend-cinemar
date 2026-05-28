@@ -1,3 +1,4 @@
+// frontend/src/services/members.service.ts
 import api from './api';
 
 export interface MemberFoto {
@@ -125,12 +126,12 @@ const MembersService = {
       
       const response = await api.post('/members', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 60000
+        timeout: 120000
       });
       return response.data;
     } else {
       const response = await api.post('/members', payload, {
-        timeout: 30000
+        timeout: 60000
       });
       return response.data;
     }
@@ -146,12 +147,12 @@ const MembersService = {
       
       const response = await api.patch(`/members/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 60000
+        timeout: 120000
       });
       return response.data;
     } else {
       const response = await api.patch(`/members/${id}`, payload, {
-        timeout: 30000
+        timeout: 60000
       });
       return response.data;
     }
@@ -163,7 +164,7 @@ const MembersService = {
     
     const response = await api.post(`/members/${id}/foto`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 60000
+      timeout: 120000
     });
     return response.data;
   },

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FaSpotify, FaHeart, FaRegHeart, FaShareAlt, FaClock,
@@ -12,27 +12,63 @@ import { usePlaylists } from '../hooks/usePlaylists';
 import PlaylistForm from '../components/PlaylistForm';
 import { useTheme } from '../components/context/ThemeContext';
 
-// Categorias para filtro
-const playlistCategories = [
+// Constantes
+const PLAYLIST_CATEGORIES = [
   { id: 'all', name: 'Todas as Mixtapes', icon: <FaMusic />, filter: null },
   { id: 'literatura', name: 'Literatura em Foco', icon: <FaBook />, filter: 'literatura' },
   { id: 'cinema', name: 'Puro Cinema', icon: <FaFilm />, filter: 'cinema' },
   { id: 'sociedade', name: 'Debate Social', icon: <FaUsers />, filter: 'sociedade' },
-];
+] as const;
+
+type CategoryId = typeof PLAYLIST_CATEGORIES[number]['id'];
+
+interface User {
+  role: string;
+  name?: string;
+  email?: string;
+}
+
+interface Sessao {
+  id: string;
+  titulo: string;
+}
+
+// Hook customizado para buscar dados do localStorage
+function useLocalStorage<T>(key: string, initialValue: T): [T, () => void] {
+  const [data, setData] = useState<T>(initialValue);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      try {
+        setData(JSON.parse(stored));
+      } catch (e) {
+        console.error(`Erro ao parsear ${key}:`, e);
+      }
+    }
+  }, [key]);
+
+  const clear = useCallback(() => {
+    localStorage.removeItem(key);
+    setData(initialValue);
+  }, [key, initialValue]);
+
+  return [data, clear];
+}
 
 export default function Playlists() {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
   
   // Estados locais
-  const [user, setUser] = useState<any>(null);
+  const [user] = useLocalStorage<User | null>('cinemar_user', null);
+  const [sessoes] = useLocalStorage<Sessao[]>('cinemar_sessoes', []);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showPlaylistForm, setShowPlaylistForm] = useState(false);
   const [editingPlaylist, setEditingPlaylist] = useState<any>(null);
-  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [sessoes, setSessoes] = useState<any[]>([]);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Hook de playlists
   const {
@@ -52,30 +88,6 @@ export default function Playlists() {
     refetch,
   } = usePlaylists({ limit: 100 });
 
-  // Verificar usuário
-  useEffect(() => {
-    const storedUser = localStorage.getItem('cinemar_user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Erro ao parsear usuário:', e);
-      }
-    }
-  }, []);
-
-  // Carregar sessões do localStorage ou API
-  useEffect(() => {
-    const storedSessoes = localStorage.getItem('cinemar_sessoes');
-    if (storedSessoes) {
-      try {
-        setSessoes(JSON.parse(storedSessoes));
-      } catch (e) {
-        console.error('Erro ao parsear sessões:', e);
-      }
-    }
-  }, []);
-
   const isAdmin = user?.role === 'admin';
 
   // Filtrar playlists localmente
@@ -83,20 +95,18 @@ export default function Playlists() {
     let filtered = [...playlists];
 
     // Filtro por categoria
-    if (selectedCategory !== 'all') {
-      if (selectedCategory === 'literatura') {
-        filtered = filtered.filter(p => 
-          p.theme?.toLowerCase().includes('literatura') || 
-          p.relatedFilm === 'A Hora da Estrela'
-        );
-      } else if (selectedCategory === 'cinema') {
-        filtered = filtered.filter(p => 
-          p.relatedFilm?.includes('Bacurau') || 
-          p.relatedFilm?.includes('Ainda Estou Aqui')
-        );
-      } else if (selectedCategory === 'sociedade') {
-        filtered = filtered.filter(p => p.relatedFilm === 'Medida Provisória');
-      }
+    if (selectedCategory === 'literatura') {
+      filtered = filtered.filter(p => 
+        p.theme?.toLowerCase().includes('literatura') || 
+        p.relatedFilm === 'A Hora da Estrela'
+      );
+    } else if (selectedCategory === 'cinema') {
+      filtered = filtered.filter(p => 
+        p.relatedFilm?.includes('Bacurau') || 
+        p.relatedFilm?.includes('Ainda Estou Aqui')
+      );
+    } else if (selectedCategory === 'sociedade') {
+      filtered = filtered.filter(p => p.relatedFilm === 'Medida Provisória');
     }
 
     // Filtro por busca
@@ -129,46 +139,49 @@ export default function Playlists() {
     return () => clearTimeout(timer);
   }, [searchTerm, setSearch]);
 
-  // Selecionar playlist
-  const selectPlaylist = (playlist: any) => {
-    if (playlist && playlist.id) {
+  // Reset selected playlist quando os filtros mudam
+  useEffect(() => {
+    if (filteredPlaylists.length > 0 && !filteredPlaylists.some(p => p.id === selectedPlaylistId)) {
+      setSelectedPlaylistId(filteredPlaylists[0]?.id || null);
+    }
+  }, [filteredPlaylists, selectedPlaylistId]);
+
+  // Handlers
+  const selectPlaylist = useCallback((playlist: any) => {
+    if (playlist?.id) {
       setSelectedPlaylistId(playlist.id);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  };
+  }, []);
 
-  // Navegação
   const currentIndex = filteredPlaylists.findIndex(p => p.id === selectedPlaylist?.id);
-  const goToPrev = () => {
+  
+  const goToPrev = useCallback(() => {
     if (filteredPlaylists.length === 0) return;
-    if (currentIndex > 0) {
-      selectPlaylist(filteredPlaylists[currentIndex - 1]);
-    } else {
-      selectPlaylist(filteredPlaylists[filteredPlaylists.length - 1]);
-    }
-  };
-  const goToNext = () => {
-    if (filteredPlaylists.length === 0) return;
-    if (currentIndex < filteredPlaylists.length - 1) {
-      selectPlaylist(filteredPlaylists[currentIndex + 1]);
-    } else {
-      selectPlaylist(filteredPlaylists[0]);
-    }
-  };
-  const goToRandom = () => {
-    if (filteredPlaylists.length === 0) return;
-    const random = Math.floor(Math.random() * filteredPlaylists.length);
-    selectPlaylist(filteredPlaylists[random]);
-  };
+    const newIndex = currentIndex > 0 ? currentIndex - 1 : filteredPlaylists.length - 1;
+    selectPlaylist(filteredPlaylists[newIndex]);
+  }, [filteredPlaylists, currentIndex, selectPlaylist]);
 
-  const sharePlaylist = () => {
+  const goToNext = useCallback(() => {
+    if (filteredPlaylists.length === 0) return;
+    const newIndex = currentIndex < filteredPlaylists.length - 1 ? currentIndex + 1 : 0;
+    selectPlaylist(filteredPlaylists[newIndex]);
+  }, [filteredPlaylists, currentIndex, selectPlaylist]);
+
+  const goToRandom = useCallback(() => {
+    if (filteredPlaylists.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * filteredPlaylists.length);
+    selectPlaylist(filteredPlaylists[randomIndex]);
+  }, [filteredPlaylists, selectPlaylist]);
+
+  const sharePlaylist = useCallback(() => {
     if (selectedPlaylist?.spotifyUrl) {
       navigator.clipboard.writeText(selectedPlaylist.spotifyUrl);
+      // Opcional: mostrar toast de sucesso
     }
-  };
+  }, [selectedPlaylist]);
 
-  // CRUD Handlers
-  const handleSavePlaylist = async (formData: any) => {
+  const handleSavePlaylist = useCallback(async (formData: any) => {
     if (editingPlaylist) {
       await updatePlaylist(editingPlaylist.id, formData);
     } else {
@@ -176,35 +189,40 @@ export default function Playlists() {
     }
     setShowPlaylistForm(false);
     setEditingPlaylist(null);
-  };
+  }, [editingPlaylist, updatePlaylist, createPlaylist]);
 
-  const handleDeletePlaylist = async (id: string) => {
-    if (confirmDelete === id) {
+  const handleDeletePlaylist = useCallback(async (id: string) => {
+    if (confirmDeleteId === id) {
       await removePlaylist(id);
-      setConfirmDelete(null);
+      setConfirmDeleteId(null);
       if (selectedPlaylist?.id === id && filteredPlaylists.length > 1) {
-        const next = filteredPlaylists.find(p => p.id !== id);
-        if (next) selectPlaylist(next);
+        const nextPlaylist = filteredPlaylists.find(p => p.id !== id);
+        if (nextPlaylist) selectPlaylist(nextPlaylist);
       }
     } else {
-      setConfirmDelete(id);
-      setTimeout(() => setConfirmDelete(null), 3000);
+      setConfirmDeleteId(id);
+      setTimeout(() => setConfirmDeleteId(null), 3000);
     }
-  };
+  }, [confirmDeleteId, removePlaylist, selectedPlaylist, filteredPlaylists, selectPlaylist]);
 
-  const openEditPlaylist = (playlist: any) => {
+  const openEditPlaylist = useCallback((playlist: any) => {
     setEditingPlaylist(playlist);
     setShowPlaylistForm(true);
-  };
+  }, []);
 
-  // Buscar título da sessão
-  const getSessaoTitulo = (sessaoId?: string) => {
+  const clearAllFilters = useCallback(() => {
+    setSearchTerm('');
+    setSelectedCategory('all');
+    resetFilters();
+  }, [resetFilters]);
+
+  const getSessaoTitulo = useCallback((sessaoId?: string) => {
     if (!sessaoId) return '';
     const sessao = sessoes.find(s => s.id === sessaoId);
-    return sessao ? sessao.titulo : '';
-  };
+    return sessao?.titulo || '';
+  }, [sessoes]);
 
-  // Loading state
+  // Renderização condicional
   if (isLoading && playlists.length === 0) {
     return (
       <div className={`${styles.playlistsContainer} ${isDarkMode ? styles.dark : styles.light}`}>
@@ -216,7 +234,6 @@ export default function Playlists() {
     );
   }
 
-  // Error state
   if (error && playlists.length === 0) {
     return (
       <div className={`${styles.playlistsContainer} ${isDarkMode ? styles.dark : styles.light}`}>
@@ -241,7 +258,8 @@ export default function Playlists() {
           <div className={styles.heroMain}>
             <h1 className={styles.heroTitle}>ACERVO SONORO</h1>
             <p className={styles.heroSubtitle}>
-              A música expande a tela. Explore nossas mixtapes exclusivas, curadas a dedo para prolongar as emoções e reflexões dos nossos debates cinematográficos.
+              A música expande a tela. Explore nossas mixtapes exclusivas, curadas a dedo 
+              para prolongar as emoções e reflexões dos nossos debates cinematográficos.
             </p>
             {stats && (
               <div className={styles.heroStats}>
@@ -256,7 +274,7 @@ export default function Playlists() {
         </div>
       </header>
 
-      {/* Botão flutuante */}
+      {/* Botão flutuante - apenas admin */}
       {isAdmin && (
         <button 
           className={styles.floatingAddBtn} 
@@ -297,7 +315,7 @@ export default function Playlists() {
         </div>
 
         <div className={styles.categoryFilters}>
-          {playlistCategories.map(cat => (
+          {PLAYLIST_CATEGORIES.map(cat => (
             <button
               key={cat.id}
               className={`${styles.categoryFilterBtn} ${selectedCategory === cat.id ? styles.active : ''}`}
@@ -319,27 +337,38 @@ export default function Playlists() {
               <div className={styles.cardHeader}>
                 <div>
                   <h2 className={styles.currentPlaylistTitle}>{selectedPlaylist.title}</h2>
-                  {selectedPlaylist.curator && <p>Curada por: {selectedPlaylist.curator}</p>}
+                  {selectedPlaylist.curator && (
+                    <p>Curada por: {selectedPlaylist.curator}</p>
+                  )}
                   {selectedPlaylist.curatorDescription && (
-                    <p style={{ fontSize: '14px', marginTop: '8px', opacity: 0.8 }}>{selectedPlaylist.curatorDescription}</p>
+                    <p style={{ fontSize: '14px', marginTop: '8px', opacity: 0.8 }}>
+                      {selectedPlaylist.curatorDescription}
+                    </p>
                   )}
                   <span className={styles.debateFilm}>
                     <FaFilm /> Universo Cinematográfico: {selectedPlaylist.relatedFilm || 'Não definido'}
                     {selectedPlaylist.sessaoId && (
-                      <span className={styles.sessaoBadge}>Sessão: {getSessaoTitulo(selectedPlaylist.sessaoId)}</span>
+                      <span className={styles.sessaoBadge}>
+                        Sessão: {getSessaoTitulo(selectedPlaylist.sessaoId)}
+                      </span>
                     )}
                   </span>
                 </div>
                 {isAdmin && (
                   <div className={styles.cardAdminActions}>
-                    <button onClick={() => openEditPlaylist(selectedPlaylist)} className={styles.cardEditBtn}>
+                    <button 
+                      onClick={() => openEditPlaylist(selectedPlaylist)} 
+                      className={styles.cardEditBtn}
+                      title="Editar playlist"
+                    >
                       <FaEdit />
                     </button>
                     <button 
                       onClick={() => handleDeletePlaylist(selectedPlaylist.id)} 
-                      className={`${styles.cardDeleteBtn} ${confirmDelete === selectedPlaylist.id ? styles.confirmingDelete : ''}`}
+                      className={`${styles.cardDeleteBtn} ${confirmDeleteId === selectedPlaylist.id ? styles.confirmingDelete : ''}`}
+                      title={confirmDeleteId === selectedPlaylist.id ? "Clique novamente para confirmar" : "Excluir playlist"}
                     >
-                      {confirmDelete === selectedPlaylist.id ? <FaTimes /> : <FaTrash />}
+                      {confirmDeleteId === selectedPlaylist.id ? <FaTimes /> : <FaTrash />}
                     </button>
                   </div>
                 )}
@@ -373,7 +402,10 @@ export default function Playlists() {
 
                 <div style={{ display: 'flex', gap: '12px', marginTop: '24px', flexWrap: 'wrap' }}>
                   {selectedPlaylist.spotifyUrl && (
-                    <button className={styles.spotifyButton} onClick={() => window.open(selectedPlaylist.spotifyUrl, '_blank')}>
+                    <button 
+                      className={styles.spotifyButton} 
+                      onClick={() => window.open(selectedPlaylist.spotifyUrl, '_blank')}
+                    >
                       <FaSpotify /> Abrir no Spotify
                     </button>
                   )}
@@ -388,14 +420,14 @@ export default function Playlists() {
 
                 {filteredPlaylists.length > 1 && (
                   <div style={{ display: 'flex', gap: '16px', marginTop: '28px', justifyContent: 'center' }}>
-                    <button className={styles.playlistNavButton} onClick={goToPrev}>
+                    <button className={styles.playlistNavButton} onClick={goToPrev} title="Anterior">
                       <FaChevronLeft />
                     </button>
                     <span>{currentIndex + 1} / {filteredPlaylists.length}</span>
-                    <button className={styles.playlistNavButton} onClick={goToNext}>
+                    <button className={styles.playlistNavButton} onClick={goToNext} title="Próxima">
                       <FaChevronRight />
                     </button>
-                    <button className={styles.playlistNavButton} onClick={goToRandom}>
+                    <button className={styles.playlistNavButton} onClick={goToRandom} title="Aleatório">
                       <FaRandom />
                     </button>
                   </div>
@@ -454,10 +486,18 @@ export default function Playlists() {
                     </div>
                     {isAdmin && (
                       <div className={styles.gridAdminActions}>
-                        <button onClick={(e) => { e.stopPropagation(); openEditPlaylist(playlist); }} className={styles.gridEditBtn}>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); openEditPlaylist(playlist); }} 
+                          className={styles.gridEditBtn}
+                          title="Editar"
+                        >
                           <FaEdit />
                         </button>
-                        <button onClick={(e) => { e.stopPropagation(); handleDeletePlaylist(playlist.id); }} className={styles.gridDeleteBtn}>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDeletePlaylist(playlist.id); }} 
+                          className={styles.gridDeleteBtn}
+                          title={confirmDeleteId === playlist.id ? "Clique novamente para confirmar" : "Excluir"}
+                        >
                           <FaTrash />
                         </button>
                       </div>
@@ -474,10 +514,7 @@ export default function Playlists() {
           <div className={styles.noResults}>
             <FaMusic />
             <p>Nenhuma playlist encontrada para "{searchTerm}"</p>
-            <button 
-              className={styles.clearFiltersBtn} 
-              onClick={() => { setSearchTerm(''); setSelectedCategory('all'); resetFilters(); }}
-            >
+            <button className={styles.clearFiltersBtn} onClick={clearAllFilters}>
               Limpar filtros
             </button>
           </div>
