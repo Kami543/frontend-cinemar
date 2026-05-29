@@ -1,4 +1,4 @@
-// hooks/useFilmes.ts
+// frontend/src/hooks/useFilmes.ts
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import FilmesService from '../services/filmes.service';
 import type {
@@ -7,7 +7,7 @@ import type {
   UpdateFilmePayload,
   FilmesQuery
 } from '../services/filmes.service';
-import { getImageUrl } from '../utils/imageUtils';
+import { getImageUrl, getPlaceholderImage } from '../utils/imageUtils';
 
 // Converte data "29 de Março, 2025" ou "2025-03-29" → Date
 const MONTHS: Record<string, number> = {
@@ -41,7 +41,7 @@ export interface FilmeComStatus extends Filme {
   views?: number;
 }
 
-// Função para processar URLs das imagens
+// Função para processar URLs das imagens com tratamento de erro
 const processFilmeImages = (filme: Filme): FilmeComStatus => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -55,17 +55,40 @@ const processFilmeImages = (filme: Filme): FilmeComStatus => {
   thirtyDays.setDate(today.getDate() + 30);
   const highlight = filmeDate >= today && filmeDate <= thirtyDays;
   
+  // Views baseadas em status e popularidade simulada
   const views = status === 'Realizado'
     ? Math.floor(Math.random() * (5000 - 800 + 1)) + 800
     : Math.floor(Math.random() * 201);
   
+  // Processar imagem principal com fallback
+  let imageUrl = getPlaceholderImage();
+  try {
+    imageUrl = getImageUrl(filme.imageUrl);
+  } catch (err) {
+    console.error(`Erro ao processar imagem do filme ${filme.id}:`, err);
+    imageUrl = getPlaceholderImage();
+  }
+  
+  // Processar fotos do filme
+  const filmesFotos = (filme.filmesFotos || []).map(foto => {
+    try {
+      return {
+        ...foto,
+        path: getImageUrl(foto.path),
+      };
+    } catch (err) {
+      console.error(`Erro ao processar foto ${foto.id}:`, err);
+      return {
+        ...foto,
+        path: getPlaceholderImage(),
+      };
+    }
+  });
+  
   return {
     ...filme,
-    imageUrl: getImageUrl(filme.imageUrl),
-    filmesFotos: filme.filmesFotos?.map(foto => ({
-      ...foto,
-      path: getImageUrl(foto.path),
-    })) || [],
+    imageUrl,
+    filmesFotos,
     status,
     highlight,
     views
@@ -85,7 +108,7 @@ interface UseFilmesState {
 export function useFilmes(initialQuery?: FilmesQuery) {
   const [query, setQuery] = useState<FilmesQuery>({
     page: 1,
-    limit: 12,
+    limit: 100,
     ...initialQuery
   });
 
@@ -103,7 +126,7 @@ export function useFilmes(initialQuery?: FilmesQuery) {
 
   const showToast = useCallback((msg: string, type: 'success' | 'error' | 'warn' = 'success') => {
     setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 5000); // Aumentado para 5 segundos
   }, []);
 
   const fetchFilmes = useCallback(async (refresh = false) => {
@@ -128,7 +151,24 @@ export function useFilmes(initialQuery?: FilmesQuery) {
       const res = await FilmesService.findAll(cleanQuery);
 
       const filmesData = Array.isArray(res.data) ? res.data : [];
-      const filmesProcessados = filmesData.map(processFilmeImages);
+      
+      // Processar cada filme com tratamento de erro individual
+      const filmesProcessados = filmesData.map(filme => {
+        try {
+          return processFilmeImages(filme);
+        } catch (err) {
+          console.error(`Erro ao processar filme ${filme.id}:`, err);
+          // Retornar filme com dados básicos mesmo com erro
+          return {
+            ...filme,
+            imageUrl: getPlaceholderImage(),
+            filmesFotos: [],
+            status: 'Próximo' as const,
+            highlight: false,
+            views: 0,
+          };
+        }
+      });
 
       setState({
         filmes: filmesProcessados,
@@ -141,13 +181,29 @@ export function useFilmes(initialQuery?: FilmesQuery) {
       });
     } catch (err: any) {
       console.error('Erro ao buscar filmes:', err);
-      const errorMsg = err.response?.data?.message || err.message || 'Erro ao carregar filmes.';
+      
+      let errorMsg = 'Erro ao carregar filmes.';
+      
+      if (err.response?.status === 400) {
+        errorMsg = 'Erro na requisição. Por favor, recarregue a página.';
+      } else if (err.response?.status === 404) {
+        errorMsg = 'Nenhum filme encontrado.';
+      } else if (err.response?.status === 500) {
+        errorMsg = 'Erro no servidor. Tente novamente mais tarde.';
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      
       setState((s) => ({
         ...s,
         isLoading: false,
         isRefreshing: false,
-        error: errorMsg
+        error: errorMsg,
+        filmes: [], // Limpar filmes em caso de erro
       }));
+      
       showToast(errorMsg, 'error');
     }
   }, [query, showToast]);
@@ -157,7 +213,10 @@ export function useFilmes(initialQuery?: FilmesQuery) {
   }, [fetchFilmes]);
 
   const filmesOrdenados = useMemo(() => {
+    if (!state.filmes.length) return [];
+    
     return [...state.filmes].sort((a, b) => {
+      // Próximos primeiro
       if (a.status === 'Próximo' && b.status === 'Realizado') return -1;
       if (a.status === 'Realizado' && b.status === 'Próximo') return 1;
 
@@ -165,9 +224,9 @@ export function useFilmes(initialQuery?: FilmesQuery) {
       const dB = parseFilmeDate(b.date).getTime();
 
       if (a.status === 'Realizado') {
-        return dB - dA;
+        return dB - dA; // Mais recentes primeiro
       } else {
-        return dA - dB;
+        return dA - dB; // Mais próximos primeiro
       }
     });
   }, [state.filmes]);
@@ -183,7 +242,7 @@ export function useFilmes(initialQuery?: FilmesQuery) {
     try {
       const newFilme = await FilmesService.create(payload, files);
       await fetchFilmes(true);
-      showToast(`"${payload.title}" adicionado com sucesso!`);
+      showToast(`"${payload.title}" adicionado com sucesso!`, 'success');
       return newFilme;
     } catch (err: any) {
       const errorMsg = err.response?.data?.message ?? 'Erro ao criar filme.';
@@ -196,10 +255,19 @@ export function useFilmes(initialQuery?: FilmesQuery) {
     try {
       const updatedFilme = await FilmesService.update(id, payload, files);
       await fetchFilmes(true);
-      showToast(`Filme "${updatedFilme.title}" atualizado com sucesso!`);
+      showToast(`Filme "${updatedFilme.title}" atualizado com sucesso!`, 'success');
       return updatedFilme;
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message ?? 'Erro ao atualizar filme.';
+      let errorMsg = 'Erro ao atualizar filme.';
+      
+      if (err.response?.status === 400) {
+        errorMsg = 'Dados inválidos. Verifique as informações e tente novamente.';
+      } else if (err.response?.status === 404) {
+        errorMsg = 'Filme não encontrado.';
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      }
+      
       showToast(errorMsg, 'error');
       throw err;
     }
@@ -211,7 +279,14 @@ export function useFilmes(initialQuery?: FilmesQuery) {
       await fetchFilmes(true);
       showToast('Filme removido com sucesso.', 'warn');
     } catch (err: any) {
-      const errorMsg = err.response?.data?.message ?? 'Erro ao remover filme.';
+      let errorMsg = 'Erro ao remover filme.';
+      
+      if (err.response?.status === 404) {
+        errorMsg = 'Filme não encontrado.';
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      }
+      
       showToast(errorMsg, 'error');
       throw err;
     }
@@ -246,7 +321,7 @@ export function useFilmes(initialQuery?: FilmesQuery) {
   }, []);
 
   const resetFilters = useCallback(() => {
-    setQuery({ page: 1, limit: 12 });
+    setQuery({ page: 1, limit: 100 });
   }, []);
 
   const refetch = useCallback(() => {

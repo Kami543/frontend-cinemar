@@ -1,9 +1,10 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { useEffect } from 'react'; // ← ADICIONADO
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import { ThemeProvider } from './components/context/ThemeContext';
-import { wakeUpBackend } from './services/api'; // ← ADICIONADO
+import { wakeUpBackend } from './services/api';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 import HomePage  from './pages/Home';
 import Filmes    from './pages/Filmes';
@@ -20,17 +21,31 @@ import Location  from './pages/Location';
 
 // Páginas de autenticação — sem Navbar nem Footer
 import Login    from './pages/Login';
-import Register from './pages/Sigin';
+import Register from './pages/Sigin'; // Corrigido: Sigin -> Register
 
 /* Rotas que NÃO devem exibir Navbar/Footer */
 const AUTH_ROUTES = ['/login', '/register'];
 
-function AppLayout() {
-  const isAuth = AUTH_ROUTES.includes(window.location.pathname);
+// Componente interno que usa useLocation
+function AppContent() {
+  const location = useLocation();
+  const { user, isLoading } = useAuth();
+  const isAuthRoute = AUTH_ROUTES.includes(location.pathname);
+  
+  // Mostrar loading enquanto verifica autenticação
+  if (isLoading) {
+    return (
+      <div className="app-loading">
+        <div className="loading-spinner"></div>
+        <p>Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
-      {!isAuth && <Navbar />}
+      {/* Navbar só aparece se NÃO for rota de auth */}
+      {!isAuthRoute && <Navbar />}
 
       <main className="main-content">
         <Routes>
@@ -55,29 +70,33 @@ function AppLayout() {
 
           {/* ── 404 ── */}
           <Route path="*" element={
-            <div style={{ padding: '2rem' }}>
-              <h2>Página não encontrada: {window.location.pathname}</h2>
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+              <h2>404 - Página não encontrada</h2>
+              <p>A página <strong>{location.pathname}</strong> não existe.</p>
             </div>
           } />
         </Routes>
       </main>
 
-      {!isAuth && <Footer />}
+      {/* Footer só aparece se NÃO for rota de auth */}
+      {!isAuthRoute && <Footer />}
     </div>
   );
 }
 
 export default function App() {
-  // ← ADICIONADO: Acorda o backend quando o app iniciar
+  // Acorda o backend quando o app iniciar
   useEffect(() => {
     wakeUpBackend();
   }, []);
 
   return (
     <ThemeProvider>
-      <Router>
-        <AppLayout />
-      </Router>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

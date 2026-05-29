@@ -1,20 +1,28 @@
-import { useState, useId } from 'react';
+// frontend/src/pages/Login.tsx
+import { useState, useId, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiEye, FiEyeOff, FiAlertCircle, FiArrowLeft, FiFilm, FiHeadphones, FiCamera, FiUsers } from 'react-icons/fi';
 import logoImage from '../images/cinemar-logo.png';
 import styles from '../styles/Auth.module.css';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
   const navigate   = useNavigate();
   const emailId    = useId();
   const passwordId = useId();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, isAuthenticated } = useAuth();
 
   const [form, setForm]          = useState({ email: '', password: '' });
   const [errors, setErrors]      = useState<Record<string, string>>({});
   const [showPwd, setShowPwd]    = useState(false);
   const [globalError, setGlobal] = useState('');
+
+  // Se já estiver autenticado, redirecionar para home
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -34,10 +42,9 @@ export default function Login() {
 
     try {
       await login({ email: form.email, password: form.password });
-      navigate('/');
+      // O useEffect vai redirecionar automaticamente
     } catch (err: any) {
       const msg = err.response?.data?.message;
-      // Backend retorna string ou array de strings
       setGlobal(Array.isArray(msg) ? msg.join(', ') : (msg ?? 'E-mail ou senha incorretos.'));
     }
   };
@@ -56,8 +63,6 @@ export default function Login() {
 
   return (
     <div className={styles.authPage}>
-
-      {/* ── Painel esquerdo ── */}
       <div className={styles.sidePanel} aria-hidden="true">
         <div className={styles.sidePanelContent}>
           <img src={logoImage} alt="" className={styles.sideLogo} />
@@ -77,10 +82,8 @@ export default function Login() {
         </div>
       </div>
 
-      {/* ── Formulário ── */}
       <main className={styles.formPanel}>
         <div className={styles.formCard}>
-
           <header className={styles.formHeader}>
             <h1 className={styles.formTitle}>Entrar na conta</h1>
             <p className={styles.formSubtitle}>
@@ -97,8 +100,6 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} noValidate aria-label="Formulário de login">
             <div className={styles.fieldGroup}>
-
-              {/* E-mail */}
               <div className={styles.field}>
                 <label className={styles.fieldLabel} htmlFor={emailId}>E-mail</label>
                 <input
@@ -119,7 +120,6 @@ export default function Login() {
                 )}
               </div>
 
-              {/* Senha */}
               <div className={styles.field}>
                 <label className={styles.fieldLabel} htmlFor={passwordId}>Senha</label>
                 <div className={styles.passwordWrapper}>
@@ -153,7 +153,6 @@ export default function Login() {
                   Esqueci minha senha
                 </Link>
               </div>
-
             </div>
 
             <button
@@ -187,7 +186,6 @@ export default function Login() {
               Voltar para o site
             </Link>
           </div>
-
         </div>
       </main>
     </div>

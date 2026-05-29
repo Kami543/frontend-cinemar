@@ -1,9 +1,10 @@
-import { useState, useId } from 'react';
+// frontend/src/pages/Register.tsx
+import { useState, useId, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiEye, FiEyeOff, FiAlertCircle, FiCheckCircle, FiArrowLeft, FiFilm, FiHeadphones, FiCamera, FiUsers } from 'react-icons/fi';
 import logoImage from '../images/cinemar-logo.png';
 import styles from '../styles/Auth.module.css';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 
 function getStrength(pwd: string): 0 | 1 | 2 | 3 | 4 {
   if (!pwd) return 0;
@@ -25,7 +26,7 @@ export default function Register() {
   const emailId   = useId();
   const pwdId     = useId();
   const confirmId = useId();
-  const { register, isLoading } = useAuth();
+  const { register, isLoading, isAuthenticated } = useAuth();
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '',
@@ -38,6 +39,13 @@ export default function Register() {
   const [globalError, setGlobal] = useState('');
 
   const strength = getStrength(form.password);
+
+  // Se já estiver autenticado, redirecionar para home
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -61,7 +69,6 @@ export default function Register() {
     setErrors({});
 
     try {
-      // Backend espera "nome" como campo único — junta firstName + lastName
       await register({
         email: form.email,
         nome: `${form.firstName.trim()} ${form.lastName.trim()}`,
@@ -90,8 +97,6 @@ export default function Register() {
 
   return (
     <div className={styles.authPage}>
-
-      {/* ── Painel esquerdo ── */}
       <div className={styles.sidePanel} aria-hidden="true">
         <div className={styles.sidePanelContent}>
           <img src={logoImage} alt="" className={styles.sideLogo} />
@@ -112,10 +117,8 @@ export default function Register() {
         </div>
       </div>
 
-      {/* ── Formulário ── */}
       <main className={styles.formPanel}>
         <div className={styles.formCard}>
-
           <header className={styles.formHeader}>
             <h1 className={styles.formTitle}>Criar conta</h1>
             <p className={styles.formSubtitle}>
@@ -139,8 +142,6 @@ export default function Register() {
 
           <form onSubmit={handleSubmit} noValidate aria-label="Formulário de cadastro">
             <div className={styles.fieldGroup}>
-
-              {/* Nome + Sobrenome */}
               <div className={styles.fieldRow}>
                 <div className={styles.field}>
                   <label className={styles.fieldLabel} htmlFor={firstId}>Nome</label>
@@ -183,7 +184,6 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* E-mail */}
               <div className={styles.field}>
                 <label className={styles.fieldLabel} htmlFor={emailId}>E-mail</label>
                 <input
@@ -204,7 +204,6 @@ export default function Register() {
                 )}
               </div>
 
-              {/* Senha */}
               <div className={styles.field}>
                 <label className={styles.fieldLabel} htmlFor={pwdId}>Senha</label>
                 <div className={styles.passwordWrapper}>
@@ -256,7 +255,6 @@ export default function Register() {
                 )}
               </div>
 
-              {/* Confirmar senha */}
               <div className={styles.field}>
                 <label className={styles.fieldLabel} htmlFor={confirmId}>Confirmar senha</label>
                 <div className={styles.passwordWrapper}>
@@ -288,7 +286,6 @@ export default function Register() {
                 )}
               </div>
 
-              {/* Termos */}
               <div className={styles.field}>
                 <div className={styles.checkboxField}>
                   <input
@@ -313,7 +310,6 @@ export default function Register() {
                   </span>
                 )}
               </div>
-
             </div>
 
             <button
@@ -347,7 +343,6 @@ export default function Register() {
               Voltar para o site
             </Link>
           </div>
-
         </div>
       </main>
     </div>

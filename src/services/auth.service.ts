@@ -1,3 +1,4 @@
+// frontend/src/services/auth.service.ts
 import api, { clearTokens, saveTokens } from './api';
 
 export interface User {
@@ -42,8 +43,12 @@ const AuthService = {
   },
 
   async logout(): Promise<void> {
-    try { await api.post('/auth/logout'); } catch {}
-    clearTokens();
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // Ignorar erro
+    }
+    this.clearTokens();
   },
 
   async me(): Promise<User> {
@@ -59,6 +64,11 @@ const AuthService = {
 
   isAdmin(): boolean {
     return this.getStoredUser()?.role === 'admin';
+  },
+
+  clearTokens(): void {
+    clearTokens();
+    localStorage.removeItem('cinemar_user');
   },
 };
 
