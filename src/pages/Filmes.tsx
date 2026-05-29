@@ -1,4 +1,4 @@
-// frontend/src/pages/Filmes.tsx (versão com melhorias responsivas)
+// frontend/src/pages/Filmes.tsx (versão com CSS Modules puro)
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -439,56 +439,52 @@ export default function Filmes() {
   }
 
   return (
-    // Container principal responsivo - padding adaptativo
     <div className={`${styles.filmesContainer} ${isDarkMode ? styles.dark : ''}`}>
-      {/* HEADER COM PADDING RESPONSIVO */}
+      {/* HEADER */}
       <header className={styles.heroHeader}>
-        <div className={`${styles.heroHeaderContent} container mx-auto px-4 sm:px-6 lg:px-8`}>
+        <div className={styles.heroHeaderContent}>
           <div className={styles.heroHeaderTop}>
-            <Link to="/" className={`${styles.backLink} text-sm sm:text-base`}>
+            <Link to="/" className={styles.backLink}>
               ← Voltar para sessões
             </Link>
           </div>
 
-          <div className={`${styles.heroMain} text-center sm:text-left`}>
-            <h1 className={`${styles.heroTitle} text-2xl sm:text-3xl md:text-4xl lg:text-5xl`}>
-              CATÁLOGO DE FILMES
-            </h1>
-            <p className={`${styles.heroSubtitle} text-sm sm:text-base max-w-2xl mx-auto sm:mx-0`}>
+          <div className={styles.heroMain}>
+            <h1 className={styles.heroTitle}>CATÁLOGO DE FILMES</h1>
+            <p className={styles.heroSubtitle}>
               Explore todos os filmes já exibidos e as próximas sessões do CineMar
             </p>
 
             {stats && (
-              <div className={`${styles.heroStats} flex justify-center sm:justify-start gap-2 sm:gap-4`}>
-                <span className="text-xs sm:text-sm">{stats.realizados} realizados</span>
-                <span className={styles.heroStatsSep}>•</span>
-                <span className="text-xs sm:text-sm">{stats.proximos} próximos</span>
+              <div className={styles.heroStats}>
+                <span>{stats.realizados} realizados</span>
+                <span>{stats.proximos} próximos</span>
               </div>
             )}
           </div>
         </div>
       </header>
 
-      {/* BOTÃO FLUTUANTE ADMIN RESPONSIVO */}
+      {/* BOTÃO FLUTUANTE ADMIN */}
       {isAdmin && (
         <button
-          className={`${styles.floatingAddBtn} fixed bottom-4 right-4 sm:bottom-6 sm:right-6 md:bottom-8 md:right-8 z-50 p-3 sm:p-4 rounded-full shadow-lg`}
+          className={styles.floatingAddBtn}
           onClick={() => {
             resetFilmeForm();
             setShowFilmeForm(true);
           }}
           title="Adicionar filme"
         >
-          <FaPlus className="text-lg sm:text-xl" />
+          <FaPlus />
         </button>
       )}
 
-      {/* FORMULÁRIO RESPONSIVO */}
+      {/* FORMULÁRIO */}
       {showFilmeForm && isAdmin && (
         <div className={styles.formOverlay}>
-          <div className={`${styles.formContainer} w-[95%] sm:w-[90%] md:w-[80%] lg:w-[70%] xl:w-[60%] max-h-[90vh] overflow-y-auto`}>
+          <div className={styles.formContainer}>
             <div className={styles.formHeader}>
-              <h3 className="text-lg sm:text-xl">{editingFilme ? 'Editar Filme' : 'Novo Filme'}</h3>
+              <h3>{editingFilme ? 'Editar Filme' : 'Novo Filme'}</h3>
               <button
                 onClick={() => {
                   setShowFilmeForm(false);
@@ -500,65 +496,227 @@ export default function Filmes() {
               </button>
             </div>
 
-            <div className={`${styles.formBody} p-4 sm:p-6`}>
-              {/* Identificação - Grid responsivo */}
+            <div className={styles.formBody}>
+              {/* Identificação */}
               <div className={styles.formSection}>
-                <h4 className={`${styles.formSectionTitle} text-base sm:text-lg`}>Identificação</h4>
-                {/* flex-col md:flex-row - side-by-side vira coluna */}
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium mb-2">Título *</label>
+                <h4 className={styles.formSectionTitle}>Identificação</h4>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Título *</label>
                     <input
                       type="text"
                       value={filmeForm.title}
                       onChange={(e) => setFilmeForm({ ...filmeForm, title: e.target.value })}
                       placeholder="Nome do filme"
-                      className="w-full px-3 py-2 rounded-md"
                     />
                   </div>
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium mb-2">Diretor *</label>
+                  <div className={styles.formGroup}>
+                    <label>Diretor *</label>
                     <input
                       type="text"
                       value={filmeForm.director}
                       onChange={(e) => setFilmeForm({ ...filmeForm, director: e.target.value })}
                       placeholder="Nome do diretor"
-                      className="w-full px-3 py-2 rounded-md"
                     />
                   </div>
                 </div>
-                <div className="flex flex-col md:flex-row gap-4 mt-4">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium mb-2">Ano</label>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Ano</label>
                     <input
                       type="number"
                       value={filmeForm.year}
                       onChange={(e) =>
                         setFilmeForm({ ...filmeForm, year: parseInt(e.target.value) })
                       }
-                      className="w-full px-3 py-2 rounded-md"
                     />
                   </div>
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium mb-2">Data da Sessão *</label>
+                  <div className={styles.formGroup}>
+                    <label>Data da Sessão *</label>
                     <input
                       type="text"
                       value={filmeForm.date}
                       onChange={(e) => setFilmeForm({ ...filmeForm, date: e.target.value })}
                       placeholder="29 de Março, 2025"
-                      className="w-full px-3 py-2 rounded-md"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Restante do formulário similar com grid responsivo */}
-              {/* ... (manter o resto do formulário, mas adicionar classes responsivas) */}
+              {/* Sinopse */}
+              <div className={styles.formSection}>
+                <h4 className={styles.formSectionTitle}>Sinopse</h4>
+                <div className={styles.formGroup}>
+                  <textarea
+                    rows={4}
+                    value={filmeForm.description}
+                    onChange={(e) => setFilmeForm({ ...filmeForm, description: e.target.value })}
+                    placeholder="Sinopse do filme..."
+                  />
+                </div>
+              </div>
+
+              {/* Ficha Técnica */}
+              <div className={styles.formSection}>
+                <h4 className={styles.formSectionTitle}>Ficha Técnica</h4>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Roteiro</label>
+                    <input
+                      type="text"
+                      value={filmeForm.screenplay}
+                      onChange={(e) => setFilmeForm({ ...filmeForm, screenplay: e.target.value })}
+                      placeholder="Nome do roteirista"
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Elenco Principal</label>
+                    <input
+                      type="text"
+                      value={filmeForm.cast}
+                      onChange={(e) => setFilmeForm({ ...filmeForm, cast: e.target.value })}
+                      placeholder="Atores principais"
+                    />
+                  </div>
+                </div>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Gênero</label>
+                    <input
+                      type="text"
+                      value={filmeForm.genre}
+                      onChange={(e) => setFilmeForm({ ...filmeForm, genre: e.target.value })}
+                      placeholder="Drama, Comédia, etc"
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Duração</label>
+                    <input
+                      type="text"
+                      value={filmeForm.duration}
+                      onChange={(e) => setFilmeForm({ ...filmeForm, duration: e.target.value })}
+                      placeholder="2h 15min"
+                    />
+                  </div>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Idioma</label>
+                  <input
+                    type="text"
+                    value={filmeForm.language}
+                    onChange={(e) => setFilmeForm({ ...filmeForm, language: e.target.value })}
+                    placeholder="Português, Inglês, etc"
+                  />
+                </div>
+              </div>
+
+              {/* Links */}
+              <div className={styles.formSection}>
+                <h4 className={styles.formSectionTitle}>Links</h4>
+                <div className={styles.formGroup}>
+                  <label>URL da Imagem (Poster)</label>
+                  <input
+                    type="text"
+                    value={filmeForm.imageUrl}
+                    onChange={(e) => setFilmeForm({ ...filmeForm, imageUrl: e.target.value })}
+                    placeholder="https://exemplo.com/poster.jpg"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Link dos Materiais</label>
+                  <input
+                    type="text"
+                    value={filmeForm.materialsLink}
+                    onChange={(e) => setFilmeForm({ ...filmeForm, materialsLink: e.target.value })}
+                    placeholder="https://drive.google.com/..."
+                  />
+                </div>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label>Playlist ID (Spotify)</label>
+                    <input
+                      type="text"
+                      value={filmeForm.playlistId}
+                      onChange={(e) => setFilmeForm({ ...filmeForm, playlistId: e.target.value })}
+                      placeholder="ID da playlist do Spotify"
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Link da Playlist (YouTube)</label>
+                    <input
+                      type="text"
+                      value={filmeForm.playlistLink}
+                      onChange={(e) => setFilmeForm({ ...filmeForm, playlistLink: e.target.value })}
+                      placeholder="https://youtube.com/playlist?list=..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Prêmios e Tags */}
+              <div className={styles.formSection}>
+                <h4 className={styles.formSectionTitle}>Prêmios e Tags</h4>
+                <div className={styles.formGroup}>
+                  <label>Prêmios (separados por vírgula)</label>
+                  <input
+                    type="text"
+                    value={filmeForm.awardsNames?.join(', ')}
+                    onChange={(e) => handleArrayFieldChange('awardsNames', e.target.value)}
+                    placeholder="Oscar de Melhor Filme, Cannes, etc"
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Tags (separadas por vírgula)</label>
+                  <input
+                    type="text"
+                    value={filmeForm.tagNames?.join(', ')}
+                    onChange={(e) => handleArrayFieldChange('tagNames', e.target.value)}
+                    placeholder="Drama, Nacional, Premiado, etc"
+                  />
+                </div>
+              </div>
+
+              {/* Upload de Fotos */}
+              <div className={styles.formSection}>
+                <h4 className={styles.formSectionTitle}>Galeria de Fotos</h4>
+                <div className={styles.fileInputArea}>
+                  <label className={styles.fileInputLabel}>
+                    <FaUpload /> Selecionar Fotos
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                  <small>Selecione várias imagens para a galeria</small>
+                </div>
+                {selectedFiles.length > 0 && (
+                  <div className={styles.selectedFiles}>
+                    <h5>Fotos selecionadas ({selectedFiles.length})</h5>
+                    <div className={styles.fileList}>
+                      {selectedFiles.map((file, index) => (
+                        <div key={index} className={styles.fileItem}>
+                          <FaImage />
+                          <span className={styles.fileName}>{file.name}</span>
+                          <span className={styles.fileSize}>
+                            {(file.size / 1024).toFixed(0)} KB
+                          </span>
+                          <button onClick={() => removeSelectedFile(index)}>
+                            <FaTimes />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className={`${styles.formFooter} p-4 sm:p-6 flex flex-col sm:flex-row gap-3 justify-end`}>
+            <div className={styles.formFooter}>
               <button
-                className={`${styles.cancelBtn} px-4 py-2 rounded-md`}
+                className={styles.cancelBtn}
                 onClick={() => {
                   setShowFilmeForm(false);
                   resetFilmeForm();
@@ -567,11 +725,12 @@ export default function Filmes() {
                 Cancelar
               </button>
               <button
-                className={`${styles.submitBtn} px-4 py-2 rounded-md`}
+                className={styles.submitBtn}
                 onClick={editingFilme ? handleEditFilme : handleAddFilme}
                 disabled={uploading}
               >
-                {uploading ? <FaSpinner className={styles.spinnerInline} /> : <FaSave />}
+                {uploading && <FaSpinner className={styles.spinnerInline} />}
+                <FaSave />
                 {editingFilme ? 'Salvar Alterações' : 'Adicionar Filme'}
               </button>
             </div>
@@ -579,74 +738,63 @@ export default function Filmes() {
         </div>
       )}
 
-      {/* CONTEÚDO PRINCIPAL - LAYOUT RESPONSIVO */}
-      <div className="flex flex-col lg:flex-row gap-6 p-4 sm:p-6 lg:p-8">
-        {/* SIDEBAR - Ocupa largura total no mobile, fixa no desktop */}
-        <div className="w-full lg:w-1/3 xl:w-1/4">
+      {/* CONTEÚDO PRINCIPAL */}
+      <div className={styles.mainLayout}>
+        {/* SIDEBAR */}
+        <div className={styles.sidebarWrapper}>
           <div className={styles.sidebar}>
-            <div className={`${styles.sidebarHeader} flex justify-between items-center mb-4 p-4`}>
-              <h2 className={`${styles.sidebarTitle} text-lg sm:text-xl flex items-center gap-2`}>
+            <div className={styles.sidebarHeader}>
+              <h2 className={styles.sidebarTitle}>
                 <FaFilter /> Programação
               </h2>
-              <span className={`${styles.totalFilmes} text-sm bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full`}>
-                {filmesFiltrados.length} filmes
-              </span>
+              <span className={styles.totalFilmes}>{filmesFiltrados.length} filmes</span>
             </div>
 
-            <div className={`${styles.filters} p-4`}>
-              {/* Filter Buttons - Wrap em mobile */}
-              <div className="flex flex-wrap gap-2 mb-4">
+            <div className={styles.filters}>
+              <div className={styles.filterButtons}>
                 <button
-                  className={`${styles.filterBtn} flex-1 sm:flex-none px-3 py-2 text-sm rounded-md ${
-                    activeFilter === 'all' ? styles.active : ''
-                  }`}
+                  className={`${styles.filterBtn} ${activeFilter === 'all' ? styles.active : ''}`}
                   onClick={() => setActiveFilter('all')}
                 >
                   Todos
                 </button>
                 <button
-                  className={`${styles.filterBtn} flex-1 sm:flex-none px-3 py-2 text-sm rounded-md ${
-                    activeFilter === 'realized' ? styles.active : ''
-                  }`}
+                  className={`${styles.filterBtn} ${activeFilter === 'realized' ? styles.active : ''}`}
                   onClick={() => setActiveFilter('realized')}
                 >
                   Realizados
                 </button>
                 <button
-                  className={`${styles.filterBtn} flex-1 sm:flex-none px-3 py-2 text-sm rounded-md ${
-                    activeFilter === 'upcoming' ? styles.active : ''
-                  }`}
+                  className={`${styles.filterBtn} ${activeFilter === 'upcoming' ? styles.active : ''}`}
                   onClick={() => setActiveFilter('upcoming')}
                 >
                   Próximos
                 </button>
               </div>
 
-              {/* Search Box - Full width no mobile */}
-              <div className="relative mb-4">
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <div className={styles.searchBox}>
+                <FaSearch className={styles.searchIcon} />
                 <input
                   type="text"
                   placeholder="Buscar filme, diretor ou gênero..."
-                  className="w-full pl-10 pr-10 py-2 rounded-md border focus:outline-none focus:ring-2"
+                  className={styles.searchInput}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 {searchTerm && (
-                  <button className="absolute right-3 top-1/2 transform -translate-y-1/2" onClick={() => setSearchTerm('')}>
+                  <button className={styles.clearSearch} onClick={() => setSearchTerm('')}>
                     <FaTimes />
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Film List - Altura máxima em mobile */}
-            <div className={`${styles.filmeList} max-h-[500px] sm:max-h-[600px] lg:max-h-[calc(100vh-300px)] overflow-y-auto`}>
+            <div className={styles.filmeList}>
               {filmesFiltrados.length === 0 ? (
-                <div className="text-center p-8">
-                  <FaExclamationTriangle className="mx-auto text-3xl mb-2" />
-                  <p className="text-sm">Nenhum filme encontrado para a busca "{searchTerm}"</p>
-                  <button className="mt-4 px-4 py-2 text-sm rounded-md" onClick={clearAllFilters}>
+                <div className={styles.emptyState}>
+                  <FaExclamationTriangle className={styles.emptyStateIcon} />
+                  <p>Nenhum filme encontrado para a busca "{searchTerm}"</p>
+                  <button className={styles.clearFiltersBtn} onClick={clearAllFilters}>
                     Limpar filtros
                   </button>
                 </div>
@@ -654,7 +802,7 @@ export default function Filmes() {
                 filmesFiltrados.map((filme) => (
                   <div
                     key={filme.id}
-                    className={`${styles.filmeListItem} p-3 sm:p-4 cursor-pointer transition-all ${
+                    className={`${styles.filmeListItem} ${
                       selectedFilme?.id === filme.id ? styles.active : ''
                     } ${filme.highlight ? styles.highlighted : ''}`}
                     onClick={() => setSelectedFilme(filme)}
@@ -662,33 +810,33 @@ export default function Filmes() {
                     tabIndex={0}
                     onKeyDown={(e) => e.key === 'Enter' && setSelectedFilme(filme)}
                   >
-                    {/* Layout flex column no mobile, row no desktop */}
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <div className="relative w-full sm:w-24 md:w-32 flex-shrink-0">
-                        <img
-                          src={getFilmeImageUrl(filme)}
-                          alt={filme.title}
-                          className="w-full h-32 sm:h-24 object-cover rounded-md"
-                          onError={() => handleImageError(filme.id)}
-                          loading="lazy"
-                        />
-                        {filme.status === 'Próximo' && (
-                          <div className="absolute top-1 right-1 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
-                            <FaFire className="inline mr-1 text-xs" /> PRÓXIMO
-                          </div>
-                        )}
-                        {filme.status === 'Realizado' && (
-                          <div className="absolute top-1 right-1 bg-green-600 text-white text-xs px-2 py-1 rounded-full">
-                            <FaCalendarCheck className="inline mr-1 text-xs" /> EXIBIDO
-                          </div>
-                        )}
-                      </div>
+                    <div className={styles.listItemImage}>
+                      <img
+                        src={getFilmeImageUrl(filme)}
+                        alt={filme.title}
+                        className={styles.filmeThumbnail}
+                        onError={() => handleImageError(filme.id)}
+                        loading="lazy"
+                      />
+                      {filme.status === 'Próximo' && (
+                        <div className={styles.upcomingBadge}>
+                          <FaFire /> PRÓXIMO
+                        </div>
+                      )}
+                      {filme.status === 'Realizado' && (
+                        <div className={styles.realizedBadge}>
+                          <FaCalendarCheck /> EXIBIDO
+                        </div>
+                      )}
+                    </div>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-end gap-1 mb-2">
+                    <div className={styles.listItemContent}>
+                      <div className={styles.listItemHeader}>
+                        <div className={styles.filmeNumber}>#{filme.numero}</div>
+                        <div className={styles.itemActions}>
                           <button
-                            className={`p-1.5 rounded-full transition-colors ${
-                              favorites.includes(filme.id) ? 'text-red-500' : 'text-gray-400'
+                            className={`${styles.actionBtn} ${
+                              favorites.includes(filme.id) ? styles.active : ''
                             }`}
                             onClick={(e) => toggleFavorite(filme.id, e)}
                             title={favorites.includes(filme.id) ? 'Remover favorito' : 'Favoritar'}
@@ -696,8 +844,8 @@ export default function Filmes() {
                             {favorites.includes(filme.id) ? <FaHeart /> : <FaRegHeart />}
                           </button>
                           <button
-                            className={`p-1.5 rounded-full transition-colors ${
-                              watchlist.includes(filme.id) ? 'text-blue-500' : 'text-gray-400'
+                            className={`${styles.actionBtn} ${
+                              watchlist.includes(filme.id) ? styles.active : ''
                             }`}
                             onClick={(e) => toggleWatchlist(filme.id, e)}
                             title={watchlist.includes(filme.id) ? 'Remover da lista' : 'Adicionar à lista'}
@@ -707,18 +855,18 @@ export default function Filmes() {
                           {isAdmin && (
                             <>
                               <button
-                                className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                                className={styles.actionBtn}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   openEditFilme(filme);
                                 }}
                                 title="Editar"
                               >
-                                <FaEdit className="text-sm" />
+                                <FaEdit />
                               </button>
                               <button
-                                className={`p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                  confirmDelete === filme.id ? 'text-red-500' : ''
+                                className={`${styles.actionBtn} ${
+                                  confirmDelete === filme.id ? styles.confirmingDelete : ''
                                 }`}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -731,30 +879,20 @@ export default function Filmes() {
                             </>
                           )}
                         </div>
-
-                        <h3 className={`${styles.listItemTitle} text-base sm:text-lg font-semibold truncate`}>
-                          {filme.title}
-                        </h3>
-                        <div className="flex flex-wrap gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          <span>{filme.year}</span>
-                          <span>•</span>
-                          <span className="truncate">{filme.director.split(' e ')[0]}</span>
+                      </div>
+                      <div className={styles.listItemTitle}>{filme.title}</div>
+                      <div className={styles.listItemMeta}>
+                        <span className={styles.listItemYear}>{filme.year}</span>
+                        <span className={styles.listItemDirector}>
+                          <FaUser /> {filme.director.split(' e ')[0]}
+                        </span>
+                      </div>
+                      <div className={styles.listItemFooter}>
+                        <div className={styles.listItemDate}>
+                          <FaCalendarAlt /> {filme.date.split(',')[0]}
                         </div>
-
-                        <div className="flex justify-between items-center mt-2 text-xs sm:text-sm">
-                          <div className="flex items-center gap-1">
-                            <FaCalendarAlt className="text-xs" />
-                            <span className="truncate">{filme.date.split(',')[0]}</span>
-                          </div>
-                          <div
-                            className={`px-2 py-1 rounded-full text-xs ${
-                              filme.status === 'Próximo' 
-                                ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-                                : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                            }`}
-                          >
-                            {filme.status}
-                          </div>
+                        <div className={`${styles.filmeStatus} ${styles[filme.status.toLowerCase()]}`}>
+                          {filme.status}
                         </div>
                       </div>
                     </div>
@@ -765,103 +903,110 @@ export default function Filmes() {
           </div>
         </div>
 
-        {/* DETALHES - Largura total no mobile, resto no desktop */}
-        <div className="w-full lg:w-2/3 xl:w-3/4">
+        {/* DETALHES */}
+        <div className={styles.detailsWrapper}>
           {selectedFilme ? (
-            <div className={`${styles.detailsContainer} p-4 sm:p-6 lg:p-8`}>
-              {/* Cabeçalho responsivo */}
-              <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <h2 className={`${styles.detailsTitle} text-xl sm:text-2xl md:text-3xl font-bold`}>
-                      {selectedFilme.title}
-                    </h2>
+            <div className={styles.detailsInner}>
+              {/* Header */}
+              <div className={styles.detailsHeader}>
+                <div className={styles.titleSection}>
+                  <div className={styles.titleWrapper}>
+                    <h2 className={styles.detailsTitle}>{selectedFilme.title}</h2>
                     {selectedFilme.highlight && selectedFilme.status === 'Próximo' && (
-                      <div className="bg-yellow-500 text-black px-2 py-1 rounded-md text-xs font-semibold">
-                        <FaFire className="inline mr-1" /> DESTAQUE
+                      <div className={styles.highlightBadge}>
+                        <FaFire /> DESTAQUE
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-3 text-sm text-gray-600 dark:text-gray-400">
+                  <div className={styles.metaInfo}>
                     <span>{selectedFilme.year}</span>
                     {selectedFilme.genre && (
                       <>
                         <span>•</span>
-                        <span><FaTag className="inline mr-1 text-xs" /> {selectedFilme.genre}</span>
+                        <span>
+                          <FaTag className="inline" /> {selectedFilme.genre}
+                        </span>
                       </>
                     )}
                     {selectedFilme.duration && (
                       <>
                         <span>•</span>
-                        <span><FaClock className="inline mr-1 text-xs" /> {selectedFilme.duration}</span>
+                        <span>
+                          <FaClock className="inline" /> {selectedFilme.duration}
+                        </span>
                       </>
                     )}
                     {selectedFilme.views && (
                       <>
                         <span>•</span>
-                        <span><FaEye className="inline mr-1 text-xs" /> {selectedFilme.views.toLocaleString()} visualizações</span>
+                        <span>
+                          <FaEye className="inline" /> {selectedFilme.views.toLocaleString()} visualizações
+                        </span>
                       </>
                     )}
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <div className="bg-yellow-500 text-black px-3 py-1 rounded-full text-sm font-semibold">
-                    <FaStar className="inline mr-1" />
+                <div className={styles.actionButtonsGroup}>
+                  <div className={styles.ratingBadge}>
+                    <FaStar />
                     {selectedFilme.rating?.toFixed(1) || '0.0'}
-                    <span className="text-xs ml-1">({selectedFilme.reviewCount || 0})</span>
+                    <span className={styles.ratingCount}>({selectedFilme.reviewCount || 0})</span>
                   </div>
 
                   <button
-                    className={`p-2 rounded-full transition-colors ${
-                      favorites.includes(selectedFilme.id) ? 'text-red-500 bg-red-50 dark:bg-red-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                    className={`${styles.iconButtonRound} ${
+                      favorites.includes(selectedFilme.id) ? styles.iconButtonActive : ''
                     }`}
                     onClick={(e) => toggleFavorite(selectedFilme.id, e)}
                     title={favorites.includes(selectedFilme.id) ? 'Remover favorito' : 'Favoritar'}
                   >
                     {favorites.includes(selectedFilme.id) ? <FaHeart /> : <FaRegHeart />}
                   </button>
+                  
                   <button
-                    className={`p-2 rounded-full transition-colors ${
-                      watchlist.includes(selectedFilme.id) ? 'text-blue-500 bg-blue-50 dark:bg-blue-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                    className={`${styles.iconButtonRound} ${
+                      watchlist.includes(selectedFilme.id) ? styles.iconButtonWatchlistActive : ''
                     }`}
                     onClick={(e) => toggleWatchlist(selectedFilme.id, e)}
                     title={watchlist.includes(selectedFilme.id) ? 'Remover da lista' : 'Adicionar à lista'}
                   >
                     {watchlist.includes(selectedFilme.id) ? <FaBookmark /> : <FaRegBookmark />}
                   </button>
-                  <div className="relative" ref={shareRef}>
-                    <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800" onClick={shareFilme} title="Compartilhar">
+                  
+                  <div className={styles.shareContainer} ref={shareRef}>
+                    <button className={styles.iconButtonRound} onClick={shareFilme} title="Compartilhar">
                       <FaShareAlt />
                     </button>
                     {showShareMenu && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-10">
-                        <button onClick={copyLink} className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">
-                          <FaCopy className="inline mr-2" /> Copiar link
+                      <div className={styles.shareMenu}>
+                        <button onClick={copyLink}>
+                          <FaCopy /> Copiar link
                         </button>
                         <a
                           href={`https://twitter.com/intent/tweet?text=Confira "${selectedFilme.title}" no CineMar!&url=${window.location.href}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          className={styles.twitterShare}
                         >
-                          <FaTwitter className="inline mr-2" /> Compartilhar no Twitter
+                          <FaTwitter /> Compartilhar no Twitter
                         </a>
                       </div>
                     )}
                   </div>
+                  
                   {isAdmin && (
                     <>
                       <button
-                        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                        className={styles.iconButtonRound}
                         onClick={() => openEditFilme(selectedFilme)}
                         title="Editar filme"
                       >
                         <FaEdit />
                       </button>
                       <button
-                        className={`p-2 rounded-full transition-colors ${
-                          confirmDelete === selectedFilme.id ? 'text-red-500 bg-red-50 dark:bg-red-900' : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                        className={`${styles.iconButtonRound} ${
+                          confirmDelete === selectedFilme.id ? styles.iconButtonActive : ''
                         }`}
                         onClick={() => handleDeleteFilme(selectedFilme.id)}
                         title={confirmDelete === selectedFilme.id ? 'Confirmar exclusão?' : 'Excluir filme'}
@@ -873,110 +1018,104 @@ export default function Filmes() {
                 </div>
               </div>
 
-              {/* Conteúdo principal - flex coluna no mobile, row no desktop */}
-              <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
-                {/* Coluna esquerda - imagem responsiva */}
-                <div className="w-full md:w-1/3 lg:w-1/4">
-                  <div className="relative">
+              {/* Conteúdo principal */}
+              <div className={styles.contentColumns}>
+                {/* Coluna esquerda */}
+                <div className={styles.leftColumnDetails}>
+                  <div className={styles.posterWrapper}>
                     <img
                       src={getFilmeImageUrl(selectedFilme)}
                       alt={selectedFilme.title}
-                      className="w-full h-auto rounded-lg shadow-lg object-cover"
+                      className={styles.posterImage}
                       onError={() => handleImageError(selectedFilme.id)}
                       loading="lazy"
                     />
-                    <div className="absolute top-2 right-2">
-                      <span className={`px-2 py-1 rounded-md text-xs font-bold ${
-                        selectedFilme.status === 'Próximo' 
-                          ? 'bg-red-600 text-white'
-                          : 'bg-green-600 text-white'
+                    <div className={styles.statusOverlay}>
+                      <span className={`${styles.statusBadgeSmall} ${
+                        selectedFilme.status === 'Próximo' ? styles.statusUpcoming : styles.statusRealized
                       }`}>
                         {selectedFilme.status === 'Próximo' ? 'EM BREVE' : 'EXIBIDO'}
                       </span>
                     </div>
                   </div>
 
-                  {/* Info cards responsivos */}
-                  <div className="mt-4 space-y-3">
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <FaCalendarAlt className="text-gray-500 mt-1" />
-                      <div>
-                        <h4 className="text-xs font-semibold uppercase text-gray-500">Data</h4>
-                        <p className="text-sm">{selectedFilme.date}</p>
+                  <div className={styles.infoCards}>
+                    <div className={styles.infoCard}>
+                      <FaCalendarAlt className={styles.infoCardIcon} />
+                      <div className={styles.infoCardContent}>
+                        <h4 className={styles.infoCardLabel}>Data</h4>
+                        <p className={styles.infoCardValue}>{selectedFilme.date}</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <FaUser className="text-gray-500 mt-1" />
-                      <div>
-                        <h4 className="text-xs font-semibold uppercase text-gray-500">Diretor</h4>
-                        <p className="text-sm break-words">{selectedFilme.director}</p>
+                    <div className={styles.infoCard}>
+                      <FaUser className={styles.infoCardIcon} />
+                      <div className={styles.infoCardContent}>
+                        <h4 className={styles.infoCardLabel}>Diretor</h4>
+                        <p className={styles.infoCardValue}>{selectedFilme.director}</p>
                       </div>
                     </div>
                     {selectedFilme.duration && (
-                      <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <FaClock className="text-gray-500 mt-1" />
-                        <div>
-                          <h4 className="text-xs font-semibold uppercase text-gray-500">Duração</h4>
-                          <p className="text-sm">{selectedFilme.duration}</p>
+                      <div className={styles.infoCard}>
+                        <FaClock className={styles.infoCardIcon} />
+                        <div className={styles.infoCardContent}>
+                          <h4 className={styles.infoCardLabel}>Duração</h4>
+                          <p className={styles.infoCardValue}>{selectedFilme.duration}</p>
                         </div>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Coluna direita - conteúdo principal */}
-                <div className="w-full md:w-2/3 lg:w-3/4">
-                  {/* Sinopse com quebra de texto */}
-                  <div className="mb-6">
-                    <h3 className="text-lg sm:text-xl font-semibold mb-3">Sinopse</h3>
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed break-words">
-                      {selectedFilme.description}
-                    </p>
+                {/* Coluna direita */}
+                <div className={styles.rightColumnDetails}>
+                  {/* Sinopse */}
+                  <div className={styles.section}>
+                    <h3 className={styles.sectionTitle}>Sinopse</h3>
+                    <p className={styles.synopsis}>{selectedFilme.description}</p>
                   </div>
 
-                  {/* Ficha técnica com quebra de texto */}
-                  <div className="mb-6">
-                    <h3 className="text-lg sm:text-xl font-semibold mb-3">Ficha Técnica</h3>
-                    <div className="space-y-2">
-                      <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
-                        <strong className="w-full sm:w-32">Roteiro:</strong>
-                        <span className="flex-1 break-words">{selectedFilme.screenplay}</span>
+                  {/* Ficha Técnica */}
+                  <div className={styles.section}>
+                    <h3 className={styles.sectionTitle}>Ficha Técnica</h3>
+                    <div className={styles.technicalSheet}>
+                      <div className={styles.techRow}>
+                        <strong className={styles.techLabel}>Roteiro:</strong>
+                        <span className={styles.techValue}>{selectedFilme.screenplay}</span>
                       </div>
-                      <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
-                        <strong className="w-full sm:w-32">Elenco Principal:</strong>
-                        <span className="flex-1 break-words">{selectedFilme.cast}</span>
+                      <div className={styles.techRow}>
+                        <strong className={styles.techLabel}>Elenco Principal:</strong>
+                        <span className={styles.techValue}>{selectedFilme.cast}</span>
                       </div>
                       {selectedFilme.language && (
-                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
-                          <strong className="w-full sm:w-32">Idioma:</strong>
-                          <span className="flex-1">{selectedFilme.language}</span>
+                        <div className={styles.techRow}>
+                          <strong className={styles.techLabel}>Idioma:</strong>
+                          <span className={styles.techValue}>{selectedFilme.language}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Prêmios com wrap */}
+                  {/* Prêmios */}
                   {selectedFilme.awards && selectedFilme.awards.length > 0 && (
-                    <div className="mb-6">
-                      <h3 className="text-lg sm:text-xl font-semibold mb-3">Prêmios</h3>
-                      <div className="flex flex-wrap gap-2">
+                    <div className={styles.section}>
+                      <h3 className={styles.sectionTitle}>Prêmios</h3>
+                      <div className={styles.tagsContainer}>
                         {selectedFilme.awards.map((award: any, index: number) => (
-                          <div key={index} className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900 px-3 py-1 rounded-full text-sm">
-                            <FaAward className="text-yellow-600 dark:text-yellow-400" />
-                            <span>{award.name}</span>
+                          <div key={index} className={styles.awardItem}>
+                            <FaAward /> {award.name}
                           </div>
                         ))}
                       </div>
                     </div>
                   )}
 
-                  {/* Tags com wrap */}
+                  {/* Tags */}
                   {selectedFilme.tags && selectedFilme.tags.length > 0 && (
-                    <div className="mb-6">
-                      <h3 className="text-lg sm:text-xl font-semibold mb-3">Tags</h3>
-                      <div className="flex flex-wrap gap-2">
+                    <div className={styles.section}>
+                      <h3 className={styles.sectionTitle}>Tags</h3>
+                      <div className={styles.tagsContainer}>
                         {selectedFilme.tags.map((tag: any, index: number) => (
-                          <span key={index} className="bg-gray-200 dark:bg-gray-700 px-3 py-1 rounded-full text-sm">
+                          <span key={index} className={styles.tag}>
                             {tag.name}
                           </span>
                         ))}
@@ -984,134 +1123,128 @@ export default function Filmes() {
                     </div>
                   )}
 
-                  {/* Galeria de fotos responsiva - grid responsivo */}
-                  <div className="mb-6">
-                    <h3 className="text-lg sm:text-xl font-semibold mb-3">
-                      <FaImages className="inline mr-2" /> Galeria de Fotos
+                  {/* Galeria de Fotos */}
+                  <div className={styles.section}>
+                    <h3 className={styles.sectionTitle}>
+                      <FaImages className="inline" /> Galeria de Fotos
                     </h3>
                     
                     {selectedFilme.filmesFotos && selectedFilme.filmesFotos.length > 0 ? (
-                      // Grid responsivo: 2 colunas no mobile, 3 no tablet, 4 no desktop
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      <div className={styles.photosGrid}>
                         {selectedFilme.filmesFotos.slice(0, 8).map((foto: any) => (
                           <div 
                             key={foto.id} 
-                            className="relative cursor-pointer group"
+                            className={styles.photoItem}
                             onClick={() => navigateToFotos(selectedFilme.id, selectedFilme.title, foto.id)}
                           >
                             <img
                               src={foto.path}
                               alt={foto.titulo}
-                              className="w-full h-32 sm:h-40 object-cover rounded-lg transition-transform group-hover:scale-105"
+                              className={styles.photoImage}
                               onError={(e) => {
                                 e.currentTarget.src = PLACEHOLDER_IMAGE;
                               }}
                             />
                             {foto.principal && (
-                              <span className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 rounded">
-                                Principal
-                              </span>
+                              <span className={styles.photoBadge}>Principal</span>
                             )}
                           </div>
                         ))}
                         {selectedFilme.filmesFotos.length > 8 && (
                           <div 
-                            className="relative bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center cursor-pointer h-32 sm:h-40"
+                            className={styles.morePhotos}
                             onClick={() => navigateToFotos(selectedFilme.id, selectedFilme.title)}
                           >
-                            <div className="text-center">
-                              <FaImages className="text-2xl mx-auto mb-1" />
-                              <span className="text-sm font-semibold">
-                                +{selectedFilme.filmesFotos.length - 8}
-                              </span>
-                              <p className="text-xs">Ver todas</p>
+                            <div className={styles.morePhotosContent}>
+                              <FaImages className={styles.morePhotosIcon} />
+                              <span>+{selectedFilme.filmesFotos.length - 8}</span>
+                              <p>Ver todas</p>
                             </div>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="text-center p-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <FaImages className="text-4xl mx-auto mb-2 text-gray-400" />
-                        <p className="text-gray-600 dark:text-gray-400">Este filme ainda não possui fotos na galeria.</p>
+                      <div className={styles.emptyGallery}>
+                        <FaImages className={styles.emptyGalleryIcon} />
+                        <p>Este filme ainda não possui fotos na galeria.</p>
                         {isAdmin && (
                           <button 
-                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                            className={styles.adicionarFotosBtn}
                             onClick={() => openEditFilme(selectedFilme)}
                           >
-                            <FaPlus className="inline mr-2" /> Adicionar fotos
+                            <FaPlus /> Adicionar fotos
                           </button>
                         )}
                       </div>
                     )}
                   </div>
 
-                  {/* Botões de acesso - responsivos */}
+                  {/* Acessos */}
                   {selectedFilme.status === 'Realizado' && (
-                    <div className="mb-6">
-                      <h3 className="text-lg sm:text-xl font-semibold mb-3">Acessos Disponíveis</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className={styles.section}>
+                      <h3 className={styles.sectionTitle}>Acessos Disponíveis</h3>
+                      <div className={styles.accessGrid}>
                         {selectedFilme.materialsLink && (
                           <button
-                            className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                            className={styles.accessButton}
                             onClick={handleGoToMaterials}
                             disabled={loadingMaterials}
                           >
-                            <FaImages className="text-blue-500 text-xl" />
-                            <div className="flex-1">
-                              <div className="font-semibold text-sm">Materiais do Debate</div>
-                              <div className="text-xs text-gray-500">Fotos e documentos</div>
+                            <FaImages className={styles.accessButtonIcon} style={{ color: '#3b82f6' }} />
+                            <div className={styles.accessButtonContent}>
+                              <div className={styles.accessButtonTitle}>Materiais do Debate</div>
+                              <div className={styles.accessButtonSubtitle}>Fotos e documentos</div>
                             </div>
-                            {loadingMaterials && <FaSpinner className="animate-spin" />}
+                            {loadingMaterials && <FaSpinner className={styles.spinnerInline} />}
                           </button>
                         )}
 
                         <button
-                          className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                          className={styles.accessButton}
                           onClick={handleGoToCineMarPlaylist}
                           disabled={loadingPlaylist}
                         >
-                          <FaHeadphones className="text-green-500 text-xl" />
-                          <div className="flex-1">
-                            <div className="font-semibold text-sm">Playlist Oficial</div>
-                            <div className="text-xs text-gray-500">CineMar no Spotify</div>
+                          <FaHeadphones className={styles.accessButtonIcon} style={{ color: '#10b981' }} />
+                          <div className={styles.accessButtonContent}>
+                            <div className={styles.accessButtonTitle}>Playlist Oficial</div>
+                            <div className={styles.accessButtonSubtitle}>CineMar no Spotify</div>
                           </div>
-                          {loadingPlaylist && <FaSpinner className="animate-spin" />}
+                          {loadingPlaylist && <FaSpinner className={styles.spinnerInline} />}
                         </button>
 
                         {selectedFilme.playlistLink && (
                           <button
-                            className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                            className={styles.accessButton}
                             onClick={handleOpenExternalPlaylist}
                             disabled={loadingYouTube}
                           >
-                            <FaMusic className="text-purple-500 text-xl" />
-                            <div className="flex-1">
-                              <div className="font-semibold text-sm">Trilha Sonora</div>
-                              <div className="text-xs text-gray-500">YouTube Music</div>
+                            <FaMusic className={styles.accessButtonIcon} style={{ color: '#8b5cf6' }} />
+                            <div className={styles.accessButtonContent}>
+                              <div className={styles.accessButtonTitle}>Trilha Sonora</div>
+                              <div className={styles.accessButtonSubtitle}>YouTube Music</div>
                             </div>
-                            {loadingYouTube && <FaSpinner className="animate-spin" />}
-                            <FaExternalLinkAlt className="text-xs text-gray-400" />
+                            {loadingYouTube && <FaSpinner className={styles.spinnerInline} />}
+                            <FaExternalLinkAlt className={styles.externalIcon} />
                           </button>
                         )}
                       </div>
                     </div>
                   )}
 
-                  {/* Ações principais responsivas */}
-                  <div className="mt-6">
+                  {/* Ações */}
+                  <div className={styles.actionButtonsRow}>
                     {selectedFilme.status === 'Próximo' ? (
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <button className="flex-1 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors font-semibold" onClick={scheduleFilme}>
-                          <FaCalendarCheck className="inline mr-2" /> Adicionar à Agenda
+                      <>
+                        <button className={styles.primaryActionButton} onClick={scheduleFilme}>
+                          <FaCalendarCheck /> Adicionar à Agenda
                         </button>
-                        <button className="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors font-semibold" onClick={shareFilme}>
-                          <FaShareAlt className="inline mr-2" /> Compartilhar
+                        <button className={styles.secondaryActionButton} onClick={shareFilme}>
+                          <FaShareAlt /> Compartilhar
                         </button>
-                      </div>
+                      </>
                     ) : (
-                      <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                        <FaCalendarTimes className="inline mr-2 text-gray-500" />
-                        <span className="text-gray-600 dark:text-gray-400">Filme realizado em {selectedFilme.date}</span>
+                      <div className={styles.pastFilmNotice}>
+                        <FaCalendarTimes className="inline" /> Filme realizado em {selectedFilme.date}
                       </div>
                     )}
                   </div>
@@ -1119,24 +1252,26 @@ export default function Filmes() {
               </div>
             </div>
           ) : (
-            <div className="text-center p-8 sm:p-12 lg:p-16 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <FaFilm className="text-5xl mx-auto mb-4 text-gray-400" />
-              <h3 className="text-xl font-semibold mb-2">Nenhum filme selecionado</h3>
-              <p className="text-gray-600 dark:text-gray-400">Selecione um filme na lista ao lado</p>
+            <div className={styles.emptyState}>
+              <FaFilm className={styles.emptyStateIcon} />
+              <h3 className={styles.emptyStateTitle}>Nenhum filme selecionado</h3>
+              <p className={styles.emptyStateText}>Selecione um filme na lista ao lado</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* TOAST RESPONSIVO */}
+      {/* TOAST */}
       {toast && (
-        <div className={`${styles.toast} fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[90%] sm:w-auto sm:max-w-md z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg ${
-          toast.type === 'success' ? 'bg-green-500' : toast.type === 'error' ? 'bg-red-500' : 'bg-yellow-500'
-        } text-white`}>
+        <div className={`${styles.toastResponsive} ${
+          toast.type === 'success' ? styles.toastSuccess : 
+          toast.type === 'error' ? styles.toastError : 
+          styles.toastWarn
+        }`}>
           {toast.type === 'success' && <FaCalendarCheck />}
           {toast.type === 'error' && <FaExclamationTriangle />}
           {toast.type === 'warn' && <FaExclamationTriangle />}
-          <span className="text-sm sm:text-base break-words flex-1">{toast.msg}</span>
+          <span className={styles.toastMessage}>{toast.msg}</span>
         </div>
       )}
     </div>

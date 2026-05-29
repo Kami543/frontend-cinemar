@@ -1,4 +1,4 @@
-/* index.css - Versão Mobile-First Otimizada e Compatível */
+/* index.css - Versão Mobile-First Otimizada */
 
 /* Reset base com melhorias mobile */
 html, body {
@@ -17,7 +17,6 @@ html, body {
   /* Cores comuns */
   --primary-red: #dc2626;
   --primary-red-dark: #b91c1c;
-  --primary-red-light: #fca5a5;
   --white: #ffffff;
   --black: #000000;
   --gray-50: #f9fafb;
