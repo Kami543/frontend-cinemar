@@ -14,6 +14,7 @@ import styles from '../styles/Filmes.module.css';
 import { useTheme } from '../components/context/ThemeContext';
 import { useFilmes, type CreateFilmePayload, type UpdateFilmePayload } from '../hooks/useFilmes';
 import { getPlaceholderImage } from '../utils/imageUtils';
+import FilmesService from '../services/filmes.service';
 
 const PLACEHOLDER_IMAGE = getPlaceholderImage();
 
@@ -181,30 +182,23 @@ export default function Filmes() {
     window.open(url, '_blank');
   }, [selectedFilme]);
 
+  // ✅ FUNÇÃO CORRIGIDA - Usando FilmesService.updateCover
   const handleUpdateCover = async () => {
     if (!selectedFilme || !newCoverImage) return;
     setUploadingCover(true);
-    const formData = new FormData();
-    formData.append('coverImage', newCoverImage);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/api/filmes/${selectedFilme.id}/cover`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
-      });
-      if (response.ok) {
-        const updatedFilme = await response.json();
-        setSelectedFilme(updatedFilme);
-        refetch();
-        setShowCoverModal(false);
-        setNewCoverImage(null);
+      const updatedFilme = await FilmesService.updateCover(selectedFilme.id, newCoverImage);
+      setSelectedFilme(updatedFilme);
+      await refetch(); // Atualiza a lista de filmes
+      setShowCoverModal(false);
+      setNewCoverImage(null);
+      if (coverPreview) {
+        URL.revokeObjectURL(coverPreview);
         setCoverPreview(null);
-      } else {
-        console.error('Erro ao atualizar capa');
       }
     } catch (error) {
       console.error('Erro ao atualizar capa:', error);
+      alert('Erro ao atualizar capa. Verifique se você está logado como admin.');
     } finally {
       setUploadingCover(false);
     }

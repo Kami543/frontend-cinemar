@@ -312,6 +312,76 @@ const FilmesService = {
     const { data } = await api.delete<{ message: string }>(`/filmes/${id}`);
     return data;
   },
+
+  // 🆕 Atualizar apenas a capa do filme
+  async updateCover(id: string, coverFile: File): Promise<Filme> {
+    // Primeiro, buscar o filme atual para preservar todos os dados
+    const currentMovie = await this.findById(id);
+    
+    // Preparar o payload mantendo todos os campos existentes
+    const payload: UpdateFilmePayload = {
+      title: currentMovie.title,
+      director: currentMovie.director,
+      year: currentMovie.year,
+      date: currentMovie.date,
+      description: currentMovie.description,
+      screenplay: currentMovie.screenplay,
+      cast: currentMovie.cast,
+      genre: currentMovie.genre,
+      duration: currentMovie.duration,
+      language: currentMovie.language,
+      materialsLink: currentMovie.materialsLink,
+      playlistLink: currentMovie.playlistLink,
+      playlistId: currentMovie.playlistId,
+      // Manter prêmios e tags existentes
+      awardsNames: currentMovie.awards?.map(a => a.name),
+      tagNames: currentMovie.tags?.map(t => t.name),
+      // Adicionar a nova foto como principal (capa)
+      adicionarFotos: [{ 
+        principal: true,  // Marca como foto principal/capa
+        tipo: 'cover',
+        titulo: 'Capa do Filme'
+      }]
+    };
+    
+    // Fazer o upload da nova capa
+    return this.update(id, payload, [coverFile]);
+  },
+
+  // 🆕 Atualizar capa e deletar a anterior (opcional - mais avançado)
+  async updateCoverAndDeleteOld(id: string, coverFile: File): Promise<Filme> {
+    const currentMovie = await this.findById(id);
+    
+    // Encontrar a foto principal atual (capa)
+    const currentCover = currentMovie.filmesFotos?.find(foto => foto.principal === true);
+    
+    const payload: UpdateFilmePayload = {
+      title: currentMovie.title,
+      director: currentMovie.director,
+      year: currentMovie.year,
+      date: currentMovie.date,
+      description: currentMovie.description,
+      screenplay: currentMovie.screenplay,
+      cast: currentMovie.cast,
+      genre: currentMovie.genre,
+      duration: currentMovie.duration,
+      language: currentMovie.language,
+      materialsLink: currentMovie.materialsLink,
+      playlistLink: currentMovie.playlistLink,
+      playlistId: currentMovie.playlistId,
+      awardsNames: currentMovie.awards?.map(a => a.name),
+      tagNames: currentMovie.tags?.map(t => t.name),
+      adicionarFotos: [{ principal: true, tipo: 'cover' }]
+    };
+    
+    // Se existe uma capa atual, marcar para deletar
+    if (currentCover) {
+      payload.deletarFotosIds = [currentCover.id];
+      console.log(`🗑️ Capa antiga (${currentCover.id}) será deletada`);
+    }
+    
+    return this.update(id, payload, [coverFile]);
+  },
 };
 
 export default FilmesService;
