@@ -181,7 +181,6 @@ export default function Filmes() {
     window.open(url, '_blank');
   }, [selectedFilme]);
 
-  // Atualizar capa — usa API_BASE em vez de URL hardcoded
   const handleUpdateCover = async () => {
     if (!selectedFilme || !newCoverImage) return;
     setUploadingCover(true);
@@ -219,7 +218,6 @@ export default function Filmes() {
     }
   };
 
-  // CRUD
   const handleAddFilme = async () => {
     if (!filmeForm.title || !filmeForm.director || !filmeForm.date) return;
     setUploading(true);
@@ -319,7 +317,6 @@ export default function Filmes() {
 
   const clearAllFilters = () => { setSearchTerm(''); setActiveFilter('all'); resetFilters(); };
 
-  // Resolve URL de imagem do filme usando buildMediaUrl
   const getFilmeImageUrl = (filme: any): string => {
     if (imageErrors[filme.id]) return PLACEHOLDER_IMAGE;
     if (filme.imageUrl) return buildMediaUrl(filme.imageUrl) ?? PLACEHOLDER_IMAGE;
@@ -492,20 +489,23 @@ export default function Filmes() {
                       </div>
                     </div>
 
+                    {/* TÍTULO - CORRIGIDO: sem uppercase, com quebra de palavra */}
                     <div className={styles.listItemTitle}>{filme.title}</div>
 
+                    {/* META - CORRIGIDO: ano e diretor com quebra adequada */}
                     <div className={styles.listItemMeta}>
                       <span className={styles.listItemYear}>{filme.year}</span>
                       <span className={styles.listItemDirector}>
-                        <FaUser aria-hidden="true" /> {filme.director.split(' e ')[0]}
+                        <FaUser aria-hidden="true" /> {filme.director}
                       </span>
                     </div>
 
+                    {/* FOOTER - CORRIGIDO: data e status */}
                     <div className={styles.listItemFooter}>
                       <div className={styles.listItemDate}>
                         <FaCalendarAlt aria-hidden="true" /> {filme.date.split(',')[0]}
                       </div>
-                      <span className={`${styles.filmeStatus} ${styles[filme.status.toLowerCase() as keyof typeof styles] || ''}`}>
+                      <span className={`${styles.filmeStatus} ${styles[filme.status.toLowerCase()] || ''}`}>
                         {filme.status}
                       </span>
                     </div>
@@ -622,10 +622,7 @@ export default function Filmes() {
                 </div>
               </div>
 
-              {/* Conteúdo — sem scroll interno */}
               <div className={styles.detailsMainContent}>
-
-                {/* Coluna Esquerda */}
                 <div className={styles.leftColumn}>
                   <div className={styles.posterContainer}>
                     <img
@@ -635,7 +632,7 @@ export default function Filmes() {
                       onError={() => handleImageError(selectedFilme.id)}
                     />
                     <div className={styles.filmeStatusBadge}>
-                      <span className={`${styles.statusBadge} ${styles[selectedFilme.status.toLowerCase() as keyof typeof styles] || ''}`}>
+                      <span className={`${styles.statusBadge} ${styles[selectedFilme.status.toLowerCase()] || ''}`}>
                         {selectedFilme.status === 'Próximo' ? 'Em Breve' : 'Exibido'}
                       </span>
                     </div>
@@ -668,7 +665,6 @@ export default function Filmes() {
                   </div>
                 </div>
 
-                {/* Coluna Direita — flui com a página, sem scroll próprio */}
                 <div className={styles.rightColumn}>
                   <div className={styles.synopsisSection}>
                     <h3 className={styles.sectionTitle}>Sinopse</h3>
@@ -720,7 +716,6 @@ export default function Filmes() {
                     </div>
                   )}
 
-                  {/* Galeria — usa buildMediaUrl em cada foto */}
                   {selectedFilme.filmesFotos?.length > 0 && (
                     <div className={styles.fotosSection}>
                       <div className={styles.fotosSectionHeader}>
@@ -830,7 +825,6 @@ export default function Filmes() {
         </div>
       </div>
 
-      {/* BOTÃO FLUTUANTE */}
       {isAdmin && (
         <button
           className={styles.floatingAddBtn}
@@ -842,7 +836,6 @@ export default function Filmes() {
         </button>
       )}
 
-      {/* MODAL — EDITAR CAPA */}
       {showCoverModal && (
         <div className={styles.modalOverlay} onClick={e => { if (e.target === e.currentTarget) { setShowCoverModal(false); setNewCoverImage(null); setCoverPreview(null); }}}>
           <div className={styles.modalContent}>
@@ -882,7 +875,6 @@ export default function Filmes() {
         </div>
       )}
 
-      {/* FORMULÁRIO */}
       {showFilmeForm && isAdmin && (
         <div className={styles.formOverlay} onClick={e => { if (e.target === e.currentTarget) { setShowFilmeForm(false); resetFilmeForm(); }}}>
           <div className={styles.formContainer}>
@@ -1032,7 +1024,6 @@ export default function Filmes() {
         </div>
       )}
 
-      {/* TOAST */}
       {toast && (
         <div className={`${styles.toast} ${
           toast.type === 'success' ? styles.toast_success :
