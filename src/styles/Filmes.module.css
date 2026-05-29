@@ -3005,3 +3005,204 @@
     font-size: 0.7rem;
   }
 }
+/* ===== SCROLLBAR PERSONALIZADA ===== */
+.filmeList::-webkit-scrollbar,
+.formContainer::-webkit-scrollbar,
+.detailsMainContent::-webkit-scrollbar,
+.fileList::-webkit-scrollbar,
+.rightColumn::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.filmeList::-webkit-scrollbar-track,
+.formContainer::-webkit-scrollbar-track,
+.detailsMainContent::-webkit-scrollbar-track,
+.fileList::-webkit-scrollbar-track,
+.rightColumn::-webkit-scrollbar-track {
+  background: var(--gray-200);
+  border-radius: 10px;
+}
+
+.filmesContainer.dark .filmeList::-webkit-scrollbar-track,
+.filmesContainer.dark .formContainer::-webkit-scrollbar-track,
+.filmesContainer.dark .detailsMainContent::-webkit-scrollbar-track,
+.filmesContainer.dark .fileList::-webkit-scrollbar-track,
+.filmesContainer.dark .rightColumn::-webkit-scrollbar-track {
+  background: var(--dark-border);
+}
+
+.filmeList::-webkit-scrollbar-thumb,
+.formContainer::-webkit-scrollbar-thumb,
+.detailsMainContent::-webkit-scrollbar-thumb,
+.fileList::-webkit-scrollbar-thumb,
+.rightColumn::-webkit-scrollbar-thumb {
+  background: var(--primary-red);
+  border-radius: 10px;
+}
+
+.filmeList::-webkit-scrollbar-thumb:hover,
+.formContainer::-webkit-scrollbar-thumb:hover,
+.detailsMainContent::-webkit-scrollbar-thumb:hover,
+.fileList::-webkit-scrollbar-thumb:hover,
+.rightColumn::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-red-dark);
+}
+
+/* Limitar altura das áreas com scroll para evitar página sem conteúdo */
+.filmeList {
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.rightColumn {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+.detailsMainContent {
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+}
+
+/* ===== BOTÃO EDITAR CAPA ===== */
+.editCoverBtn {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+.posterContainer {
+  position: relative;
+  overflow: hidden;
+}
+
+.posterContainer:hover .editCoverBtn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.editCoverBtn:hover {
+  background: var(--primary-red);
+}
+
+/* ===== MODAL DE CAPA ===== */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+.filmesContainer.dark .modalContent {
+  background: var(--dark-card);
+  border: 1px solid var(--dark-border);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--gray-50);
+  border-radius: 20px 20px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.filmesContainer.dark .modalHeader {
+  background: var(--dark-bg);
+  border-bottom-color: var(--dark-border);
+}
+
+.modalHeader h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.modalBody {
+  padding: 1.5rem;
+}
+
+.modalFooter {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--gray-200);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: var(--gray-50);
+  border-radius: 0 0 20px 20px;
+}
+
+.filmesContainer.dark .modalFooter {
+  background: var(--dark-bg);
+  border-top-color: var(--dark-border);
+}
+
+/* Preview da imagem no modal */
+.imagePreviewContainer {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.imagePreviewModal {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* Responsividade da scrollbar */
+@media (max-width: 768px) {
+  .filmeList {
+    max-height: 400px;
+  }
+  
+  .rightColumn {
+    max-height: 500px;
+  }
+  
+  .detailsMainContent {
+    max-height: none;
+  }
+}

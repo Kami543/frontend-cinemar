@@ -29,6 +29,9 @@ export interface RegisterPayload {
 
 const AuthService = {
   async login(payload: LoginPayload): Promise<AuthResponse> {
+    // Primeiro, limpa tokens antigos antes do login
+    clearTokens();
+    
     const { data } = await api.post<AuthResponse>('/auth/login', payload);
     saveTokens(data.accessToken, data.refreshToken);
     localStorage.setItem('cinemar_user', JSON.stringify(data.user));
@@ -36,6 +39,9 @@ const AuthService = {
   },
 
   async register(payload: RegisterPayload): Promise<AuthResponse> {
+    // Limpa qualquer token existente antes do registro
+    clearTokens();
+    
     const { data } = await api.post<AuthResponse>('/auth/register', payload);
     saveTokens(data.accessToken, data.refreshToken);
     localStorage.setItem('cinemar_user', JSON.stringify(data.user));

@@ -37,6 +37,7 @@ import {
   FaUpload,
   FaImage,
   FaArrowRight,
+  FaCamera,
 } from 'react-icons/fa';
 import styles from '../styles/Filmes.module.css';
 import { useTheme } from '../components/context/ThemeContext';
@@ -70,9 +71,12 @@ export default function Filmes() {
   const [editingFilme, setEditingFilme] = useState<any>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  
+  // Estados para o modal de capa
   const [showCoverModal, setShowCoverModal] = useState(false);
   const [newCoverImage, setNewCoverImage] = useState<File | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
   const [filmeForm, setFilmeForm] = useState<Partial<CreateFilmePayload>>({
     title: '',
@@ -241,7 +245,7 @@ export default function Filmes() {
     window.open(googleCalendarUrl, '_blank');
   }, [selectedFilme]);
 
-  // Atualizar capa do filme
+  // FUNÇÃO PARA ATUALIZAR A CAPA DO FILME
   const handleUpdateCover = async () => {
     if (!selectedFilme || !newCoverImage) return;
     
@@ -262,14 +266,30 @@ export default function Filmes() {
       if (response.ok) {
         const updatedFilme = await response.json();
         setSelectedFilme(updatedFilme);
+        // Atualizar a lista de filmes
         refetch();
         setShowCoverModal(false);
         setNewCoverImage(null);
+        setCoverPreview(null);
+        // Mostrar toast de sucesso (opcional)
+      } else {
+        console.error('Erro ao atualizar capa');
       }
     } catch (error) {
       console.error('Erro ao atualizar capa:', error);
     } finally {
       setUploadingCover(false);
+    }
+  };
+
+  // Função para selecionar nova capa
+  const handleCoverFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setNewCoverImage(file);
+      // Criar preview
+      const previewUrl = URL.createObjectURL(file);
+      setCoverPreview(previewUrl);
     }
   };
 
@@ -784,6 +804,16 @@ export default function Filmes() {
                         {selectedFilme.status === 'Próximo' ? 'EM BREVE' : 'EXIBIDO'}
                       </span>
                     </div>
+                    {/* BOTÃO PARA EDITAR CAPA */}
+                    {isAdmin && (
+                      <button
+                        className={styles.editCoverBtn}
+                        onClick={() => setShowCoverModal(true)}
+                        title="Alterar foto de capa"
+                      >
+                        <FaCamera /> Alterar Capa
+                      </button>
+                    )}
                   </div>
 
                   <div className={styles.quickInfo}>
@@ -1016,38 +1046,50 @@ export default function Filmes() {
 
       {/* MODAL PARA EDITAR CAPA */}
       {showCoverModal && (
-        <div className={styles.formOverlay}>
-          <div className={styles.formContainer}>
-            <div className={styles.formHeader}>
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
               <h3>Alterar Foto de Capa</h3>
-              <button onClick={() => setShowCoverModal(false)} className={styles.formClose}>
+              <button 
+                onClick={() => {
+                  setShowCoverModal(false);
+                  setNewCoverImage(null);
+                  setCoverPreview(null);
+                }} 
+                className={styles.formClose}
+              >
                 <FaTimes />
               </button>
             </div>
-            <div className={styles.formBody}>
+            <div className={styles.modalBody}>
               <div className={styles.formGroup}>
                 <label>Selecione uma nova imagem para a capa</label>
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => {
-                    if (e.target.files?.[0]) {
-                      setNewCoverImage(e.target.files[0]);
-                    }
-                  }}
+                  onChange={handleCoverFileSelect}
                 />
-                {newCoverImage && (
-                  <div className={styles.imagePreview}>
-                    <img
-                      src={URL.createObjectURL(newCoverImage)}
-                      alt="Preview"
+                {coverPreview && (
+                  <div className={styles.imagePreviewContainer}>
+                    <img 
+                      src={coverPreview} 
+                      alt="Preview da nova capa" 
+                      className={styles.imagePreviewModal}
                     />
+                    <small>Prévia da nova imagem</small>
                   </div>
                 )}
               </div>
             </div>
-            <div className={styles.formFooter}>
-              <button onClick={() => setShowCoverModal(false)} className={styles.cancelBtn}>
+            <div className={styles.modalFooter}>
+              <button 
+                onClick={() => {
+                  setShowCoverModal(false);
+                  setNewCoverImage(null);
+                  setCoverPreview(null);
+                }} 
+                className={styles.cancelBtn}
+              >
                 Cancelar
               </button>
               <button 
