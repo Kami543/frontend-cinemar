@@ -23,7 +23,7 @@ export interface LoginPayload {
 
 export interface RegisterPayload {
   email: string;
-  nome: string;
+  nome: string;  // frontend usa 'nome'
   password: string;
 }
 
@@ -42,12 +42,14 @@ const AuthService = {
     // Limpa qualquer token existente antes do registro
     clearTokens();
     
-    // ✅ Converte 'nome' para 'name' que o backend espera
+    // ✅ Converte 'nome' para 'name' (campo que o backend espera)
     const backendPayload = {
       email: payload.email,
       name: payload.nome,  // ← conversão: nome -> name
       password: payload.password,
     };
+    
+    console.log('📝 Registrando usuário:', { email: payload.email, name: payload.nome });
     
     const { data } = await api.post<AuthResponse>('/auth/register', backendPayload);
     saveTokens(data.accessToken, data.refreshToken);
