@@ -20,6 +20,8 @@ import About     from './pages/About';
 import Podcasts  from './pages/Podcasts';
 import Members   from './pages/Members';
 import Location  from './pages/Location';
+import termos-de-uso  from './pages/TermosDeUso';
+
 
 // Páginas de autenticação
 import Login    from './pages/Login';
@@ -65,6 +67,7 @@ function AppContent() {
           <Route path="/members"    element={<Members />} />
           <Route path="/login"      element={<Login />} />
           <Route path="/register"   element={<Register />} />
+          <Route path="/termos-de-uso" element={<TermosDeUso />} />
           <Route path="*" element={
             <div style={{ padding: '2rem', textAlign: 'center' }}>
               <h2>404 - Página não encontrada</h2>
