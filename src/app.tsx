@@ -1,5 +1,7 @@
+// frontend/src/App.tsx
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
+import { FaSpinner } from 'react-icons/fa';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import { ThemeProvider } from './components/context/ThemeContext';
@@ -29,15 +31,17 @@ const AUTH_ROUTES = ['/login', '/register'];
 // Componente interno que usa useLocation
 function AppContent() {
   const location = useLocation();
-  const { user, isLoading } = useAuth();
+  const { isLoading } = useAuth();
   const isAuthRoute = AUTH_ROUTES.includes(location.pathname);
   
-  // Mostrar loading enquanto verifica autenticação
+  // ✅ LOADING CORRIGIDO - igual ao estilo do Filmes.module.css
   if (isLoading) {
     return (
-      <div className="app-loading">
-        <div className="loading-spinner"></div>
-        <p>Carregando...</p>
+      <div className="app-loading-container">
+        <div className="app-loading-spinner">
+          <FaSpinner className="spinner-icon" />
+        </div>
+        <p className="app-loading-text">Carregando...</p>
       </div>
     );
   }
