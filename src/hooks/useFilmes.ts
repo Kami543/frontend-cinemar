@@ -36,6 +36,7 @@ export function parseFilmeDate(dateStr: string): Date {
 }
 
 export interface FilmeComStatus extends Filme {
+  numero?: number;
   status: 'Realizado' | 'Próximo';
   highlight: boolean;
   views?: number;
@@ -87,6 +88,7 @@ const processFilmeImages = (filme: Filme): FilmeComStatus => {
   
   return {
     ...filme,
+    numero: filme.numero ?? 0,
     imageUrl,
     filmesFotos,
     status,

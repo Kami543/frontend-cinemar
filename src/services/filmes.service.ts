@@ -16,8 +16,10 @@ export interface FilmeFoto {
   createdAt: string;
 }
 
+
 export interface Filme {
   id: string;
+  numero?: number; // 👈 ADICIONAR ESTA LINHA
   title: string;
   director: string;
   year: number;
