@@ -97,7 +97,6 @@ export function useMembers(initialQuery?: MembersQuery) {
       
       const membersData = membersRes.data || [];
       
-      // Processar fotos de cada membro com tratamento de erro
       const processedMembers = membersData.map(member => {
         try {
           return processMemberPhoto(member);
@@ -191,6 +190,7 @@ export function useMembers(initialQuery?: MembersQuery) {
     }
   }, [fetchMembers, showToast]);
 
+  // ✅ FUNÇÃO CORRIGIDA PARA UPLOAD DE FOTO
   const uploadFoto = useCallback(async (id: string, file: File) => {
     try {
       console.log('📸 Iniciando upload da foto para membro:', id);
@@ -228,6 +228,8 @@ export function useMembers(initialQuery?: MembersQuery) {
       
       if (err.response?.status === 400) {
         errorMsg = 'Formato de arquivo inválido ou arquivo muito grande.';
+      } else if (err.response?.status === 413) {
+        errorMsg = 'Arquivo muito grande. Máximo permitido: 5MB.';
       } else if (err.response?.data?.message) {
         errorMsg = err.response.data.message;
       }

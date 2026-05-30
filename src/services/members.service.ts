@@ -119,6 +119,7 @@ const MembersService = {
   async create(payload: CreateMemberPayload, files?: File[]): Promise<Member> {
     if (files && files.length > 0) {
       const formData = new FormData();
+      // Envia os dados como JSON string
       formData.append('data', JSON.stringify(payload));
       files.forEach(file => {
         formData.append('fotos', file);
@@ -158,11 +159,12 @@ const MembersService = {
     }
   },
 
+  // ✅ CORRIGIDO: Upload de foto
   async uploadFoto(id: string, file: File): Promise<Member> {
     const formData = new FormData();
     formData.append('foto', file);
     
-    const response = await api.post(`/members/${id}/foto`, formData, {
+    const response = await api.patch(`/members/${id}/foto`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 120000
     });
