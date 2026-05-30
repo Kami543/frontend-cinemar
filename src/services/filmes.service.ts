@@ -304,22 +304,25 @@ const FilmesService = {
     return data;
   },
 
-  // 🆕 Atualizar capa do filme (usando addFotos)
+  // 🆕 Atualizar capa do filme (CORRIGIDO)
   async updateCover(id: string, coverFile: File): Promise<Filme> {
     try {
-      // Adiciona a foto como principal usando o endpoint específico
-      const updatedMovie = await this.addFotos(id, [coverFile], [{ 
+      // Adiciona a foto como principal
+      await this.addFotos(id, [coverFile], [{ 
         principal: true,
         tipo: 'cover',
         titulo: 'Capa do Filme'
       }]);
       
-      return updatedMovie;
+      // Busca o filme atualizado novamente para garantir dados frescos
+      const freshMovie = await this.findById(id);
+      
+      return freshMovie;
     } catch (error) {
       console.error('Erro ao atualizar capa:', error);
       throw error;
     }
   },
-}; // ✅ FECHA O OBJETO FilmesService CORRETAMENTE
+};
 
 export default FilmesService;

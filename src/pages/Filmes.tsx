@@ -59,6 +59,9 @@ export default function Filmes() {
   const [newCoverImage,   setNewCoverImage]   = useState<File | null>(null);
   const [uploadingCover,  setUploadingCover]  = useState(false);
   const [coverPreview,    setCoverPreview]    = useState<string | null>(null);
+  
+  // ✅ Força re-render da imagem
+  const [imageKey, setImageKey] = useState(0);
 
   const [filmeForm, setFilmeForm] = useState<Partial<CreateFilmePayload>>({
     title: '', director: '', year: new Date().getFullYear(), date: '',
@@ -188,8 +191,19 @@ export default function Filmes() {
     setUploadingCover(true);
     try {
       const updatedFilme = await FilmesService.updateCover(selectedFilme.id, newCoverImage);
+      
+      // Força a atualização
       setSelectedFilme(updatedFilme);
-      await refetch(); // Atualiza a lista de filmes
+      
+      // Limpa o cache da imagem antiga
+      setImageErrors(prev => ({ ...prev, [selectedFilme.id]: false }));
+      
+      // Força re-render da imagem
+      setImageKey(prev => prev + 1);
+      
+      // Aguarda a refetch
+      await refetch();
+      
       setShowCoverModal(false);
       setNewCoverImage(null);
       if (coverPreview) {
@@ -210,6 +224,46 @@ export default function Filmes() {
       setNewCoverImage(file);
       setCoverPreview(URL.createObjectURL(file));
     }
+  };
+
+  // ✅ FUNÇÃO CORRIGIDA - Prioriza foto principal
+  const getFilmeImageUrl = (filme: any): string => {
+    if (!filme) return PLACEHOLDER_IMAGE;
+    if (imageErrors[filme.id]) return PLACEHOLDER_IMAGE;
+    
+    let url = PLACEHOLDER_IMAGE;
+    
+    // Primeiro, tenta pegar a foto principal (capa)
+    if (filme.filmesFotos?.length > 0) {
+      const principal = filme.filmesFotos.find((f: any) => f.principal === true);
+      if (principal && principal.path) {
+        url = buildMediaUrl(principal.path) ?? PLACEHOLDER_IMAGE;
+      } else {
+        const primeiraFoto = filme.filmesFotos[0];
+        if (primeiraFoto && primeiraFoto.path) {
+          url = buildMediaUrl(primeiraFoto.path) ?? PLACEHOLDER_IMAGE;
+        }
+      }
+    }
+    
+    // Se não tem foto, tenta imageUrl
+    if (url === PLACEHOLDER_IMAGE && filme.imageUrl) {
+      url = buildMediaUrl(filme.imageUrl) ?? PLACEHOLDER_IMAGE;
+    }
+    
+    // Adiciona timestamp para quebrar cache
+    if (url !== PLACEHOLDER_IMAGE && url.includes('http')) {
+      const separator = url.includes('?') ? '&' : '?';
+      url = `${url}${separator}t=${Date.now()}`;
+    }
+    
+    return url;
+  };
+
+  // ✅ Função auxiliar para status seguro
+  const getStatusClass = (status: string | undefined): string => {
+    if (!status) return '';
+    return styles[status.toLowerCase()] || '';
   };
 
   const handleAddFilme = async () => {
@@ -310,16 +364,6 @@ export default function Filmes() {
   };
 
   const clearAllFilters = () => { setSearchTerm(''); setActiveFilter('all'); resetFilters(); };
-
-  const getFilmeImageUrl = (filme: any): string => {
-    if (imageErrors[filme.id]) return PLACEHOLDER_IMAGE;
-    if (filme.imageUrl) return buildMediaUrl(filme.imageUrl) ?? PLACEHOLDER_IMAGE;
-    if (filme.filmesFotos?.length > 0) {
-      const principal = filme.filmesFotos.find((f: any) => f.principal) || filme.filmesFotos[0];
-      return buildMediaUrl(principal.path) ?? PLACEHOLDER_IMAGE;
-    }
-    return PLACEHOLDER_IMAGE;
-  };
 
   if (isLoading && filmesBackend.length === 0) {
     return (
@@ -492,13 +536,13 @@ export default function Filmes() {
                       </span>
                     </div>
 
-                    {/* ✅ CORRIGIDO: Adicionado ?. e fallback */}
+                    {/* ✅ CORRIGIDO: usando getStatusClass */}
                     <div className={styles.listItemFooter}>
                       <div className={styles.listItemDate}>
                         <FaCalendarAlt aria-hidden="true" /> {filme.date.split(',')[0]}
                       </div>
-                      <span className={`${styles.filmeStatus} ${styles[filme.status?.toLowerCase() || ''] || ''}`}>
-                        {filme.status}
+                      <span className={`${styles.filmeStatus} ${getStatusClass(filme.status)}`}>
+                        {filme.status || 'Próximo'}
                       </span>
                     </div>
                   </div>
@@ -617,15 +661,17 @@ export default function Filmes() {
               <div className={styles.detailsMainContent}>
                 <div className={styles.leftColumn}>
                   <div className={styles.posterContainer}>
+                    {/* ✅ IMAGEM COM KEY PARA FORÇAR RE-RENDER */}
                     <img
+                      key={imageKey}
                       src={getFilmeImageUrl(selectedFilme)}
                       alt={selectedFilme.title}
                       className={styles.posterImage}
                       onError={() => handleImageError(selectedFilme.id)}
                     />
                     <div className={styles.filmeStatusBadge}>
-                      {/* ✅ CORRIGIDO: Adicionado ?. e fallback */}
-                      <span className={`${styles.statusBadge} ${styles[selectedFilme.status?.toLowerCase() || 'próximo'] || ''}`}>
+                      {/* ✅ CORRIGIDO: usando getStatusClass */}
+                      <span className={`${styles.statusBadge} ${getStatusClass(selectedFilme.status) || styles.próximo}`}>
                         {selectedFilme.status === 'Próximo' ? 'Em Breve' : 'Exibido'}
                       </span>
                     </div>
