@@ -16,10 +16,9 @@ export interface FilmeFoto {
   createdAt: string;
 }
 
-
 export interface Filme {
   id: string;
-  numero?: number; // 👈 ADICIONAR ESTA LINHA
+  numero?: number;
   title: string;
   director: string;
   year: number;
@@ -88,6 +87,7 @@ export interface CreateFilmePayload {
   playlistId?: string;
   awardsNames?: string[];
   tagNames?: string[];
+  fotos?: FilmeFotoMetadata[];
 }
 
 export interface UpdateFilmePayload {
@@ -155,7 +155,6 @@ const FilmesService = {
   // Listar todos os filmes
   async findAll(query?: FilmesQuery, retryCount = 0): Promise<PaginatedFilmes> {
     try {
-      // Primeira requisição? Acorda o backend
       if (retryCount === 0) {
         await ensureBackendIsAwake();
       }
@@ -163,10 +162,8 @@ const FilmesService = {
       const { data } = await api.get<PaginatedFilmes>('/filmes', { params: query });
       return processPaginatedFilmes(data);
     } catch (error: any) {
-      // Se for timeout e ainda tem tentativas, tenta de novo
       if (error.code === 'ECONNABORTED' && retryCount < 2) {
         console.log(`⏱️ Timeout na requisição, tentando novamente... (${retryCount + 1}/2)`);
-        // Espera 2 segundos e tenta de novo
         await new Promise(resolve => setTimeout(resolve, 2000));
         return this.findAll(query, retryCount + 1);
       }
@@ -197,11 +194,9 @@ const FilmesService = {
     if (files && files.length > 0) {
       const formData = new FormData();
       
-      // Adicionar campos diretamente, não como JSON string
       Object.entries(payload).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           if (Array.isArray(value)) {
-            // Para arrays, enviar como JSON string
             formData.append(key, JSON.stringify(value));
           } else {
             formData.append(key, String(value));
@@ -209,7 +204,6 @@ const FilmesService = {
         }
       });
       
-      // Adicionar arquivos
       files.forEach((file) => {
         formData.append('fotos', file);
       });
@@ -218,11 +212,10 @@ const FilmesService = {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        timeout: 120000, // 2 minutos para upload de fotos
+        timeout: 120000,
       });
       return processFilmeImage(data);
     } else {
-      // Sem upload de arquivos
       const { data } = await api.post<Filme>('/filmes', payload);
       return processFilmeImage(data);
     }
@@ -233,7 +226,6 @@ const FilmesService = {
     if (files && files.length > 0) {
       const formData = new FormData();
       
-      // Adicionar campos diretamente
       Object.entries(payload).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           if (Array.isArray(value)) {
@@ -246,7 +238,6 @@ const FilmesService = {
         }
       });
       
-      // Adicionar arquivos
       files.forEach((file) => {
         formData.append('adicionarFotos', file);
       });
@@ -255,11 +246,10 @@ const FilmesService = {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        timeout: 120000, // 2 minutos para upload de fotos
+        timeout: 120000,
       });
       return processFilmeImage(data);
     } else {
-      // Sem upload de arquivos
       const { data } = await api.patch<Filme>(`/filmes/${id}`, payload);
       return processFilmeImage(data);
     }
@@ -269,7 +259,6 @@ const FilmesService = {
   async addFotos(id: string, files: File[], fotosMetadata: FilmeFotoMetadata[]): Promise<Filme> {
     const formData = new FormData();
     
-    // Adicionar metadados como campos individuais
     fotosMetadata.forEach((metadata, index) => {
       if (metadata.titulo) formData.append(`fotosMetadata[${index}][titulo]`, metadata.titulo);
       if (metadata.descricao) formData.append(`fotosMetadata[${index}][descricao]`, metadata.descricao);
@@ -315,81 +304,22 @@ const FilmesService = {
     return data;
   },
 
-  // 🆕 Atualizar apenas a capa do filme
+  // 🆕 Atualizar capa do filme (usando addFotos)
   async updateCover(id: string, coverFile: File): Promise<Filme> {
-    // 1. Buscar o filme atual
-    const currentMovie = await this.findById(id);
-    
-    // 2. Preparar payload SEM o campo adicionarFotos (apenas dados do filme)
-    const payload: UpdateFilmePayload = {
-      title: currentMovie.title,
-      director: currentMovie.director,
-      year: currentMovie.year,
-      date: currentMovie.date,
-      description: currentMovie.description,
-      screenplay: currentMovie.screenplay,
-      cast: currentMovie.cast,
-      genre: currentMovie.genre,
-      duration: currentMovie.duration,
-      language: currentMovie.language,
-      materialsLink: currentMovie.materialsLink,
-      playlistLink: currentMovie.playlistLink,
-      playlistId: currentMovie.playlistId,
-      awardsNames: currentMovie.awards?.map(a => a.name),
-      tagNames: currentMovie.tags?.map(t => t.name),
-      // ❌ NÃO incluir adicionarFotos aqui
-    };
-    
-    // 3. Enviar apenas o arquivo (sem metadata)
-    const updatedMovie = await this.update(id, payload, [coverFile]);
-    
-    // 4. A nova foto foi adicionada, mas ainda não é a principal.
-    //    Encontrar a foto recém-adicionada (a última da lista)
-    const novaFoto = updatedMovie.filmesFotos?.[updatedMovie.filmesFotos.length - 1];
-    if (novaFoto) {
-      // 5. Definir essa foto como principal
-      await this.setFotoPrincipal(id, novaFoto.id);
-      // 6. Buscar o filme atualizado novamente
-      return this.findById(id);
+    try {
+      // Adiciona a foto como principal usando o endpoint específico
+      const updatedMovie = await this.addFotos(id, [coverFile], [{ 
+        principal: true,
+        tipo: 'cover',
+        titulo: 'Capa do Filme'
+      }]);
+      
+      return updatedMovie;
+    } catch (error) {
+      console.error('Erro ao atualizar capa:', error);
+      throw error;
     }
-    
-    return updatedMovie;
-  }
-
-  // 🆕 Atualizar capa e deletar a anterior (opcional - mais avançado)
-  async updateCoverAndDeleteOld(id: string, coverFile: File): Promise<Filme> {
-    const currentMovie = await this.findById(id);
-    
-    // Encontrar a foto principal atual (capa)
-    const currentCover = currentMovie.filmesFotos?.find(foto => foto.principal === true);
-    
-    const payload: UpdateFilmePayload = {
-      title: currentMovie.title,
-      director: currentMovie.director,
-      year: currentMovie.year,
-      date: currentMovie.date,
-      description: currentMovie.description,
-      screenplay: currentMovie.screenplay,
-      cast: currentMovie.cast,
-      genre: currentMovie.genre,
-      duration: currentMovie.duration,
-      language: currentMovie.language,
-      materialsLink: currentMovie.materialsLink,
-      playlistLink: currentMovie.playlistLink,
-      playlistId: currentMovie.playlistId,
-      awardsNames: currentMovie.awards?.map(a => a.name),
-      tagNames: currentMovie.tags?.map(t => t.name),
-      adicionarFotos: [{ principal: true, tipo: 'cover' }]
-    };
-    
-    // Se existe uma capa atual, marcar para deletar
-    if (currentCover) {
-      payload.deletarFotosIds = [currentCover.id];
-      console.log(`🗑️ Capa antiga (${currentCover.id}) será deletada`);
-    }
-    
-    return this.update(id, payload, [coverFile]);
   },
-};
+}; // ✅ FECHA O OBJETO FilmesService CORRETAMENTE
 
 export default FilmesService;
