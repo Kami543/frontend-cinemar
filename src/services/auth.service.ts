@@ -42,7 +42,14 @@ const AuthService = {
     // Limpa qualquer token existente antes do registro
     clearTokens();
     
-    const { data } = await api.post<AuthResponse>('/auth/register', payload);
+    // ✅ Converte 'nome' para 'name' que o backend espera
+    const backendPayload = {
+      email: payload.email,
+      name: payload.nome,  // ← conversão: nome -> name
+      password: payload.password,
+    };
+    
+    const { data } = await api.post<AuthResponse>('/auth/register', backendPayload);
     saveTokens(data.accessToken, data.refreshToken);
     localStorage.setItem('cinemar_user', JSON.stringify(data.user));
     return data;
