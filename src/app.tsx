@@ -21,7 +21,9 @@ import Podcasts  from './pages/Podcasts';
 import Members   from './pages/Members';
 import Location  from './pages/Location';
 import TermosDeUso from './pages/TermosDeUso';
-import PoliticaPrivacidade from './pages/PoliticaPrivacidade'; // ✅ Adicionar
+import PoliticaPrivacidade from './pages/PoliticaPrivacidade'; 
+import Editais from './pages/Editais';
+
 
 // Páginas de autenticação
 import Login    from './pages/Login';
@@ -68,7 +70,9 @@ function AppContent() {
           <Route path="/login"            element={<Login />} />
           <Route path="/register"         element={<Register />} />
           <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} /> {/* ✅ Adicionado */}
-          <Route path="/TermosDeUso"      element={<TermosDeUso />} />      {/* ✅ Compatibilidade */}
+          <Route path="/TermosDeUso"      element={<TermosDeUso />} />
+          <Route path="/editais" element={<Editais />} />
+
           <Route path="*" element={
             <div style={{ padding: '2rem', textAlign: 'center' }}>
               <h2>404 - Página não encontrada</h2>
