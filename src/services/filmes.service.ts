@@ -317,10 +317,10 @@ const FilmesService = {
 
   // 🆕 Atualizar apenas a capa do filme
   async updateCover(id: string, coverFile: File): Promise<Filme> {
-    // Primeiro, buscar o filme atual para preservar todos os dados
+    // 1. Buscar o filme atual
     const currentMovie = await this.findById(id);
     
-    // Preparar o payload mantendo todos os campos existentes
+    // 2. Preparar payload SEM o campo adicionarFotos (apenas dados do filme)
     const payload: UpdateFilmePayload = {
       title: currentMovie.title,
       director: currentMovie.director,
@@ -335,20 +335,26 @@ const FilmesService = {
       materialsLink: currentMovie.materialsLink,
       playlistLink: currentMovie.playlistLink,
       playlistId: currentMovie.playlistId,
-      // Manter prêmios e tags existentes
       awardsNames: currentMovie.awards?.map(a => a.name),
       tagNames: currentMovie.tags?.map(t => t.name),
-      // Adicionar a nova foto como principal (capa)
-      adicionarFotos: [{ 
-        principal: true,  // Marca como foto principal/capa
-        tipo: 'cover',
-        titulo: 'Capa do Filme'
-      }]
+      // ❌ NÃO incluir adicionarFotos aqui
     };
     
-    // Fazer o upload da nova capa
-    return this.update(id, payload, [coverFile]);
-  },
+    // 3. Enviar apenas o arquivo (sem metadata)
+    const updatedMovie = await this.update(id, payload, [coverFile]);
+    
+    // 4. A nova foto foi adicionada, mas ainda não é a principal.
+    //    Encontrar a foto recém-adicionada (a última da lista)
+    const novaFoto = updatedMovie.filmesFotos?.[updatedMovie.filmesFotos.length - 1];
+    if (novaFoto) {
+      // 5. Definir essa foto como principal
+      await this.setFotoPrincipal(id, novaFoto.id);
+      // 6. Buscar o filme atualizado novamente
+      return this.findById(id);
+    }
+    
+    return updatedMovie;
+  }
 
   // 🆕 Atualizar capa e deletar a anterior (opcional - mais avançado)
   async updateCoverAndDeleteOld(id: string, coverFile: File): Promise<Filme> {

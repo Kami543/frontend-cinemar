@@ -1,5 +1,6 @@
 // frontend/src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AuthService, { type User, type LoginPayload, type RegisterPayload } from '../services/auth.service';
 
 interface AuthContextType {
@@ -16,6 +17,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,11 +30,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (storedUser) {
         try {
-          // Verificar se o token ainda é válido
           const freshUser = await AuthService.me();
           setUser(freshUser);
         } catch {
-          // Token inválido, limpar
           AuthService.clearTokens();
           localStorage.removeItem('cinemar_user');
           setUser(null);
@@ -50,8 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await AuthService.login(payload);
       setUser(response.user);
-      // Forçar recarregamento do localStorage
       window.dispatchEvent(new Event('storage'));
+      navigate('/'); // ✅ Redireciona para home após login
     } catch (err: any) {
       const msg = err.response?.data?.message ?? 'Erro ao fazer login.';
       setError(msg);
@@ -68,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await AuthService.register(payload);
       setUser(response.user);
       window.dispatchEvent(new Event('storage'));
+      navigate('/'); // ✅ Redireciona para home após registro
     } catch (err: any) {
       const msg = err.response?.data?.message ?? 'Erro ao registrar.';
       setError(msg);
@@ -87,8 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setIsLoading(false);
       window.dispatchEvent(new Event('storage'));
-      // Redirecionar para home após logout
-      window.location.href = '/';
+      navigate('/login'); // ✅ Redireciona para login após logout
     }
   };
 

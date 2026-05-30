@@ -1,31 +1,23 @@
+// frontend/src/components/layout/Navbar.tsx
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { FaUser } from 'react-icons/fa';
+import { useAuth } from '../../contexts/AuthContext';
 import image from '../../images/cinemar-logo.png';
 import styles from '../../styles/Navbar.module.css';
 import Menu from './Menu';
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const { user, logout, isAuthenticated } = useAuth(); // ✅ Usando o AuthContext
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const burgerMenuRef = useRef<HTMLButtonElement>(null);
-
-  // Verificar usuário logado
-  useEffect(() => {
-    const storedUser = localStorage.getItem('cinemar_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
 
   const handleLogin = () => navigate('/login');
   const handleRegister = () => navigate('/register');
   
   const handleLogout = () => {
-    localStorage.removeItem('cinemar_user');
-    setUser(null);
-    navigate('/login');
+    logout(); // ✅ Usando o logout do AuthContext
   };
 
   const toggleMenu = () => setIsMenuOpen(prev => !prev);
@@ -88,7 +80,7 @@ export default function Navbar() {
           {/* Auth apenas - sem botão de sair */}
           <div className={styles.desktopNav}>
             <div className={styles.authButtons}>
-              {user ? (
+              {isAuthenticated && user ? (
                 <span className={styles.userGreeting}>
                   {user.nome || user.email?.split('@')[0]}
                 </span>
