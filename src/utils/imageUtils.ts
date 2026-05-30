@@ -3,7 +3,8 @@
 // URL do Supabase (configure no .env)
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://seu-projeto.supabase.co';
 const SUPABASE_BUCKET = import.meta.env.VITE_SUPABASE_BUCKET ?? 'filmes';
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const _rawApiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const API_BASE_URL = new URL(_rawApiUrl).origin; 
 
 // Placeholder local (imagem fallback)
 const PLACEHOLDER_IMAGE = '/images/fallback-poster.jpg';

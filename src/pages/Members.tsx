@@ -20,7 +20,9 @@ import { useTheme } from '../components/context/ThemeContext';
 // ─── URL helper ───────────────────────────────────────────────────────────────
 // O backend serve os uploads em sua própria porta (ex: 3000).
 // Sem o prefixo, o browser tentaria buscar em localhost:5173 (Vite) e daria 404.
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const _raw = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const API_BASE = new URL(_raw).origin;
+
 
 function buildMediaUrl(path: string | null | undefined): string | null {
   if (!path) return null;
