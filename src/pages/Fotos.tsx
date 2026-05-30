@@ -1,5 +1,5 @@
 // frontend/src/pages/Fotos.tsx
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import {
   FaArrowLeft,
@@ -7,7 +7,7 @@ import {
   FaFilm,
   FaSearch,
   FaChevronLeft,
-  FaChevvronRight,
+  FaChevronRight,
   FaTimes,
   FaVideo,
   FaImage,
@@ -26,7 +26,7 @@ import {
 import { useTheme } from '../components/context/ThemeContext';
 import styles from '../styles/Fotos.module.css';
 import FilmesService, { type Filme, type FilmeFoto } from '../services/filmes.service';
-import { getImageUrl, getPlaceholderImage } from '../utils/imageUtils';
+import { getPlaceholderImage } from '../utils/imageUtils';
 import { useAuth } from '../contexts/AuthContext';
 
 const PLACEHOLDER_IMAGE = getPlaceholderImage();
