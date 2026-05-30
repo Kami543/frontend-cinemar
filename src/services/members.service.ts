@@ -119,7 +119,6 @@ const MembersService = {
   async create(payload: CreateMemberPayload, files?: File[]): Promise<Member> {
     if (files && files.length > 0) {
       const formData = new FormData();
-      // Envia os dados como JSON string
       formData.append('data', JSON.stringify(payload));
       files.forEach(file => {
         formData.append('fotos', file);
@@ -159,14 +158,42 @@ const MembersService = {
     }
   },
 
-  // ✅ CORRIGIDO: Upload de foto
+  // ✅ CORRIGIDO: Usando POST em vez de PATCH (backend usa @Post)
   async uploadFoto(id: string, file: File): Promise<Member> {
     const formData = new FormData();
     formData.append('foto', file);
     
-    const response = await api.patch(`/members/${id}/foto`, formData, {
+    const response = await api.post(`/members/${id}/foto`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 120000
+    });
+    return response.data;
+  },
+
+  async addFotos(id: string, files: File[], fotosMetadata: any[]): Promise<Member> {
+    const formData = new FormData();
+    formData.append('data', JSON.stringify({ fotosMetadata }));
+    files.forEach(file => {
+      formData.append('fotos', file);
+    });
+    
+    const response = await api.post(`/members/${id}/fotos`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000
+    });
+    return response.data;
+  },
+
+  async deleteFoto(memberId: string, fotoId: string): Promise<{ message: string }> {
+    const response = await api.delete(`/members/${memberId}/fotos/${fotoId}`, {
+      timeout: 30000
+    });
+    return response.data;
+  },
+
+  async setFotoPrincipal(memberId: string, fotoId: string): Promise<Member> {
+    const response = await api.patch(`/members/${memberId}/fotos/${fotoId}/principal`, {}, {
+      timeout: 30000
     });
     return response.data;
   },
