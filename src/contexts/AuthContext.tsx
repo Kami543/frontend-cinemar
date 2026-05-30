@@ -17,12 +17,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // ✅ Agora funciona porque está dentro do Router
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Carregar usuário ao iniciar
   useEffect(() => {
     const loadUser = async () => {
       setIsLoading(true);
@@ -51,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await AuthService.login(payload);
       setUser(response.user);
       window.dispatchEvent(new Event('storage'));
-      navigate('/'); // ✅ Redireciona para home após login
+      navigate('/');
     } catch (err: any) {
       const msg = err.response?.data?.message ?? 'Erro ao fazer login.';
       setError(msg);
@@ -68,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await AuthService.register(payload);
       setUser(response.user);
       window.dispatchEvent(new Event('storage'));
-      navigate('/'); // ✅ Redireciona para home após registro
+      navigate('/');
     } catch (err: any) {
       const msg = err.response?.data?.message ?? 'Erro ao registrar.';
       setError(msg);
@@ -88,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setIsLoading(false);
       window.dispatchEvent(new Event('storage'));
-      navigate('/login'); // ✅ Redireciona para login após logout
+      navigate('/login');
     }
   };
 

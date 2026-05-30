@@ -21,9 +21,9 @@ import Podcasts  from './pages/Podcasts';
 import Members   from './pages/Members';
 import Location  from './pages/Location';
 
-// Páginas de autenticação — sem Navbar nem Footer
+// Páginas de autenticação
 import Login    from './pages/Login';
-import Register from './pages/Sigin'; // Corrigido: Sigin -> Register
+import Register from './pages/Sigin';
 
 /* Rotas que NÃO devem exibir Navbar/Footer */
 const AUTH_ROUTES = ['/login', '/register'];
@@ -34,7 +34,6 @@ function AppContent() {
   const { isLoading } = useAuth();
   const isAuthRoute = AUTH_ROUTES.includes(location.pathname);
   
-  // ✅ LOADING CORRIGIDO - igual ao estilo do Filmes.module.css
   if (isLoading) {
     return (
       <div className="app-loading-container">
@@ -48,12 +47,9 @@ function AppContent() {
 
   return (
     <div className="app">
-      {/* Navbar só aparece se NÃO for rota de auth */}
       {!isAuthRoute && <Navbar />}
-
       <main className="main-content">
         <Routes>
-          {/* ── Públicas ── */}
           <Route path="/"           element={<HomePage />} />
           <Route path="/filmes"     element={<Filmes />} />
           <Route path="/playlists"  element={<Playlists />} />
@@ -67,12 +63,8 @@ function AppContent() {
           <Route path="/about"      element={<About />} />
           <Route path="/podcasts"   element={<Podcasts />} />
           <Route path="/members"    element={<Members />} />
-
-          {/* ── Autenticação ── */}
-          <Route path="/login"    element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
-          {/* ── 404 ── */}
+          <Route path="/login"      element={<Login />} />
+          <Route path="/register"   element={<Register />} />
           <Route path="*" element={
             <div style={{ padding: '2rem', textAlign: 'center' }}>
               <h2>404 - Página não encontrada</h2>
@@ -81,26 +73,23 @@ function AppContent() {
           } />
         </Routes>
       </main>
-
-      {/* Footer só aparece se NÃO for rota de auth */}
       {!isAuthRoute && <Footer />}
     </div>
   );
 }
 
 export default function App() {
-  // Acorda o backend quando o app iniciar
   useEffect(() => {
     wakeUpBackend();
   }, []);
 
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <Router>
+      <Router>  {/* ✅ Router primeiro */}
+        <AuthProvider>  {/* ✅ AuthProvider DENTRO do Router */}
           <AppContent />
-        </Router>
-      </AuthProvider>
+        </AuthProvider>
+      </Router>
     </ThemeProvider>
   );
 }
