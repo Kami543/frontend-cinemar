@@ -40,7 +40,7 @@ function Footer() {
             
             {/* Links dos Termos */}
             <div className={styles.termsContainer}>
-              <Link to="/termos-de-uso" className={styles.termsLink}>
+              <Link to="/TermosDeUso" className={styles.termsLink}>
                 Termos de Uso
               </Link>
               <span className={styles.termsSeparator}>|</span>

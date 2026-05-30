@@ -67,7 +67,6 @@ function AppContent() {
           <Route path="/members"          element={<Members />} />
           <Route path="/login"            element={<Login />} />
           <Route path="/register"         element={<Register />} />
-          <Route path="/termos-de-uso"    element={<TermosDeUso />} />      {/* ✅ Corrigido */}
           <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} /> {/* ✅ Adicionado */}
           <Route path="/TermosDeUso"      element={<TermosDeUso />} />      {/* ✅ Compatibilidade */}
           <Route path="*" element={
