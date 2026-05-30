@@ -1,3 +1,4 @@
+// Contact.tsx - Versão completa com painel de mensagens
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -12,7 +13,11 @@ import {
   FaPhone,
   FaMapMarkerAlt,
   FaClock,
-  FaCheckCircle
+  FaCheckCircle,
+  FaInbox,
+  FaEye,
+  FaReply,
+  FaSpinner
 } from 'react-icons/fa';
 import { useTheme } from '../components/context/ThemeContext';
 import styles from '../styles/Contact.module.css';
@@ -22,7 +27,6 @@ interface ContactInfo {
   title: string;
   details: string[];
   link?: string;
-  // REMOVA o ícone da interface - ele será definido no componente
 }
 
 interface FaqItem {
@@ -31,7 +35,18 @@ interface FaqItem {
   answer: string;
 }
 
-// Mapeamento de ícones por título (para renderização)
+interface Message {
+  id: number;
+  nome: string;
+  email: string;
+  telefone: string;
+  assunto: string;
+  mensagem: string;
+  data: string;
+  lida: boolean;
+  resposta?: string;
+}
+
 const getIconByTitle = (title: string) => {
   switch (title) {
     case 'E-mail': return <FaEnvelope />;
@@ -56,12 +71,16 @@ export default function Contact() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [showMessagesPanel, setShowMessagesPanel] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [isReplying, setIsReplying] = useState(false);
 
   // Edit states
   const [editingContactId, setEditingContactId] = useState<number | null>(null);
   const [isAddingContact, setIsAddingContact] = useState(false);
 
-  // Dados editáveis - SEM ícones
   const [contactInfo, setContactInfo] = useState<ContactInfo[]>([
     {
       id: 1,
@@ -111,7 +130,6 @@ export default function Contact() {
     }
   ]);
 
-  // Form states para edição
   const [editContactForm, setEditContactForm] = useState<ContactInfo>({
     id: 0,
     title: '',
@@ -145,7 +163,6 @@ export default function Contact() {
     'Outro'
   ];
 
-  // Verificar usuário logado
   useEffect(() => {
     const storedUser = localStorage.getItem('cinemar_user');
     if (storedUser) {
@@ -153,7 +170,6 @@ export default function Contact() {
     }
   }, []);
 
-  // Carregar dados do localStorage
   useEffect(() => {
     const savedContact = localStorage.getItem('cinemar_contact_info');
     if (savedContact) {
@@ -166,7 +182,6 @@ export default function Contact() {
     }
   }, []);
 
-  // Salvar dados no localStorage - AGORA SEGURO
   useEffect(() => {
     localStorage.setItem('cinemar_contact_info', JSON.stringify(contactInfo));
   }, [contactInfo]);
@@ -174,6 +189,19 @@ export default function Contact() {
   useEffect(() => {
     localStorage.setItem('cinemar_faq_items', JSON.stringify(faqItems));
   }, [faqItems]);
+
+  // Carregar mensagens do localStorage
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('cinemar_messages');
+    if (savedMessages) {
+      setMessages(JSON.parse(savedMessages));
+    }
+  }, []);
+
+  // Salvar mensagens no localStorage
+  useEffect(() => {
+    localStorage.setItem('cinemar_messages', JSON.stringify(messages));
+  }, [messages]);
 
   const isAdmin = user?.role === 'admin';
 
@@ -185,14 +213,24 @@ export default function Contact() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitSuccess(true);
+    try {
+      const newMessage: Message = {
+        id: Date.now(),
+        nome: formData.nome,
+        email: formData.email,
+        telefone: formData.telefone,
+        assunto: formData.assunto,
+        mensagem: formData.mensagem,
+        data: new Date().toLocaleString('pt-BR'),
+        lida: false
+      };
 
+      setMessages(prev => [newMessage, ...prev]);
+      setSubmitSuccess(true);
       setFormData({
         nome: '',
         email: '',
@@ -201,10 +239,50 @@ export default function Contact() {
         mensagem: ''
       });
 
-      setTimeout(() => {
-        setSubmitSuccess(false);
-      }, 5000);
-    }, 1500);
+      setTimeout(() => setSubmitSuccess(false), 5000);
+    } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
+      alert('Erro ao enviar mensagem. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleMarkAsRead = (messageId: number) => {
+    setMessages(prev => prev.map(msg =>
+      msg.id === messageId ? { ...msg, lida: true } : msg
+    ));
+  };
+
+  const handleDeleteMessage = (messageId: number) => {
+    if (window.confirm('Tem certeza que deseja excluir esta mensagem?')) {
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      if (selectedMessage?.id === messageId) {
+        setSelectedMessage(null);
+      }
+    }
+  };
+
+  const handleSendReply = async () => {
+    if (!replyText.trim() || !selectedMessage) return;
+    
+    setIsReplying(true);
+    try {
+      setMessages(prev => prev.map(msg =>
+        msg.id === selectedMessage.id 
+          ? { ...msg, resposta: replyText, lida: true }
+          : msg
+      ));
+      
+      alert(`Resposta registrada para ${selectedMessage.email}!\n\nMensagem: ${replyText}`);
+      setReplyText('');
+      setSelectedMessage(null);
+    } catch (error) {
+      console.error('Erro ao enviar resposta:', error);
+      alert('Erro ao enviar resposta. Tente novamente.');
+    } finally {
+      setIsReplying(false);
+    }
   };
 
   // ===== CRUD CONTACT INFO =====
@@ -270,6 +348,8 @@ export default function Contact() {
     setFaqItems(prev => prev.filter(f => f.id !== id));
   };
 
+  const unreadCount = messages.filter(msg => !msg.lida).length;
+
   return (
     <div className={`${styles.contactPage} ${isDarkMode ? styles.darkMode : ''}`}>
       {/* Header */}
@@ -279,6 +359,18 @@ export default function Contact() {
             <Link to="/" className={styles.backLink}>
               ← Voltar para Início
             </Link>
+            {isAdmin && (
+              <button
+                className={styles.messagesButton}
+                onClick={() => setShowMessagesPanel(!showMessagesPanel)}
+              >
+                <FaInbox />
+                <span>Mensagens</span>
+                {unreadCount > 0 && (
+                  <span className={styles.unreadBadge}>{unreadCount}</span>
+                )}
+              </button>
+            )}
           </div>
 
           <div className={styles.heroMain}>
@@ -290,8 +382,110 @@ export default function Contact() {
         </div>
       </header>
 
+      {/* Painel de Mensagens */}
+      {showMessagesPanel && isAdmin && (
+        <div className={styles.messagesPanel}>
+          <div className={styles.messagesPanelHeader}>
+            <h2>
+              <FaInbox /> Mensagens Recebidas
+              {unreadCount > 0 && ` (${unreadCount} não lidas)`}
+            </h2>
+            <button onClick={() => setShowMessagesPanel(false)} className={styles.closePanelBtn}>
+              <FaTimes />
+            </button>
+          </div>
+          
+          <div className={styles.messagesPanelContent}>
+            <div className={styles.messagesList}>
+              {messages.length === 0 ? (
+                <div className={styles.noMessages}>
+                  <FaInbox />
+                  <p>Nenhuma mensagem recebida ainda</p>
+                </div>
+              ) : (
+                messages.map(message => (
+                  <div
+                    key={message.id}
+                    className={`${styles.messageItem} ${!message.lida ? styles.unreadMessage : ''}`}
+                    onClick={() => {
+                      setSelectedMessage(message);
+                      if (!message.lida) handleMarkAsRead(message.id);
+                    }}
+                  >
+                    <div className={styles.messageHeader}>
+                      <strong>{message.nome}</strong>
+                      <span className={styles.messageDate}>{message.data}</span>
+                    </div>
+                    <div className={styles.messageSubject}>{message.assunto}</div>
+                    <div className={styles.messagePreview}>
+                      {message.mensagem.substring(0, 100)}...
+                    </div>
+                    {message.resposta && (
+                      <div className={styles.repliedBadge}>
+                        <FaReply /> Respondida
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {selectedMessage && (
+              <div className={styles.messageDetail}>
+                <div className={styles.messageDetailHeader}>
+                  <h3>Detalhe da Mensagem</h3>
+                  <button
+                    onClick={() => handleDeleteMessage(selectedMessage.id)}
+                    className={styles.deleteMessageBtn}
+                  >
+                    <FaTrash /> Excluir
+                  </button>
+                </div>
+                <div className={styles.messageDetailContent}>
+                  <p><strong>De:</strong> {selectedMessage.nome}</p>
+                  <p><strong>Email:</strong> {selectedMessage.email}</p>
+                  {selectedMessage.telefone && (
+                    <p><strong>Telefone:</strong> {selectedMessage.telefone}</p>
+                  )}
+                  <p><strong>Assunto:</strong> {selectedMessage.assunto}</p>
+                  <p><strong>Data:</strong> {selectedMessage.data}</p>
+                  <p><strong>Mensagem:</strong></p>
+                  <p className={styles.messageFullText}>{selectedMessage.mensagem}</p>
+                  
+                  {selectedMessage.resposta ? (
+                    <div className={styles.existingReply}>
+                      <h4>Sua Resposta:</h4>
+                      <p>{selectedMessage.resposta}</p>
+                    </div>
+                  ) : (
+                    <div className={styles.replySection}>
+                      <h4>Responder:</h4>
+                      <textarea
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        placeholder="Digite sua resposta aqui..."
+                        rows={4}
+                        className={styles.replyTextarea}
+                      />
+                      <button
+                        onClick={handleSendReply}
+                        disabled={isReplying || !replyText.trim()}
+                        className={styles.sendReplyBtn}
+                      >
+                        {isReplying ? <FaSpinner className={styles.spinning} /> : <FaReply />}
+                        {isReplying ? 'Enviando...' : 'Registrar Resposta'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Botão flutuante de adicionar (apenas admin) */}
-      {isAdmin && (
+      {isAdmin && !showMessagesPanel && (
         <button
           className={styles.floatingAddBtn}
           onClick={() => setIsAddingContact(true)}
@@ -303,7 +497,6 @@ export default function Contact() {
 
       <main className={styles.mainContent}>
         <div className={styles.contentWrapper}>
-
           {/* Informações de Contato */}
           <section className={styles.contactInfoSection}>
             <div className={styles.sectionHeader}>
@@ -427,7 +620,7 @@ export default function Contact() {
             )}
           </section>
 
-          {/* Resto do componente permanece igual... */}
+          {/* Formulário de Contato */}
           <section className={styles.contactFormSection}>
             <h2 className={styles.sectionTitle}>
               <FaPaperPlane className={styles.sectionTitleIcon} />
