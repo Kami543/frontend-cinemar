@@ -2,9 +2,22 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  FaChevronLeft, FaShieldAlt, FaUserSecret, FaDatabase,
-  FaCookieBite, FaEnvelope, FaGavel, FaSync, FaLock,
-  FaUserCheck, FaShareAlt, FaEye, FaFileContract, FaChevronDown,
+  FaChevronLeft,
+  FaShieldAlt,
+  FaUserSecret,
+  FaDatabase,
+  FaCookieBite,
+  FaEnvelope,
+  FaGavel,
+  FaSync,
+  FaLock,
+  FaUserCheck,
+  FaShareAlt,
+  FaEye,
+  FaFileContract,
+  FaChevronDown,
+  FaTrash,      // ✅ Adicionado
+  FaClock,      // ✅ Adicionado (usado na seção 'retecao')
 } from 'react-icons/fa';
 import { useTheme } from '../components/context/ThemeContext';
 import styles from '../styles/PoliticaPrivacidade.module.css';
