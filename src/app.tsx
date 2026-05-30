@@ -21,6 +21,7 @@ import Podcasts  from './pages/Podcasts';
 import Members   from './pages/Members';
 import Location  from './pages/Location';
 import TermosDeUso from './pages/TermosDeUso';
+import PoliticaPrivacidade from './pages/PoliticaPrivacidade'; // ✅ Adicionar
 
 // Páginas de autenticação
 import Login    from './pages/Login';
@@ -51,22 +52,24 @@ function AppContent() {
       {!isAuthRoute && <Navbar />}
       <main className="main-content">
         <Routes>
-          <Route path="/"           element={<HomePage />} />
-          <Route path="/filmes"     element={<Filmes />} />
-          <Route path="/playlists"  element={<Playlists />} />
-          <Route path="/localizacao" element={<Location />} />
-          <Route path="/local"      element={<Location />} />
-          <Route path="/materiais"  element={<Materiais />} />
-          <Route path="/eventos"    element={<Eventos />} />
-          <Route path="/fotos"      element={<Fotos />} />
-          <Route path="/sessions"   element={<Sessions />} />
-          <Route path="/contact"    element={<Contact />} />
-          <Route path="/about"      element={<About />} />
-          <Route path="/podcasts"   element={<Podcasts />} />
-          <Route path="/members"    element={<Members />} />
-          <Route path="/login"      element={<Login />} />
-          <Route path="/register"   element={<Register />} />
-          <Route path="/TermosDeUso" element={<TermosDeUso />} />
+          <Route path="/"                 element={<HomePage />} />
+          <Route path="/filmes"           element={<Filmes />} />
+          <Route path="/playlists"        element={<Playlists />} />
+          <Route path="/localizacao"      element={<Location />} />
+          <Route path="/local"            element={<Location />} />
+          <Route path="/materiais"        element={<Materiais />} />
+          <Route path="/eventos"          element={<Eventos />} />
+          <Route path="/fotos"            element={<Fotos />} />
+          <Route path="/sessions"         element={<Sessions />} />
+          <Route path="/contact"          element={<Contact />} />
+          <Route path="/about"            element={<About />} />
+          <Route path="/podcasts"         element={<Podcasts />} />
+          <Route path="/members"          element={<Members />} />
+          <Route path="/login"            element={<Login />} />
+          <Route path="/register"         element={<Register />} />
+          <Route path="/termos-de-uso"    element={<TermosDeUso />} />      {/* ✅ Corrigido */}
+          <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} /> {/* ✅ Adicionado */}
+          <Route path="/TermosDeUso"      element={<TermosDeUso />} />      {/* ✅ Compatibilidade */}
           <Route path="*" element={
             <div style={{ padding: '2rem', textAlign: 'center' }}>
               <h2>404 - Página não encontrada</h2>
@@ -87,8 +90,8 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <Router>  {/* ✅ Router primeiro */}
-        <AuthProvider>  {/* ✅ AuthProvider DENTRO do Router */}
+      <Router>
+        <AuthProvider>
           <AppContent />
         </AuthProvider>
       </Router>

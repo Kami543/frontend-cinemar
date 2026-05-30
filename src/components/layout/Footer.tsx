@@ -1,3 +1,4 @@
+// frontend/src/components/layout/Footer.tsx
 import { Link } from 'react-router-dom';
 import styles from '../../styles/Footer.module.css';
 import logoImage from '../../images/cinemar-logo.png';
@@ -28,7 +29,7 @@ function Footer() {
                 Editais
               </Link>
               <span className={styles.separator}>|</span>
-              <Link to="/politica-de-privacidade" className={styles.footerLink}>
+              <Link to="/politica-privacidade" className={styles.footerLink}>
                 Política de Privacidade
               </Link>
             </div>
@@ -39,7 +40,7 @@ function Footer() {
             
             {/* Links dos Termos */}
             <div className={styles.termsContainer}>
-              <Link to="/TermosDeUso" className={styles.termsLink}>
+              <Link to="/termos-de-uso" className={styles.termsLink}>
                 Termos de Uso
               </Link>
               <span className={styles.termsSeparator}>|</span>
@@ -47,7 +48,7 @@ function Footer() {
                 FAQ
               </Link>
               <span className={styles.termsSeparator}>|</span>
-              <Link to="/contato" className={styles.termsLink}>
+              <Link to="/contact" className={styles.termsLink}>
                 Contato
               </Link>
             </div>

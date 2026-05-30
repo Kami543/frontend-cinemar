@@ -384,7 +384,7 @@ export default function TermosDeUso() {
             <div className={styles.docFooterLinks}>
               <Link to="/">Página Inicial</Link>
               <span>·</span>
-              <Link to="/membros">Nossa Equipe</Link>
+              <Link to="/members">Nossa Equipe</Link>
               <span>·</span>
               <a href="mailto:contato@cinemar.com.br">Contato</a>
             </div>
