@@ -483,10 +483,8 @@ export default function Filmes() {
                       </div>
                     </div>
 
-                    {/* TÍTULO - CORRIGIDO: sem uppercase, com quebra de palavra */}
                     <div className={styles.listItemTitle}>{filme.title}</div>
 
-                    {/* META - CORRIGIDO: ano e diretor com quebra adequada */}
                     <div className={styles.listItemMeta}>
                       <span className={styles.listItemYear}>{filme.year}</span>
                       <span className={styles.listItemDirector}>
@@ -494,12 +492,12 @@ export default function Filmes() {
                       </span>
                     </div>
 
-                    {/* FOOTER - CORRIGIDO: data e status */}
+                    {/* ✅ CORRIGIDO: Adicionado ?. e fallback */}
                     <div className={styles.listItemFooter}>
                       <div className={styles.listItemDate}>
                         <FaCalendarAlt aria-hidden="true" /> {filme.date.split(',')[0]}
                       </div>
-                      <span className={`${styles.filmeStatus} ${styles[filme.status.toLowerCase()] || ''}`}>
+                      <span className={`${styles.filmeStatus} ${styles[filme.status?.toLowerCase() || ''] || ''}`}>
                         {filme.status}
                       </span>
                     </div>
@@ -626,7 +624,8 @@ export default function Filmes() {
                       onError={() => handleImageError(selectedFilme.id)}
                     />
                     <div className={styles.filmeStatusBadge}>
-                      <span className={`${styles.statusBadge} ${styles[selectedFilme.status.toLowerCase()] || ''}`}>
+                      {/* ✅ CORRIGIDO: Adicionado ?. e fallback */}
+                      <span className={`${styles.statusBadge} ${styles[selectedFilme.status?.toLowerCase() || 'próximo'] || ''}`}>
                         {selectedFilme.status === 'Próximo' ? 'Em Breve' : 'Exibido'}
                       </span>
                     </div>
