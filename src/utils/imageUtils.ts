@@ -27,8 +27,9 @@ export const getImageUrl = (path: string | null | undefined): string => {
   }
   
   // Se for caminho do backend antigo (uploads)
-  if (path.startsWith('/uploads')) {
-    return `${API_BASE_URL}${path}`;
+  if (path.startsWith('/uploads') || path.startsWith('uploads/')) {
+    const normalized = path.startsWith('/') ? path : `/${path}`;
+    return `${API_BASE_URL}${normalized}`;
   }
   
   // Construir URL do Supabase Storage
