@@ -9,22 +9,38 @@ import Menu from './Menu';
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const { user, logout, isAuthenticated } = useAuth(); // ✅ Usando o AuthContext
+  const { user, logout, isAuthenticated } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const burgerMenuRef = useRef<HTMLButtonElement>(null);
+  const navbarRef = useRef<HTMLElement>(null);
 
   const handleLogin = () => navigate('/login');
   const handleRegister = () => navigate('/register');
   
   const handleLogout = () => {
-    logout(); // ✅ Usando o logout do AuthContext
+    logout();
   };
 
   const toggleMenu = () => setIsMenuOpen(prev => !prev);
 
+  // ✅ useEffect substituído - calcula altura dinâmica da navbar
   useEffect(() => {
-    document.body.style.paddingTop = '80px';
-    return () => { document.body.style.paddingTop = '0'; };
+    const navbar = navbarRef.current;
+
+    const updatePadding = () => {
+      const height = navbar?.getBoundingClientRect().height ?? 80;
+      document.body.style.paddingTop = `${height}px`;
+    };
+
+    updatePadding();
+
+    const observer = new ResizeObserver(updatePadding);
+    if (navbar) observer.observe(navbar);
+
+    return () => {
+      observer.disconnect();
+      document.body.style.paddingTop = '0';
+    };
   }, []);
 
   useEffect(() => {
@@ -44,6 +60,7 @@ export default function Navbar() {
   return (
     <>
       <nav
+        ref={navbarRef}
         role="navigation"
         aria-label="Principal"
         className={styles.navbar}
