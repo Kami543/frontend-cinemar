@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FaTimes, FaSave, FaUpload, FaPlus, FaTrash } from 'react-icons/fa';
 import styles from '../styles/PlaylistForm.module.css';
-import { useTheme } from './context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 // Interface baseada no schema do Prisma
 interface Playlist {
@@ -78,9 +78,9 @@ export default function PlaylistForm({
     sessaoId: undefined,
     usarUploadCapa: false,
     coverFile: null as File | null,
-    genres: [] as string[],
-    languages: [] as string[],
-    highlightTracks: [] as string[],
+    genres: [],
+    languages: [],
+    highlightTracks: [],
   });
 
   const [previewUrl, setPreviewUrl] = useState<string>('');
@@ -88,43 +88,18 @@ export default function PlaylistForm({
 
   useEffect(() => {
     if (initialData) {
-      // Garantir que arrays sejam sempre arrays
-      let genresArray: string[] = [];
-      let languagesArray: string[] = [];
-      let tracksArray: string[] = [];
-
-      // Processar gêneros
-      if (initialData.genres) {
-        if (Array.isArray(initialData.genres)) {
-          genresArray = initialData.genres.map(g => {
-            if (typeof g === 'string') return g;
-            if (g && typeof g === 'object' && 'name' in g) return g.name;
+      // Função segura para converter para array
+      const toSafeArray = (data: any): string[] => {
+        if (!data) return [];
+        if (Array.isArray(data)) {
+          return data.map(item => {
+            if (typeof item === 'string') return item;
+            if (item && typeof item === 'object' && 'name' in item) return item.name;
             return '';
-          }).filter(g => g);
+          }).filter(item => item);
         }
-      }
-
-      // Processar idiomas
-      if (initialData.languages) {
-        if (Array.isArray(initialData.languages)) {
-          languagesArray = initialData.languages.map(l => {
-            if (typeof l === 'string') return l;
-            if (l && typeof l === 'object' && 'name' in l) return l.name;
-            return '';
-          }).filter(l => l);
-        }
-      }
-
-      // Processar faixas destacadas
-      if (initialData.highlightTracks) {
-        if (Array.isArray(initialData.highlightTracks)) {
-          tracksArray = initialData.highlightTracks.map(t => {
-            if (typeof t === 'string') return t;
-            if (t && typeof t === 'object' && 'name' in t) return t.name;
-            return '';
-          }).filter(t => t);
-        }
-      }
+        return [];
+      };
 
       setFormData({
         title: initialData.title || '',
@@ -144,9 +119,9 @@ export default function PlaylistForm({
         sessaoId: initialData.sessaoId || undefined,
         usarUploadCapa: false,
         coverFile: null,
-        genres: genresArray,
-        languages: languagesArray,
-        highlightTracks: tracksArray,
+        genres: toSafeArray(initialData.genres),
+        languages: toSafeArray(initialData.languages),
+        highlightTracks: toSafeArray(initialData.highlightTracks),
       });
       setPreviewUrl(initialData.coverImage || '');
     } else {
@@ -181,34 +156,30 @@ export default function PlaylistForm({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validar tamanho (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setErrors({ ...errors, coverImage: 'A imagem deve ter no máximo 5MB' });
       return;
     }
 
-    // Validar tipo
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
       setErrors({ ...errors, coverImage: 'Formato inválido. Use JPG, PNG, GIF ou WEBP' });
       return;
     }
 
-    setFormData({ 
-      ...formData, 
+    setFormData((prev: any) => ({ 
+      ...prev, 
       coverFile: file,
       usarUploadCapa: true,
-      coverImage: '' // Limpa URL quando usa upload
-    });
+      coverImage: ''
+    }));
     
-    // Criar preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreviewUrl(reader.result as string);
     };
     reader.readAsDataURL(file);
     
-    // Limpar erro
     if (errors.coverImage) {
       const newErrors = { ...errors };
       delete newErrors.coverImage;
@@ -216,7 +187,6 @@ export default function PlaylistForm({
     }
   };
 
-  // Extrair e validar spotifyId da URL
   const extractSpotifyId = (url: string): string | null => {
     const patterns = [
       /playlist\/([a-zA-Z0-9]{22})/,
@@ -262,7 +232,6 @@ export default function PlaylistForm({
   const handleSubmit = () => {
     if (!validateForm()) return;
 
-    // Extrair spotifyId da URL se não foi fornecido
     let spotifyId = formData.spotifyId;
     if (!spotifyId && formData.spotifyUrl) {
       const extracted = extractSpotifyId(formData.spotifyUrl);
@@ -271,13 +240,11 @@ export default function PlaylistForm({
       }
     }
 
-    // Gerar embedUrl se não fornecida
     let embedUrl = formData.embedUrl;
     if (!embedUrl && spotifyId) {
       embedUrl = `https://open.spotify.com/embed/playlist/${spotifyId}`;
     }
 
-    // Preparar dados para enviar à API
     const submitData: any = {
       title: formData.title.trim(),
       description: formData.description.trim() || '',
@@ -294,62 +261,91 @@ export default function PlaylistForm({
       theme: formData.theme.trim() || '',
       curatorDescription: formData.curatorDescription.trim() || '',
       sessaoId: formData.sessaoId || undefined,
-      genresNomes: formData.genres.filter((g: string) => g.trim()),
-      languagesNomes: formData.languages.filter((l: string) => l.trim()),
-      highlightTracksNomes: formData.highlightTracks.filter((t: string) => t.trim()),
+      genresNomes: Array.isArray(formData.genres) ? formData.genres.filter((g: string) => g.trim()) : [],
+      languagesNomes: Array.isArray(formData.languages) ? formData.languages.filter((l: string) => l.trim()) : [],
+      highlightTracksNomes: Array.isArray(formData.highlightTracks) ? formData.highlightTracks.filter((t: string) => t.trim()) : [],
       coverFile: formData.usarUploadCapa ? formData.coverFile : null,
     };
     
     onSave(submitData);
   };
 
-  // Handlers para arrays dinâmicos
+  // Handlers seguros para arrays
   const addGenre = () => {
-    setFormData({ ...formData, genres: [...formData.genres, ''] });
+    setFormData((prev: any) => ({ 
+      ...prev, 
+      genres: Array.isArray(prev.genres) ? [...prev.genres, ''] : ['']
+    }));
   };
 
   const updateGenre = (index: number, value: string) => {
-    const newGenres = [...formData.genres];
-    newGenres[index] = value;
-    setFormData({ ...formData, genres: newGenres });
+    setFormData((prev: any) => {
+      const newGenres = Array.isArray(prev.genres) ? [...prev.genres] : [];
+      newGenres[index] = value;
+      return { ...prev, genres: newGenres };
+    });
   };
 
   const removeGenre = (index: number) => {
-    const newGenres = formData.genres.filter((_: any, i: number) => i !== index);
-    setFormData({ ...formData, genres: newGenres });
+    setFormData((prev: any) => {
+      const newGenres = Array.isArray(prev.genres) ? [...prev.genres] : [];
+      newGenres.splice(index, 1);
+      return { ...prev, genres: newGenres };
+    });
   };
 
   const addLanguage = () => {
-    setFormData({ ...formData, languages: [...formData.languages, ''] });
+    setFormData((prev: any) => ({ 
+      ...prev, 
+      languages: Array.isArray(prev.languages) ? [...prev.languages, ''] : ['']
+    }));
   };
 
   const updateLanguage = (index: number, value: string) => {
-    const newLanguages = [...formData.languages];
-    newLanguages[index] = value;
-    setFormData({ ...formData, languages: newLanguages });
+    setFormData((prev: any) => {
+      const newLanguages = Array.isArray(prev.languages) ? [...prev.languages] : [];
+      newLanguages[index] = value;
+      return { ...prev, languages: newLanguages };
+    });
   };
 
   const removeLanguage = (index: number) => {
-    const newLanguages = formData.languages.filter((_: any, i: number) => i !== index);
-    setFormData({ ...formData, languages: newLanguages });
+    setFormData((prev: any) => {
+      const newLanguages = Array.isArray(prev.languages) ? [...prev.languages] : [];
+      newLanguages.splice(index, 1);
+      return { ...prev, languages: newLanguages };
+    });
   };
 
   const addHighlightTrack = () => {
-    setFormData({ ...formData, highlightTracks: [...formData.highlightTracks, ''] });
+    setFormData((prev: any) => ({ 
+      ...prev, 
+      highlightTracks: Array.isArray(prev.highlightTracks) ? [...prev.highlightTracks, ''] : ['']
+    }));
   };
 
   const updateHighlightTrack = (index: number, value: string) => {
-    const newTracks = [...formData.highlightTracks];
-    newTracks[index] = value;
-    setFormData({ ...formData, highlightTracks: newTracks });
+    setFormData((prev: any) => {
+      const newTracks = Array.isArray(prev.highlightTracks) ? [...prev.highlightTracks] : [];
+      newTracks[index] = value;
+      return { ...prev, highlightTracks: newTracks };
+    });
   };
 
   const removeHighlightTrack = (index: number) => {
-    const newTracks = formData.highlightTracks.filter((_: any, i: number) => i !== index);
-    setFormData({ ...formData, highlightTracks: newTracks });
+    setFormData((prev: any) => {
+      const newTracks = Array.isArray(prev.highlightTracks) ? [...prev.highlightTracks] : [];
+      newTracks.splice(index, 1);
+      return { ...prev, highlightTracks: newTracks };
+    });
   };
 
   if (!isOpen) return null;
+
+  // Obter arrays seguros para renderização
+  const safeGenres = Array.isArray(formData.genres) ? formData.genres : [];
+  const safeLanguages = Array.isArray(formData.languages) ? formData.languages : [];
+  const safeHighlightTracks = Array.isArray(formData.highlightTracks) ? formData.highlightTracks : [];
 
   return (
     <div className={styles.formOverlay}>
@@ -371,7 +367,7 @@ export default function PlaylistForm({
                 <input
                   type="text"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, title: e.target.value }))}
                   placeholder="Nome da playlist"
                   className={errors.title ? styles.error : ''}
                   disabled={isLoading}
@@ -383,7 +379,7 @@ export default function PlaylistForm({
                 <input
                   type="text"
                   value={formData.spotifyUrl}
-                  onChange={(e) => setFormData({ ...formData, spotifyUrl: e.target.value })}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, spotifyUrl: e.target.value }))}
                   placeholder="https://open.spotify.com/playlist/..."
                   className={errors.spotifyUrl ? styles.error : ''}
                   disabled={isLoading}
@@ -402,7 +398,7 @@ export default function PlaylistForm({
                 <label>Sessão Relacionada</label>
                 <select
                   value={formData.sessaoId || ''}
-                  onChange={(e) => setFormData({ ...formData, sessaoId: e.target.value || undefined })}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, sessaoId: e.target.value || undefined }))}
                   disabled={isLoading}
                 >
                   <option value="">Nenhuma sessão</option>
@@ -419,7 +415,7 @@ export default function PlaylistForm({
                 <input
                   type="text"
                   value={formData.relatedFilm}
-                  onChange={(e) => setFormData({ ...formData, relatedFilm: e.target.value })}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, relatedFilm: e.target.value }))}
                   placeholder="Nome do filme"
                   disabled={isLoading}
                 />
@@ -431,7 +427,7 @@ export default function PlaylistForm({
                 <input
                   type="text"
                   value={formData.director}
-                  onChange={(e) => setFormData({ ...formData, director: e.target.value })}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, director: e.target.value }))}
                   placeholder="Diretor do filme"
                   disabled={isLoading}
                 />
@@ -441,7 +437,7 @@ export default function PlaylistForm({
                 <input
                   type="number"
                   value={formData.filmYear}
-                  onChange={(e) => setFormData({ ...formData, filmYear: e.target.value })}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, filmYear: e.target.value }))}
                   placeholder="2024"
                   min="1888"
                   max={new Date().getFullYear()}
@@ -462,7 +458,7 @@ export default function PlaylistForm({
                 <input
                   type="text"
                   value={formData.curator}
-                  onChange={(e) => setFormData({ ...formData, curator: e.target.value })}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, curator: e.target.value }))}
                   placeholder="Nome do curador"
                   disabled={isLoading}
                 />
@@ -472,7 +468,7 @@ export default function PlaylistForm({
                 <input
                   type="text"
                   value={formData.theme}
-                  onChange={(e) => setFormData({ ...formData, theme: e.target.value })}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, theme: e.target.value }))}
                   placeholder="Ex: cinema, literatura, sociedade"
                   disabled={isLoading}
                 />
@@ -483,7 +479,7 @@ export default function PlaylistForm({
               <label>Descrição do Curador</label>
               <textarea
                 value={formData.curatorDescription}
-                onChange={(e) => setFormData({ ...formData, curatorDescription: e.target.value })}
+                onChange={(e) => setFormData((prev: any) => ({ ...prev, curatorDescription: e.target.value }))}
                 placeholder="Sobre o curador..."
                 rows={2}
                 disabled={isLoading}
@@ -500,7 +496,7 @@ export default function PlaylistForm({
                 <input
                   type="text"
                   value={formData.duration}
-                  onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, duration: e.target.value }))}
                   placeholder="Ex: 1h 30min"
                   disabled={isLoading}
                 />
@@ -510,7 +506,7 @@ export default function PlaylistForm({
                 <input
                   type="number"
                   value={formData.tracks}
-                  onChange={(e) => setFormData({ ...formData, tracks: parseInt(e.target.value) || 0 })}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, tracks: parseInt(e.target.value) || 0 }))}
                   placeholder="0"
                   min="0"
                   className={errors.tracks ? styles.error : ''}
@@ -523,7 +519,7 @@ export default function PlaylistForm({
               <label>Descrição</label>
               <textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) => setFormData((prev: any) => ({ ...prev, description: e.target.value }))}
                 placeholder="Descrição da playlist..."
                 rows={3}
                 disabled={isLoading}
@@ -539,12 +535,12 @@ export default function PlaylistForm({
                 <FaPlus /> Adicionar
               </button>
             </h4>
-            {formData.genres && formData.genres.length > 0 ? (
-              formData.genres.map((genre: string, index: number) => (
+            {safeGenres.length > 0 ? (
+              safeGenres.map((genre: string, index: number) => (
                 <div key={index} className={styles.dynamicField}>
                   <input
                     type="text"
-                    value={genre}
+                    value={genre || ''}
                     onChange={(e) => updateGenre(index, e.target.value)}
                     placeholder="Ex: Rock, MPB, Jazz"
                     disabled={isLoading}
@@ -567,12 +563,12 @@ export default function PlaylistForm({
                 <FaPlus /> Adicionar
               </button>
             </h4>
-            {formData.languages && formData.languages.length > 0 ? (
-              formData.languages.map((language: string, index: number) => (
+            {safeLanguages.length > 0 ? (
+              safeLanguages.map((language: string, index: number) => (
                 <div key={index} className={styles.dynamicField}>
                   <input
                     type="text"
-                    value={language}
+                    value={language || ''}
                     onChange={(e) => updateLanguage(index, e.target.value)}
                     placeholder="Ex: Português, Inglês, Francês"
                     disabled={isLoading}
@@ -595,12 +591,12 @@ export default function PlaylistForm({
                 <FaPlus /> Adicionar
               </button>
             </h4>
-            {formData.highlightTracks && formData.highlightTracks.length > 0 ? (
-              formData.highlightTracks.map((track: string, index: number) => (
+            {safeHighlightTracks.length > 0 ? (
+              safeHighlightTracks.map((track: string, index: number) => (
                 <div key={index} className={styles.dynamicField}>
                   <input
                     type="text"
-                    value={track}
+                    value={track || ''}
                     onChange={(e) => updateHighlightTrack(index, e.target.value)}
                     placeholder="Nome da música"
                     disabled={isLoading}
@@ -627,7 +623,7 @@ export default function PlaylistForm({
                   <input
                     type="radio"
                     checked={!formData.usarUploadCapa}
-                    onChange={() => setFormData({ ...formData, usarUploadCapa: false, coverFile: null })}
+                    onChange={() => setFormData((prev: any) => ({ ...prev, usarUploadCapa: false, coverFile: null }))}
                     disabled={isLoading}
                   />
                   URL Externa
@@ -636,7 +632,7 @@ export default function PlaylistForm({
                   <input
                     type="radio"
                     checked={formData.usarUploadCapa}
-                    onChange={() => setFormData({ ...formData, usarUploadCapa: true, coverImage: '' })}
+                    onChange={() => setFormData((prev: any) => ({ ...prev, usarUploadCapa: true, coverImage: '' }))}
                     disabled={isLoading}
                   />
                   Upload de Arquivo
@@ -650,7 +646,7 @@ export default function PlaylistForm({
                 <input
                   type="text"
                   value={formData.coverImage}
-                  onChange={(e) => setFormData({ ...formData, coverImage: e.target.value })}
+                  onChange={(e) => setFormData((prev: any) => ({ ...prev, coverImage: e.target.value }))}
                   placeholder="https://i.scdn.co/image/ab67706f0000000298c5a2e6"
                   disabled={isLoading}
                 />
