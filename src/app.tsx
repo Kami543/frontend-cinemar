@@ -1,4 +1,4 @@
-// frontend/src/App.tsx
+// frontend/src/App.tsx (versão atualizada com import do CSS)
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { FaSpinner } from 'react-icons/fa';
@@ -24,10 +24,12 @@ import TermosDeUso from './pages/TermosDeUso';
 import PoliticaPrivacidade from './pages/PoliticaPrivacidade'; 
 import Editais from './pages/Editais';
 
-
 // Páginas de autenticação
 import Login    from './pages/Login';
 import Register from './pages/Sigin';
+
+// Importar os estilos globais do App
+import './styles/App.css'; // ← Adicione esta linha
 
 /* Rotas que NÃO devem exibir Navbar/Footer */
 const AUTH_ROUTES = ['/login', '/register'];
@@ -69,9 +71,9 @@ function AppContent() {
           <Route path="/members"          element={<Members />} />
           <Route path="/login"            element={<Login />} />
           <Route path="/register"         element={<Register />} />
-          <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} /> {/* ✅ Adicionado */}
+          <Route path="/politica-privacidade" element={<PoliticaPrivacidade />} />
           <Route path="/TermosDeUso"      element={<TermosDeUso />} />
-          <Route path="/editais" element={<Editais />} />
+          <Route path="/editais"          element={<Editais />} />
 
           <Route path="*" element={
             <div style={{ padding: '2rem', textAlign: 'center' }}>

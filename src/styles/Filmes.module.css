@@ -1,3 +1,5 @@
+/* Filmes.module.css - Versão Completa e Corrigida */
+
 /* ===== VARIÁVEIS GLOBAIS ===== */
 :root {
   --primary-red: #dc2626;
@@ -312,7 +314,7 @@
 }
 .clearSearch:hover { color: var(--primary-red); background: rgba(220,38,38,.08); }
 
-/* ===== LISTA DE FILMES - CORRIGIDA ===== */
+/* ===== LISTA DE FILMES ===== */
 .filmeList {
   flex: 1;
   overflow-y: auto;
@@ -337,7 +339,6 @@
   background: var(--dark-border);
 }
 
-/* Card do filme na lista */
 .filmeListItem {
   display: grid;
   grid-template-columns: 64px 1fr;
@@ -371,7 +372,6 @@
   background: rgba(220,38,38,.15);
 }
 
-/* Miniatura */
 .listItemImage {
   position: relative;
   width: 64px;
@@ -388,7 +388,6 @@
 }
 .filmesContainer.dark .filmeThumbnail { border-color: var(--dark-border); }
 
-/* Badges na thumbnail */
 .upcomingBadge,
 .realizedBadge {
   position: absolute;
@@ -407,7 +406,6 @@
 .upcomingBadge { background: var(--primary-red); color: white; }
 .realizedBadge { background: #16a34a; color: white; }
 
-/* Conteúdo do item */
 .listItemContent {
   flex: 1;
   min-width: 0;
@@ -416,7 +414,6 @@
   gap: 0.25rem;
 }
 
-/* Header com número e ações */
 .listItemHeader {
   display: flex;
   justify-content: space-between;
@@ -466,7 +463,6 @@
   background: var(--primary-red-bg);
 }
 
-/* TÍTULO - CORRIGIDO */
 .listItemTitle {
   font-size: 0.85rem;
   font-weight: 700;
@@ -479,7 +475,6 @@
 }
 .filmesContainer.dark .listItemTitle { color: var(--dark-text); }
 
-/* META (ano + diretor) - CORRIGIDO */
 .listItemMeta {
   display: flex;
   flex-wrap: wrap;
@@ -496,7 +491,6 @@
   flex-shrink: 0;
 }
 
-/* DIRETOR - CORRIGIDO (agora quebra linha) */
 .listItemDirector {
   display: inline-flex;
   align-items: center;
@@ -507,7 +501,6 @@
   line-height: 1.3;
 }
 
-/* FOOTER (data + status) - CORRIGIDO */
 .listItemFooter {
   display: flex;
   justify-content: space-between;
@@ -530,7 +523,6 @@
 }
 .filmesContainer.dark .listItemDate { color: var(--dark-text-secondary); }
 
-/* Status badge */
 .filmeStatus {
   font-size: 0.55rem;
   padding: 0.125rem 0.375rem;
@@ -552,7 +544,6 @@
   border-color: rgba(220,38,38,.25);
 }
 
-/* Estado confirmação de delete */
 .confirmingDelete {
   border-color: var(--primary-red) !important;
   background: rgba(220,38,38,.12) !important;
@@ -775,7 +766,6 @@
 .shareMenu a:hover { background: var(--primary-red-bg); }
 .shareMenu button:last-child,
 .shareMenu a:last-child { border-bottom: none; }
-.twitterShare svg { color: #1DA1F2; }
 
 /* ===== CONTEÚDO PRINCIPAL ===== */
 .detailsMainContent {
@@ -785,7 +775,6 @@
   align-items: start;
 }
 
-/* Coluna Esquerda */
 .leftColumn {
   display: flex;
   flex-direction: column;
@@ -895,7 +884,6 @@
 .filmesContainer.dark .infoCard h4 { color: var(--dark-text-secondary); }
 .filmesContainer.dark .infoCard p  { color: var(--dark-text); }
 
-/* Coluna Direita */
 .rightColumn {
   display: flex;
   flex-direction: column;
@@ -903,7 +891,6 @@
   overflow: visible;
 }
 
-/* Seções */
 .sectionTitle {
   font-size: 0.7rem;
   font-weight: 700;
@@ -1022,7 +1009,6 @@
 }
 .tag:hover { border-color: var(--primary-red); color: var(--primary-red); }
 
-/* Galeria */
 .fotosSectionHeader {
   display: flex;
   justify-content: space-between;
@@ -1113,7 +1099,6 @@
 .verMaisContent svg  { font-size: 1.25rem; }
 .verMaisContent span { font-size: 0.8rem; font-weight: 700; }
 
-/* Acessos */
 .accessButtons {
   display: flex;
   flex-direction: column;
@@ -1202,7 +1187,6 @@
   flex-shrink: 0;
 }
 
-/* Ações Principais */
 .mainActions {
   padding-top: 1.25rem;
   border-top: 1px solid var(--gray-200);
@@ -1265,7 +1249,6 @@
 }
 .pastIcon { font-size: 1rem; color: var(--gray-400); }
 
-/* Sem resultados */
 .noResults {
   display: flex;
   flex-direction: column;
@@ -1308,7 +1291,6 @@
 }
 .clearFiltersBtn:hover { background: var(--primary-red); color: white; }
 
-/* Sem filme selecionado */
 .noFilmeSelected {
   display: flex;
   flex-direction: column;
@@ -1328,10 +1310,7 @@
   color: var(--gray-500);
 }
 .noFilmeSelected p { font-size: 0.825rem; color: var(--gray-400); margin: 0; }
-.filmesContainer.dark .noFilmeSelected h3 { color: var(--dark-text-secondary); }
-.filmesContainer.dark .noFilmeSelected p  { color: var(--dark-text-secondary); }
 
-/* Loading / Error */
 .loadingContainer,
 .errorContainer {
   display: flex;
@@ -1356,12 +1335,9 @@
   margin: 0;
   max-width: 380px;
 }
-.filmesContainer.dark .loadingContainer p,
-.filmesContainer.dark .errorContainer p { color: var(--dark-text-secondary); }
 
 .errorContainer svg { font-size: 2.5rem; color: var(--primary-red); }
 .errorContainer h3 { font-size: 1.125rem; font-weight: 700; margin: 0; color: var(--gray-900); }
-.filmesContainer.dark .errorContainer h3 { color: var(--dark-text); }
 .errorContainer button {
   padding: 0.5rem 1.25rem;
   background: var(--primary-red);
@@ -1375,7 +1351,6 @@
 }
 .errorContainer button:hover { background: var(--primary-red-dark); }
 
-/* Toast */
 .toast {
   position: fixed;
   bottom: 5rem;
@@ -1401,7 +1376,7 @@
 .toast_error   { background: var(--primary-red); color: white; }
 .toast_warn    { background: #f59e0b; color: #111; }
 
-/* Modal */
+/* ===== MODAL E FORMULÁRIO ===== */
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -1486,12 +1461,7 @@
   border: 1px solid var(--gray-200);
 }
 .filmesContainer.dark .imagePreviewModal { border-color: var(--dark-border); }
-.imagePreviewContainer small {
-  font-size: 0.7rem;
-  color: var(--gray-500);
-}
 
-/* Formulário */
 .formOverlay {
   position: fixed;
   inset: 0;
@@ -1638,7 +1608,6 @@
   line-height: 1.4;
 }
 
-/* Upload de arquivos */
 .fileInputArea { margin-top: 0.375rem; }
 
 .fileInputLabel {
@@ -1760,7 +1729,6 @@
 }
 .fileItem button:hover { color: var(--primary-red); background: var(--primary-red-bg); }
 
-/* Footer do formulário */
 .formFooter {
   padding: 0.875rem 1.25rem;
   border-top: 1px solid var(--gray-200);
