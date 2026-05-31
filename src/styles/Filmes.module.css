@@ -1,4 +1,4 @@
-/* Filmes.module.css - Versão Completa e Corrigida */
+/* Filmes.module.css - Versão Completa Corrigida */
 
 /* ===== VARIÁVEIS GLOBAIS ===== */
 :root {
@@ -81,6 +81,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .heroMain { text-align: center; }
@@ -107,6 +109,7 @@
   gap: 0.5rem;
   margin-top: 1rem;
   font-size: 0.875rem;
+  flex-wrap: wrap;
 }
 
 .heroStats span {
@@ -157,7 +160,7 @@
 }
 .filmesContainer.dark .floatingAddBtn { background: #ef4444; }
 
-/* ===== LAYOUT PRINCIPAL ===== */
+/* ===== LAYOUT PRINCIPAL - COM PROTEÇÃO ===== */
 .filmesContent {
   display: grid;
   grid-template-columns: 360px 1fr;
@@ -231,7 +234,7 @@
 
 .filterButtons {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.375rem;
   margin-bottom: 0.75rem;
 }
@@ -248,6 +251,7 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--gray-600);
+  text-align: center;
 }
 .filmesContainer.dark .filterBtn {
   border-color: var(--dark-border);
@@ -307,8 +311,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   transition: all 0.15s;
 }
@@ -419,6 +423,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .filmeNumber {
@@ -439,17 +444,17 @@
 }
 
 .actionBtn {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border: 1px solid var(--gray-300);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   transition: all 0.15s;
   background: transparent;
-  color: var(--gray-400);
+  color: var(--gray-500);
   border-radius: var(--radius-sm);
 }
 .filmesContainer.dark .actionBtn {
@@ -957,58 +962,7 @@
 .filmesContainer.dark .techRow strong { color: var(--dark-text); }
 .filmesContainer.dark .techRow span   { color: var(--dark-text-secondary); }
 
-.awardsList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.awardItem {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius);
-  background: white;
-  transition: border-color 0.15s;
-}
-.filmesContainer.dark .awardItem {
-  border-color: var(--dark-border);
-  background: var(--dark-card);
-}
-.awardItem:hover { border-color: rgba(251,191,36,.4); }
-
-.awardIcon { color: #fbbf24; font-size: 0.75rem; margin-top: 0.1rem; flex-shrink: 0; }
-.awardItem span {
-  font-size: 0.825rem;
-  color: var(--gray-600);
-  line-height: 1.4;
-}
-.filmesContainer.dark .awardItem span { color: var(--dark-text-secondary); }
-
-.tagsContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-}
-
-.tag {
-  padding: 0.25rem 0.625rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  border: 1px solid var(--gray-200);
-  background: transparent;
-  color: var(--gray-600);
-  border-radius: var(--radius-sm);
-  transition: all 0.15s;
-}
-.filmesContainer.dark .tag {
-  border-color: var(--dark-border);
-  color: var(--dark-text-secondary);
-}
-.tag:hover { border-color: var(--primary-red); color: var(--primary-red); }
-
+/* ===== GALERIA DE FOTOS ===== */
 .fotosSectionHeader {
   display: flex;
   justify-content: space-between;
@@ -1099,6 +1053,7 @@
 .verMaisContent svg  { font-size: 1.25rem; }
 .verMaisContent span { font-size: 0.8rem; font-weight: 700; }
 
+/* ===== ACESSOS ===== */
 .accessButtons {
   display: flex;
   flex-direction: column;
@@ -1249,6 +1204,7 @@
 }
 .pastIcon { font-size: 1rem; color: var(--gray-400); }
 
+/* ===== ESTADOS VAZIOS ===== */
 .noResults {
   display: flex;
   flex-direction: column;
@@ -1376,7 +1332,7 @@
 .toast_error   { background: var(--primary-red); color: white; }
 .toast_warn    { background: #f59e0b; color: #111; }
 
-/* ===== MODAL E FORMULÁRIO ===== */
+/* ===== MODAL ===== */
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -1462,6 +1418,7 @@
 }
 .filmesContainer.dark .imagePreviewModal { border-color: var(--dark-border); }
 
+/* ===== FORMULÁRIO ===== */
 .formOverlay {
   position: fixed;
   inset: 0;
@@ -1785,7 +1742,7 @@
   font-size: 0.8rem;
 }
 
-/* ===== RESPONSIVIDADE ===== */
+/* ===== RESPONSIVIDADE - COM !important PARA GARANTIR PRIORIDADE ===== */
 @media (min-width: 1400px) {
   .filmesContent          { grid-template-columns: 400px 1fr; gap: 2rem; }
   .fotosGrid              { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
@@ -1803,15 +1760,21 @@
   .posterContainer        { height: 265px; }
 }
 
+/* Mobile - com !important para garantir que vence qualquer conflito global */
 @media (max-width: 768px) {
   .heroHeader             { padding: 1.25rem 1rem; }
   .heroTitle              { font-size: 1.5rem; }
   .heroSubtitle           { font-size: 0.9rem; }
   .heroHeaderTop          { margin-bottom: 1rem; }
 
-  .filmesContent          { grid-template-columns: 1fr; gap: 1rem; padding: 1rem; }
+  /* !important garante que o grid de duas colunas não seja quebrado */
+  .filmesContent          { 
+    grid-template-columns: 200px 1fr !important; 
+    gap: 0.625rem;
+    padding: 0.625rem;
+  }
 
-  .sidebar                { position: static; max-height: 440px; }
+  .sidebar                { position: static; max-height: 440px; margin-bottom: 1rem; }
 
   .detailsMainContent     { grid-template-columns: 1fr; }
   .posterContainer        { max-width: 260px; height: 320px; margin: 0 auto; }
@@ -1823,15 +1786,50 @@
 
   .formRow                { grid-template-columns: 1fr; }
   .fotosGrid              { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+  
+  /* Protege elementos específicos que poderiam ser afetados */
+  .filmeListItem {
+    grid-template-columns: 64px 1fr !important;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+  
+  .filterButtons {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.25rem;
+  }
+  
+  .filterBtn {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.25rem;
+  }
+  
+  .actionBtn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.6rem;
+  }
 }
 
 @media (max-width: 480px) {
   .heroTitle              { font-size: 1.25rem; }
-  .filmesContent          { padding: 0.75rem; gap: 0.75rem; }
+  
+  /* !important para garantir grid de duas colunas em telas muito pequenas */
+  .filmesContent          { 
+    grid-template-columns: 160px 1fr !important; 
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+  
   .detailsContainer       { padding: 0.875rem; }
   .detailsTitle           { font-size: 1.125rem; }
 
-  .filmeListItem          { grid-template-columns: 56px 1fr; gap: 0.5rem; padding: 0.5rem; }
+  .filmeListItem          { 
+    grid-template-columns: 56px 1fr !important; 
+    gap: 0.5rem; 
+    padding: 0.5rem; 
+  }
+  
   .listItemImage          { width: 56px; height: 56px; }
 
   .techRow                { flex-direction: column; gap: 0.2rem; }
@@ -1839,4 +1837,75 @@
 
   .floatingAddBtn         { bottom: 1rem; right: 1rem; width: 42px; height: 42px; font-size: 1rem; }
   .toast                  { bottom: 4rem; max-width: calc(100vw - 2rem); white-space: normal; }
+  
+  /* Esconde ações menos essenciais no mobile muito pequeno */
+  .itemActions .actionBtn:nth-child(n+3) { display: none; }
+  
+  .fotosGrid {
+    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 380px) {
+  /* !important para garantir em telas extremamente pequenas */
+  .filmesContent          { 
+    grid-template-columns: 130px 1fr !important; 
+  }
+  
+  .posterContainer        { height: 140px; }
+  .detailsMainContent     { grid-template-columns: 110px 1fr; }
+  
+  .filmeListItem          { 
+    grid-template-columns: 44px 1fr !important; 
+    gap: 0.375rem; 
+    padding: 0.375rem; 
+  }
+  
+  .listItemImage          { width: 44px; height: 44px; }
+  .listItemTitle          { font-size: 0.7rem; }
+  
+  .listItemMeta {
+    font-size: 0.6rem;
+    gap: 0.25rem;
+  }
+}
+
+/* Proteção adicional para qualquer grid que possa ser afetado */
+[class*="filmesContent"],
+[class*="FilmesContent"],
+.filmesContent {
+  display: grid !important;
+  align-items: start;
+}
+
+/* Garante que a sidebar mantenha sticky no desktop e suma no mobile */
+@media (min-width: 769px) {
+  .sidebar {
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: static;
+    max-height: 440px;
+  }
+}
+
+/* Protege o overflow da lista de filmes */
+.filmeList {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Garante que imagens não transbordem */
+.filmeThumbnail,
+.posterImage,
+.fotoItem img {
+  max-width: 100%;
+  height: auto;
 }
