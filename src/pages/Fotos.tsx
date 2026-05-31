@@ -228,6 +228,29 @@ export default function Fotos() {
   const [error, setError] = useState<string | null>(null);
   const [fotoSelecionada, setFotoSelecionada] = useState<FilmeFoto | null>(null);
   const [deleting, setDeleting] = useState(false);
+  
+  // 1. States para filmes
+  const [filmes, setFilmes] = useState<Filme[]>([]);
+  const [loadingFilmes, setLoadingFilmes] = useState(false);
+
+  // 2. useEffect para carregar todos os filmes quando não há filmeId
+  useEffect(() => {
+    if (filmeId) return; // já tem filme, não precisa
+    
+    const loadFilmes = async () => {
+      setLoadingFilmes(true);
+      try {
+        const data = await FilmesService.findAll();
+        setFilmes(data);
+      } catch (err) {
+        console.error('Erro ao carregar filmes:', err);
+      } finally {
+        setLoadingFilmes(false);
+      }
+    };
+
+    loadFilmes();
+  }, [filmeId]);
 
   // Carregar filme e suas fotos
   useEffect(() => {
@@ -302,7 +325,69 @@ export default function Fotos() {
     }
   };
 
-  // Loading state
+  // 3. Substitua o bloco "Sem filme selecionado" inteiro
+  if (!filmeId || tipo !== 'filme') {
+    return (
+      <div className={`${styles.fotosContainer} ${isDarkMode ? styles.darkMode : ''}`}>
+        <header className={styles.heroHeader}>
+          <div className={styles.heroHeaderContent}>
+            <div className={styles.heroMain}>
+              <h1 className={styles.heroTitle}>Galeria de Fotos</h1>
+              <p className={styles.heroSubtitle}>Escolha um filme para ver as fotos</p>
+            </div>
+          </div>
+        </header>
+
+        <main className={styles.mainContent}>
+          {loadingFilmes ? (
+            <div className={styles.loadingContainer}>
+              <FaSpinner className={styles.loadingSpinner} />
+              <p>Carregando filmes...</p>
+            </div>
+          ) : filmes.length === 0 ? (
+            <div className={styles.noResults}>
+              <FaImage />
+              <h3>Nenhum filme encontrado</h3>
+            </div>
+          ) : (
+            <div className={styles.galeriaGrid}>
+              {filmes.map(f => (
+                <Link
+                  key={f.id}
+                  to={`/fotos?filmeId=${f.id}&titulo=${encodeURIComponent(f.title)}&tipo=filme`}
+                  className={`${styles.midiaCard} ${isDarkMode ? styles.darkCard : ''}`}
+                >
+                  <div className={styles.midiaImagemContainer}>
+                    <img
+                      src={buildMediaUrl(f.poster) || PLACEHOLDER_IMAGE}
+                      alt={f.title}
+                      className={styles.midiaImagem}
+                      onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER_IMAGE; }}
+                      loading="lazy"
+                    />
+                    <div className={styles.midiaTipoBadge}>
+                      <FaFilm />
+                    </div>
+                  </div>
+                  <div className={styles.midiaInfo}>
+                    <h4 className={styles.midiaTitulo}>{f.title}</h4>
+                    <div className={styles.midiaMeta}>
+                      {f.year && <span><FaCalendarAlt /> {f.year}</span>}
+                      {f.filmesFotos?.length !== undefined && (
+                        <span><FaImage /> {f.filmesFotos.length} fotos</span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </main>
+      </div>
+    );
+  }
+
+  // Loading state para o filme específico
   if (isLoading) {
     return (
       <div className={`${styles.fotosContainer} ${isDarkMode ? styles.darkMode : ''}`}>
@@ -322,22 +407,6 @@ export default function Fotos() {
           <FaExclamationTriangle />
           <h3>Erro ao carregar fotos</h3>
           <p>{error}</p>
-          <Link to="/filmes" className={styles.backButton}>
-            Voltar para filmes
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // Sem filme selecionado
-  if (!filmeId || tipo !== 'filme') {
-    return (
-      <div className={`${styles.fotosContainer} ${isDarkMode ? styles.darkMode : ''}`}>
-        <div className={styles.errorContainer}>
-          <FaExclamationTriangle />
-          <h3>Nenhum filme selecionado</h3>
-          <p>Selecione um filme para ver suas fotos.</p>
           <Link to="/filmes" className={styles.backButton}>
             Voltar para filmes
           </Link>
