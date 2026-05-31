@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FaTimes, FaSave, FaUpload, FaPlus, FaTrash } from 'react-icons/fa';
 import styles from '../styles/PlaylistForm.module.css';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../components/context/ThemeContext';
 
 interface Playlist {
   id: string;
