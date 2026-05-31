@@ -22,9 +22,9 @@ interface Playlist {
   theme: string;
   curatorDescription?: string;
   sessaoId?: string;
-  genres?: { id: string; name: string }[];
-  languages?: { id: string; name: string }[];
-  highlightTracks?: { id: string; name: string }[];
+  genres?: { id: string; name: string }[] | string[];
+  languages?: { id: string; name: string }[] | string[];
+  highlightTracks?: { id: string; name: string }[] | string[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -88,6 +88,44 @@ export default function PlaylistForm({
 
   useEffect(() => {
     if (initialData) {
+      // Garantir que arrays sejam sempre arrays
+      let genresArray: string[] = [];
+      let languagesArray: string[] = [];
+      let tracksArray: string[] = [];
+
+      // Processar gêneros
+      if (initialData.genres) {
+        if (Array.isArray(initialData.genres)) {
+          genresArray = initialData.genres.map(g => {
+            if (typeof g === 'string') return g;
+            if (g && typeof g === 'object' && 'name' in g) return g.name;
+            return '';
+          }).filter(g => g);
+        }
+      }
+
+      // Processar idiomas
+      if (initialData.languages) {
+        if (Array.isArray(initialData.languages)) {
+          languagesArray = initialData.languages.map(l => {
+            if (typeof l === 'string') return l;
+            if (l && typeof l === 'object' && 'name' in l) return l.name;
+            return '';
+          }).filter(l => l);
+        }
+      }
+
+      // Processar faixas destacadas
+      if (initialData.highlightTracks) {
+        if (Array.isArray(initialData.highlightTracks)) {
+          tracksArray = initialData.highlightTracks.map(t => {
+            if (typeof t === 'string') return t;
+            if (t && typeof t === 'object' && 'name' in t) return t.name;
+            return '';
+          }).filter(t => t);
+        }
+      }
+
       setFormData({
         title: initialData.title || '',
         description: initialData.description || '',
@@ -106,9 +144,9 @@ export default function PlaylistForm({
         sessaoId: initialData.sessaoId || undefined,
         usarUploadCapa: false,
         coverFile: null,
-        genres: initialData.genres?.map(g => g.name) || [],
-        languages: initialData.languages?.map(l => l.name) || [],
-        highlightTracks: initialData.highlightTracks?.map(t => t.name) || [],
+        genres: genresArray,
+        languages: languagesArray,
+        highlightTracks: tracksArray,
       });
       setPreviewUrl(initialData.coverImage || '');
     } else {
@@ -501,20 +539,24 @@ export default function PlaylistForm({
                 <FaPlus /> Adicionar
               </button>
             </h4>
-            {formData.genres.map((genre: string, index: number) => (
-              <div key={index} className={styles.dynamicField}>
-                <input
-                  type="text"
-                  value={genre}
-                  onChange={(e) => updateGenre(index, e.target.value)}
-                  placeholder="Ex: Rock, MPB, Jazz"
-                  disabled={isLoading}
-                />
-                <button type="button" onClick={() => removeGenre(index)} className={styles.removeButton} disabled={isLoading}>
-                  <FaTrash />
-                </button>
-              </div>
-            ))}
+            {formData.genres && formData.genres.length > 0 ? (
+              formData.genres.map((genre: string, index: number) => (
+                <div key={index} className={styles.dynamicField}>
+                  <input
+                    type="text"
+                    value={genre}
+                    onChange={(e) => updateGenre(index, e.target.value)}
+                    placeholder="Ex: Rock, MPB, Jazz"
+                    disabled={isLoading}
+                  />
+                  <button type="button" onClick={() => removeGenre(index)} className={styles.removeButton} disabled={isLoading}>
+                    <FaTrash />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div className={styles.emptyMessage}>Nenhum gênero adicionado. Clique em "Adicionar" para incluir.</div>
+            )}
           </div>
 
           {/* Seção 6: Idiomas */}
@@ -525,20 +567,24 @@ export default function PlaylistForm({
                 <FaPlus /> Adicionar
               </button>
             </h4>
-            {formData.languages.map((language: string, index: number) => (
-              <div key={index} className={styles.dynamicField}>
-                <input
-                  type="text"
-                  value={language}
-                  onChange={(e) => updateLanguage(index, e.target.value)}
-                  placeholder="Ex: Português, Inglês, Francês"
-                  disabled={isLoading}
-                />
-                <button type="button" onClick={() => removeLanguage(index)} className={styles.removeButton} disabled={isLoading}>
-                  <FaTrash />
-                </button>
-              </div>
-            ))}
+            {formData.languages && formData.languages.length > 0 ? (
+              formData.languages.map((language: string, index: number) => (
+                <div key={index} className={styles.dynamicField}>
+                  <input
+                    type="text"
+                    value={language}
+                    onChange={(e) => updateLanguage(index, e.target.value)}
+                    placeholder="Ex: Português, Inglês, Francês"
+                    disabled={isLoading}
+                  />
+                  <button type="button" onClick={() => removeLanguage(index)} className={styles.removeButton} disabled={isLoading}>
+                    <FaTrash />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div className={styles.emptyMessage}>Nenhum idioma adicionado. Clique em "Adicionar" para incluir.</div>
+            )}
           </div>
 
           {/* Seção 7: Faixas Destacadas */}
@@ -549,20 +595,24 @@ export default function PlaylistForm({
                 <FaPlus /> Adicionar
               </button>
             </h4>
-            {formData.highlightTracks.map((track: string, index: number) => (
-              <div key={index} className={styles.dynamicField}>
-                <input
-                  type="text"
-                  value={track}
-                  onChange={(e) => updateHighlightTrack(index, e.target.value)}
-                  placeholder="Nome da música"
-                  disabled={isLoading}
-                />
-                <button type="button" onClick={() => removeHighlightTrack(index)} className={styles.removeButton} disabled={isLoading}>
-                  <FaTrash />
-                </button>
-              </div>
-            ))}
+            {formData.highlightTracks && formData.highlightTracks.length > 0 ? (
+              formData.highlightTracks.map((track: string, index: number) => (
+                <div key={index} className={styles.dynamicField}>
+                  <input
+                    type="text"
+                    value={track}
+                    onChange={(e) => updateHighlightTrack(index, e.target.value)}
+                    placeholder="Nome da música"
+                    disabled={isLoading}
+                  />
+                  <button type="button" onClick={() => removeHighlightTrack(index)} className={styles.removeButton} disabled={isLoading}>
+                    <FaTrash />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div className={styles.emptyMessage}>Nenhuma faixa destacada adicionada. Clique em "Adicionar" para incluir.</div>
+            )}
             <small>Adicione as faixas mais importantes da playlist</small>
           </div>
 
