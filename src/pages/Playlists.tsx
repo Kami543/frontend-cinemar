@@ -11,6 +11,7 @@ import styles from '../styles/Playlists.module.css';
 import { usePlaylists } from '../hooks/usePlaylists';
 import PlaylistForm from '../components/PlaylistForm';
 import { useTheme } from '../components/context/ThemeContext';
+import api from '../services/api';
 
 // Constantes
 const PLAYLIST_CATEGORIES = [
@@ -33,7 +34,7 @@ interface Sessao {
   titulo: string;
 }
 
-// Hook customizado para buscar dados do localStorage
+// Hook customizado para localStorage (apenas para user)
 function useLocalStorage<T>(key: string, initialValue: T): [T, () => void] {
   const [data, setData] = useState<T>(initialValue);
 
@@ -62,7 +63,7 @@ export default function Playlists() {
   
   // Estados locais
   const [user] = useLocalStorage<User | null>('cinemar_user', null);
-  const [sessoes] = useLocalStorage<Sessao[]>('cinemar_sessoes', []);
+  const [sessoes, setSessoes] = useState<Sessao[]>([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -84,32 +85,42 @@ export default function Playlists() {
     toggleLike,
     isLiked,
     setSearch,
+    setTheme,
     resetFilters,
     refetch,
   } = usePlaylists({ limit: 100 });
 
   const isAdmin = user?.role === 'admin';
 
-  // Filtrar playlists localmente
+  // Carregar sessões da API
+  useEffect(() => {
+    async function loadSessoes() {
+      try {
+        const { data } = await api.get('/sessoes');
+        setSessoes(data);
+      } catch (err) {
+        console.error('Erro ao carregar sessões da API:', err);
+        // Fallback para localStorage
+        const stored = localStorage.getItem('cinemar_sessoes');
+        if (stored) {
+          try {
+            setSessoes(JSON.parse(stored));
+          } catch (e) {
+            console.error('Erro ao parsear sessões do localStorage:', e);
+          }
+        }
+      }
+    }
+    loadSessoes();
+  }, []);
+
+  // Filtro local APENAS para busca textual (já que a API não suporta search completo)
+  // Para categoria, a API já filtra via setTheme
   const filteredPlaylists = useMemo(() => {
     let filtered = [...playlists];
 
-    // Filtro por categoria
-    if (selectedCategory === 'literatura') {
-      filtered = filtered.filter(p => 
-        p.theme?.toLowerCase().includes('literatura') || 
-        p.relatedFilm === 'A Hora da Estrela'
-      );
-    } else if (selectedCategory === 'cinema') {
-      filtered = filtered.filter(p => 
-        p.relatedFilm?.includes('Bacurau') || 
-        p.relatedFilm?.includes('Ainda Estou Aqui')
-      );
-    } else if (selectedCategory === 'sociedade') {
-      filtered = filtered.filter(p => p.relatedFilm === 'Medida Provisória');
-    }
-
-    // Filtro por busca
+    // Aplicar filtro de busca local (título, filme, tema, curador)
+    // A API não tem suporte a search genérico, então fazemos localmente
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(p =>
@@ -121,7 +132,7 @@ export default function Playlists() {
     }
 
     return filtered;
-  }, [playlists, selectedCategory, searchTerm]);
+  }, [playlists, searchTerm]);
 
   // Playlist selecionada
   const selectedPlaylist = useMemo(() => {
@@ -131,13 +142,23 @@ export default function Playlists() {
     return filteredPlaylists[0] || null;
   }, [filteredPlaylists, selectedPlaylistId]);
 
-  // Debounced search
+  // Debounced search - envia para API apenas se a API suportar search
   useEffect(() => {
     const timer = setTimeout(() => {
-      setSearch(searchTerm);
+      // Se a API suportar search, descomente a linha abaixo
+      // setSearch(searchTerm);
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm, setSearch]);
+
+  // Quando a categoria muda, envia o filtro para a API
+  const handleCategoryChange = useCallback((categoryId: CategoryId) => {
+    setSelectedCategory(categoryId);
+    
+    const cat = PLAYLIST_CATEGORIES.find(c => c.id === categoryId);
+    // Envia o filtro de tema para a API
+    setTheme(cat?.filter ?? undefined);
+  }, [setTheme]);
 
   // Reset selected playlist quando os filtros mudam
   useEffect(() => {
@@ -177,7 +198,6 @@ export default function Playlists() {
   const sharePlaylist = useCallback(() => {
     if (selectedPlaylist?.spotifyUrl) {
       navigator.clipboard.writeText(selectedPlaylist.spotifyUrl);
-      // Opcional: mostrar toast de sucesso
     }
   }, [selectedPlaylist]);
 
@@ -319,7 +339,7 @@ export default function Playlists() {
             <button
               key={cat.id}
               className={`${styles.categoryFilterBtn} ${selectedCategory === cat.id ? styles.active : ''}`}
-              onClick={() => setSelectedCategory(cat.id)}
+              onClick={() => handleCategoryChange(cat.id)}
             >
               <span className={styles.categoryIcon}>{cat.icon}</span>
               {cat.name}

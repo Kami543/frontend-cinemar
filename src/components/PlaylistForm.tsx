@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaTimes, FaSave, FaUpload } from 'react-icons/fa';
+import { FaTimes, FaSave, FaUpload, FaPlus, FaTrash } from 'react-icons/fa';
 import styles from '../styles/PlaylistForm.module.css';
 import { useTheme } from './context/ThemeContext';
 
@@ -78,9 +78,13 @@ export default function PlaylistForm({
     sessaoId: undefined,
     usarUploadCapa: false,
     coverFile: null as File | null,
+    genres: [] as string[],
+    languages: [] as string[],
+    highlightTracks: [] as string[],
   });
 
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (initialData) {
@@ -102,6 +106,9 @@ export default function PlaylistForm({
         sessaoId: initialData.sessaoId || undefined,
         usarUploadCapa: false,
         coverFile: null,
+        genres: initialData.genres?.map(g => g.name) || [],
+        languages: initialData.languages?.map(l => l.name) || [],
+        highlightTracks: initialData.highlightTracks?.map(t => t.name) || [],
       });
       setPreviewUrl(initialData.coverImage || '');
     } else {
@@ -123,74 +130,185 @@ export default function PlaylistForm({
         sessaoId: undefined,
         usarUploadCapa: false,
         coverFile: null,
+        genres: [],
+        languages: [],
+        highlightTracks: [],
       });
       setPreviewUrl('');
     }
+    setErrors({});
   }, [initialData]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setFormData({ 
-        ...formData, 
-        coverFile: file,
-        usarUploadCapa: true,
-        coverImage: '' // Limpa URL quando usa upload
-      });
-      
-      // Criar preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Validar tamanho (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors({ ...errors, coverImage: 'A imagem deve ter no máximo 5MB' });
+      return;
+    }
+
+    // Validar tipo
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setErrors({ ...errors, coverImage: 'Formato inválido. Use JPG, PNG, GIF ou WEBP' });
+      return;
+    }
+
+    setFormData({ 
+      ...formData, 
+      coverFile: file,
+      usarUploadCapa: true,
+      coverImage: '' // Limpa URL quando usa upload
+    });
+    
+    // Criar preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    
+    // Limpar erro
+    if (errors.coverImage) {
+      const newErrors = { ...errors };
+      delete newErrors.coverImage;
+      setErrors(newErrors);
     }
   };
 
-  const handleSubmit = () => {
-    // Validar campos obrigatórios
-    if (!formData.title) {
-      alert('O título é obrigatório');
-      return;
-    }
+  // Extrair e validar spotifyId da URL
+  const extractSpotifyId = (url: string): string | null => {
+    const patterns = [
+      /playlist\/([a-zA-Z0-9]{22})/,
+      /spotify\.com\/playlist\/([a-zA-Z0-9]{22})/,
+      /open\.spotify\.com\/playlist\/([a-zA-Z0-9]{22})/
+    ];
     
-    if (!formData.spotifyUrl) {
-      alert('A URL do Spotify é obrigatória');
-      return;
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
     }
+    return null;
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = 'Título é obrigatório';
+    }
+
+    if (!formData.spotifyUrl.trim()) {
+      newErrors.spotifyUrl = 'URL do Spotify é obrigatória';
+    } else {
+      const spotifyId = extractSpotifyId(formData.spotifyUrl);
+      if (!spotifyId) {
+        newErrors.spotifyUrl = 'URL do Spotify inválida. Use o formato: https://open.spotify.com/playlist/...';
+      }
+    }
+
+    if (formData.tracks < 0) {
+      newErrors.tracks = 'Número de faixas deve ser maior ou igual a 0';
+    }
+
+    if (formData.filmYear && (parseInt(formData.filmYear) < 1888 || parseInt(formData.filmYear) > new Date().getFullYear())) {
+      newErrors.filmYear = 'Ano inválido';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = () => {
+    if (!validateForm()) return;
 
     // Extrair spotifyId da URL se não foi fornecido
     let spotifyId = formData.spotifyId;
     if (!spotifyId && formData.spotifyUrl) {
-      const match = formData.spotifyUrl.match(/playlist\/([a-zA-Z0-9]+)/);
-      if (match) {
-        spotifyId = match[1];
+      const extracted = extractSpotifyId(formData.spotifyUrl);
+      if (extracted) {
+        spotifyId = extracted;
       }
+    }
+
+    // Gerar embedUrl se não fornecida
+    let embedUrl = formData.embedUrl;
+    if (!embedUrl && spotifyId) {
+      embedUrl = `https://open.spotify.com/embed/playlist/${spotifyId}`;
     }
 
     // Preparar dados para enviar à API
     const submitData: any = {
-      title: formData.title,
-      description: formData.description || '',
+      title: formData.title.trim(),
+      description: formData.description.trim() || '',
       spotifyId: spotifyId || '',
-      spotifyUrl: formData.spotifyUrl,
-      embedUrl: formData.embedUrl || '',
+      spotifyUrl: formData.spotifyUrl.trim(),
+      embedUrl: embedUrl,
       coverImage: formData.coverImage || '',
-      duration: formData.duration || '',
-      tracks: formData.tracks || 0,
-      curator: formData.curator || '',
-      relatedFilm: formData.relatedFilm || '',
-      filmYear: formData.filmYear || '',
-      director: formData.director || '',
-      theme: formData.theme || '',
-      curatorDescription: formData.curatorDescription || '',
+      duration: formData.duration.trim() || '',
+      tracks: Number(formData.tracks) || 0,
+      curator: formData.curator.trim() || '',
+      relatedFilm: formData.relatedFilm.trim() || '',
+      filmYear: formData.filmYear.trim() || '',
+      director: formData.director.trim() || '',
+      theme: formData.theme.trim() || '',
+      curatorDescription: formData.curatorDescription.trim() || '',
       sessaoId: formData.sessaoId || undefined,
-      genresNomes: [], // Será preenchido se houver campos de gênero
-      languagesNomes: [], // Será preenchido se houver campos de idioma
-      highlightTracksNomes: [], // Será preenchido se houver campos de faixas destacadas
+      genresNomes: formData.genres.filter((g: string) => g.trim()),
+      languagesNomes: formData.languages.filter((l: string) => l.trim()),
+      highlightTracksNomes: formData.highlightTracks.filter((t: string) => t.trim()),
+      coverFile: formData.usarUploadCapa ? formData.coverFile : null,
     };
     
     onSave(submitData);
+  };
+
+  // Handlers para arrays dinâmicos
+  const addGenre = () => {
+    setFormData({ ...formData, genres: [...formData.genres, ''] });
+  };
+
+  const updateGenre = (index: number, value: string) => {
+    const newGenres = [...formData.genres];
+    newGenres[index] = value;
+    setFormData({ ...formData, genres: newGenres });
+  };
+
+  const removeGenre = (index: number) => {
+    const newGenres = formData.genres.filter((_: any, i: number) => i !== index);
+    setFormData({ ...formData, genres: newGenres });
+  };
+
+  const addLanguage = () => {
+    setFormData({ ...formData, languages: [...formData.languages, ''] });
+  };
+
+  const updateLanguage = (index: number, value: string) => {
+    const newLanguages = [...formData.languages];
+    newLanguages[index] = value;
+    setFormData({ ...formData, languages: newLanguages });
+  };
+
+  const removeLanguage = (index: number) => {
+    const newLanguages = formData.languages.filter((_: any, i: number) => i !== index);
+    setFormData({ ...formData, languages: newLanguages });
+  };
+
+  const addHighlightTrack = () => {
+    setFormData({ ...formData, highlightTracks: [...formData.highlightTracks, ''] });
+  };
+
+  const updateHighlightTrack = (index: number, value: string) => {
+    const newTracks = [...formData.highlightTracks];
+    newTracks[index] = value;
+    setFormData({ ...formData, highlightTracks: newTracks });
+  };
+
+  const removeHighlightTrack = (index: number) => {
+    const newTracks = formData.highlightTracks.filter((_: any, i: number) => i !== index);
+    setFormData({ ...formData, highlightTracks: newTracks });
   };
 
   if (!isOpen) return null;
@@ -217,9 +335,10 @@ export default function PlaylistForm({
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Nome da playlist"
-                  required
+                  className={errors.title ? styles.error : ''}
                   disabled={isLoading}
                 />
+                {errors.title && <small className={styles.errorText}>{errors.title}</small>}
               </div>
               <div className={styles.formGroup}>
                 <label>URL do Spotify *</label>
@@ -228,32 +347,11 @@ export default function PlaylistForm({
                   value={formData.spotifyUrl}
                   onChange={(e) => setFormData({ ...formData, spotifyUrl: e.target.value })}
                   placeholder="https://open.spotify.com/playlist/..."
-                  required
+                  className={errors.spotifyUrl ? styles.error : ''}
                   disabled={isLoading}
                 />
-              </div>
-            </div>
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>Spotify ID</label>
-                <input
-                  type="text"
-                  value={formData.spotifyId}
-                  onChange={(e) => setFormData({ ...formData, spotifyId: e.target.value })}
-                  placeholder="ID da playlist (opcional - extraído automaticamente)"
-                  disabled={isLoading}
-                />
-                <small>Deixe em branco para extrair automaticamente da URL</small>
-              </div>
-              <div className={styles.formGroup}>
-                <label>URL do Embed</label>
-                <input
-                  type="text"
-                  value={formData.embedUrl}
-                  onChange={(e) => setFormData({ ...formData, embedUrl: e.target.value })}
-                  placeholder="https://embed.spotify.com/..."
-                  disabled={isLoading}
-                />
+                {errors.spotifyUrl && <small className={styles.errorText}>{errors.spotifyUrl}</small>}
+                <small>Ex: https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M</small>
               </div>
             </div>
           </div>
@@ -303,12 +401,16 @@ export default function PlaylistForm({
               <div className={styles.formGroup}>
                 <label>Ano do Filme</label>
                 <input
-                  type="text"
+                  type="number"
                   value={formData.filmYear}
                   onChange={(e) => setFormData({ ...formData, filmYear: e.target.value })}
                   placeholder="2024"
+                  min="1888"
+                  max={new Date().getFullYear()}
+                  className={errors.filmYear ? styles.error : ''}
                   disabled={isLoading}
                 />
+                {errors.filmYear && <small className={styles.errorText}>{errors.filmYear}</small>}
               </div>
             </div>
           </div>
@@ -333,9 +435,10 @@ export default function PlaylistForm({
                   type="text"
                   value={formData.theme}
                   onChange={(e) => setFormData({ ...formData, theme: e.target.value })}
-                  placeholder="Tema principal da playlist"
+                  placeholder="Ex: cinema, literatura, sociedade"
                   disabled={isLoading}
                 />
+                <small>Tema usado para filtrar playlists por categoria</small>
               </div>
             </div>
             <div className={styles.formGroup}>
@@ -372,8 +475,10 @@ export default function PlaylistForm({
                   onChange={(e) => setFormData({ ...formData, tracks: parseInt(e.target.value) || 0 })}
                   placeholder="0"
                   min="0"
+                  className={errors.tracks ? styles.error : ''}
                   disabled={isLoading}
                 />
+                {errors.tracks && <small className={styles.errorText}>{errors.tracks}</small>}
               </div>
             </div>
             <div className={styles.formGroup}>
@@ -388,7 +493,80 @@ export default function PlaylistForm({
             </div>
           </div>
 
-          {/* Seção 5: Imagem de Capa */}
+          {/* Seção 5: Gêneros */}
+          <div className={styles.formSection}>
+            <h4 className={styles.formSectionTitle}>
+              Gêneros Musicais
+              <button type="button" onClick={addGenre} className={styles.addButton} disabled={isLoading}>
+                <FaPlus /> Adicionar
+              </button>
+            </h4>
+            {formData.genres.map((genre: string, index: number) => (
+              <div key={index} className={styles.dynamicField}>
+                <input
+                  type="text"
+                  value={genre}
+                  onChange={(e) => updateGenre(index, e.target.value)}
+                  placeholder="Ex: Rock, MPB, Jazz"
+                  disabled={isLoading}
+                />
+                <button type="button" onClick={() => removeGenre(index)} className={styles.removeButton} disabled={isLoading}>
+                  <FaTrash />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Seção 6: Idiomas */}
+          <div className={styles.formSection}>
+            <h4 className={styles.formSectionTitle}>
+              Idiomas das Faixas
+              <button type="button" onClick={addLanguage} className={styles.addButton} disabled={isLoading}>
+                <FaPlus /> Adicionar
+              </button>
+            </h4>
+            {formData.languages.map((language: string, index: number) => (
+              <div key={index} className={styles.dynamicField}>
+                <input
+                  type="text"
+                  value={language}
+                  onChange={(e) => updateLanguage(index, e.target.value)}
+                  placeholder="Ex: Português, Inglês, Francês"
+                  disabled={isLoading}
+                />
+                <button type="button" onClick={() => removeLanguage(index)} className={styles.removeButton} disabled={isLoading}>
+                  <FaTrash />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Seção 7: Faixas Destacadas */}
+          <div className={styles.formSection}>
+            <h4 className={styles.formSectionTitle}>
+              Faixas Destacadas
+              <button type="button" onClick={addHighlightTrack} className={styles.addButton} disabled={isLoading}>
+                <FaPlus /> Adicionar
+              </button>
+            </h4>
+            {formData.highlightTracks.map((track: string, index: number) => (
+              <div key={index} className={styles.dynamicField}>
+                <input
+                  type="text"
+                  value={track}
+                  onChange={(e) => updateHighlightTrack(index, e.target.value)}
+                  placeholder="Nome da música"
+                  disabled={isLoading}
+                />
+                <button type="button" onClick={() => removeHighlightTrack(index)} className={styles.removeButton} disabled={isLoading}>
+                  <FaTrash />
+                </button>
+              </div>
+            ))}
+            <small>Adicione as faixas mais importantes da playlist</small>
+          </div>
+
+          {/* Seção 8: Imagem de Capa */}
           <div className={styles.formSection}>
             <h4 className={styles.formSectionTitle}>Imagem de Capa</h4>
             
@@ -448,6 +626,7 @@ export default function PlaylistForm({
                   )}
                 </div>
                 <small>Formatos: JPG, PNG, GIF, WEBP. Máx: 5MB</small>
+                {errors.coverImage && <small className={styles.errorText}>{errors.coverImage}</small>}
               </div>
             )}
 
