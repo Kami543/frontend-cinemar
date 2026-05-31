@@ -229,7 +229,7 @@ export default function Fotos() {
   const [fotoSelecionada, setFotoSelecionada] = useState<FilmeFoto | null>(null);
   const [deleting, setDeleting] = useState(false);
   
-  // 1. States para filmes
+  // 1. States para filmes - inicializados como array vazio
   const [filmes, setFilmes] = useState<Filme[]>([]);
   const [loadingFilmes, setLoadingFilmes] = useState(false);
 
@@ -241,9 +241,11 @@ export default function Fotos() {
       setLoadingFilmes(true);
       try {
         const data = await FilmesService.findAll();
-        setFilmes(data);
+        // Garantir que data seja um array
+        setFilmes(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Erro ao carregar filmes:', err);
+        setFilmes([]); // Em caso de erro, garantir que é array vazio
       } finally {
         setLoadingFilmes(false);
       }
@@ -344,10 +346,11 @@ export default function Fotos() {
               <FaSpinner className={styles.loadingSpinner} />
               <p>Carregando filmes...</p>
             </div>
-          ) : filmes.length === 0 ? (
+          ) : !Array.isArray(filmes) || filmes.length === 0 ? (
             <div className={styles.noResults}>
               <FaImage />
               <h3>Nenhum filme encontrado</h3>
+              <p>Tente novamente mais tarde.</p>
             </div>
           ) : (
             <div className={styles.galeriaGrid}>
@@ -373,7 +376,7 @@ export default function Fotos() {
                     <h4 className={styles.midiaTitulo}>{f.title}</h4>
                     <div className={styles.midiaMeta}>
                       {f.year && <span><FaCalendarAlt /> {f.year}</span>}
-                      {f.filmesFotos?.length !== undefined && (
+                      {f.filmesFotos && Array.isArray(f.filmesFotos) && (
                         <span><FaImage /> {f.filmesFotos.length} fotos</span>
                       )}
                     </div>
