@@ -1,4 +1,4 @@
-/* Filmes.module.css - Versão Completa com Sidebar Embaixo no Mobile */
+/* Filmes.module.css - Versão Completa para a página de Filmes */
 
 /* ===== VARIÁVEIS GLOBAIS ===== */
 :root {
@@ -33,6 +33,7 @@
 
   --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
   --shadow:    0 4px 12px rgba(0,0,0,.1);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,.1);
 }
 
 /* ===== BASE ===== */
@@ -914,6 +915,10 @@
   color: var(--dark-text-secondary);
 }
 
+.synopsisSection {
+  margin-bottom: 0.5rem;
+}
+
 .synopsisText {
   font-size: 0.875rem;
   line-height: 1.65;
@@ -962,7 +967,62 @@
 .filmesContainer.dark .techRow strong { color: var(--dark-text); }
 .filmesContainer.dark .techRow span   { color: var(--dark-text-secondary); }
 
-/* ===== GALERIA DE FOTOS ===== */
+.awardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.awardItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  background: white;
+  transition: border-color 0.15s;
+}
+.filmesContainer.dark .awardItem {
+  border-color: var(--dark-border);
+  background: var(--dark-card);
+}
+.awardItem:hover { border-color: rgba(251,191,36,.4); }
+
+.awardIcon { color: #fbbf24; font-size: 0.75rem; margin-top: 0.1rem; flex-shrink: 0; }
+.awardItem span {
+  font-size: 0.825rem;
+  color: var(--gray-600);
+  line-height: 1.4;
+}
+.filmesContainer.dark .awardItem span { color: var(--dark-text-secondary); }
+
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.tag {
+  padding: 0.25rem 0.625rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid var(--gray-200);
+  background: transparent;
+  color: var(--gray-600);
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
+}
+.filmesContainer.dark .tag {
+  border-color: var(--dark-border);
+  color: var(--dark-text-secondary);
+}
+.tag:hover { border-color: var(--primary-red); color: var(--primary-red); }
+
+.fotosSection {
+  margin-top: 0.5rem;
+}
+
 .fotosSectionHeader {
   display: flex;
   justify-content: space-between;
@@ -1307,6 +1367,7 @@
 }
 .errorContainer button:hover { background: var(--primary-red-dark); }
 
+/* ===== TOAST ===== */
 .toast {
   position: fixed;
   bottom: 5rem;
@@ -1742,7 +1803,7 @@
   font-size: 0.8rem;
 }
 
-/* ===== RESPONSIVIDADE - SIDEBAR EMBAIXO NO MOBILE ===== */
+/* ===== RESPONSIVIDADE ===== */
 @media (min-width: 1400px) {
   .filmesContent          { grid-template-columns: 400px 1fr; gap: 2rem; }
   .fotosGrid              { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
@@ -1760,14 +1821,13 @@
   .posterContainer        { height: 265px; }
 }
 
-/* Mobile - Sidebar embaixo do conteúdo (ordem invertida) */
+/* Mobile - Sidebar embaixo do conteúdo */
 @media (max-width: 768px) {
   .heroHeader             { padding: 1.25rem 1rem; }
   .heroTitle              { font-size: 1.5rem; }
   .heroSubtitle           { font-size: 0.9rem; }
   .heroHeaderTop          { margin-bottom: 1rem; }
 
-  /* INVERTE A ORDEM: conteúdo (filmeDetails) primeiro, sidebar embaixo */
   .filmesContent          { 
     display: flex !important;
     flex-direction: column !important;
@@ -1775,7 +1835,6 @@
     padding: 0.625rem;
   }
   
-  /* Sidebar vai para baixo */
   .sidebar {
     order: 2 !important;
     position: static;
@@ -1783,7 +1842,6 @@
     margin-top: 0;
   }
   
-  /* Conteúdo principal (detalhes do filme) vai para cima */
   .filmeDetails {
     order: 1 !important;
   }
@@ -1799,7 +1857,6 @@
   .formRow                { grid-template-columns: 1fr; }
   .fotosGrid              { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
   
-  /* Ajustes da lista de filmes dentro da sidebar */
   .filmeListItem {
     grid-template-columns: 64px 1fr !important;
     gap: 0.75rem;
@@ -1822,12 +1879,10 @@
     font-size: 0.6rem;
   }
   
-  /* Ajusta altura da lista dentro da sidebar */
   .filmeList {
     max-height: 400px;
   }
   
-  /* Ajuste para o botão flutuante não atrapalhar */
   .floatingAddBtn {
     bottom: 1rem;
     right: 1rem;
@@ -1862,7 +1917,6 @@
   .floatingAddBtn         { bottom: 1rem; right: 1rem; width: 42px; height: 42px; font-size: 1rem; }
   .toast                  { bottom: 4rem; max-width: calc(100vw - 2rem); white-space: normal; }
   
-  /* Esconde ações menos essenciais no mobile muito pequeno */
   .itemActions .actionBtn:nth-child(n+3) { display: none; }
   
   .fotosGrid {
@@ -1870,7 +1924,6 @@
     gap: 0.5rem;
   }
   
-  /* Sidebar mais compacta */
   .sidebar {
     max-height: 450px;
   }
@@ -1912,34 +1965,17 @@
   }
 }
 
-/* Proteção adicional para garantir a ordem correta */
-[class*="filmesContent"],
-[class*="FilmesContent"],
-.filmesContent {
-  display: grid;
-  align-items: start;
-}
-
-/* Garante que a sidebar mantenha sticky no desktop */
-@media (min-width: 769px) {
-  .sidebar {
-    position: sticky;
-    top: 1rem;
-    max-height: calc(100vh - 2rem);
-  }
-}
-
-/* Protege o overflow da lista de filmes */
-.filmeList {
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Garante que imagens não transbordem */
+/* Proteção para imagens */
 .filmeThumbnail,
 .posterImage,
 .fotoItem img {
   max-width: 100%;
   height: auto;
+}
+
+/* Scroll suave */
+.filmeList {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
