@@ -29,7 +29,7 @@ import Login    from './pages/Login';
 import Register from './pages/Sigin';
 
 // Importar os estilos globais do App
-import './styles/App.css'; // ← Adicione esta linha
+import './App.css'; // ← Adicione esta linha
 
 /* Rotas que NÃO devem exibir Navbar/Footer */
 const AUTH_ROUTES = ['/login', '/register'];
