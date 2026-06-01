@@ -10,7 +10,7 @@ import {
 import styles from '../styles/Playlists.module.css';
 import { usePlaylists } from '../hooks/usePlaylists';
 import PlaylistForm from '../components/PlaylistForm';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../components/context/ThemeContext';
 import api from '../services/api';
 
 // Constantes
