@@ -1189,13 +1189,15 @@
 }
 .filmesContainer.dark .buttonSubtitle { color: var(--dark-text-secondary); }
 
-.loadingSpinner {
+/* ✅ RENOMEADO - Spinner para botões de acesso (não conflita com o de tela cheia) */
+.buttonSpinner {
   animation: spin 1s linear infinite;
   font-size: 0.875rem;
   color: var(--gray-400);
   margin-left: auto;
   flex-shrink: 0;
 }
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
@@ -1343,14 +1345,14 @@
 }
 .noFilmeSelected p { font-size: 0.825rem; color: var(--gray-400); margin: 0; }
 
-/* ===== LOADING CONTAINER - IGUAL AO FOTOS ===== */
+/* ===== LOADING CONTAINER - TELA CHEIA ===== */
 .loadingContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  width: 100%;
+  width: 100vw;
   gap: 1.5rem;
   text-align: center;
   background: var(--bg-primary);
@@ -1360,12 +1362,16 @@
   right: 0;
   bottom: 0;
   z-index: 9999;
+  margin: 0;
+  padding: 0;
 }
 
-.filmesContainer.dark .loadingContainer {
-  background: var(--dark-bg);
+/* ✅ SPINNER DE TELA CHEIA - NÃO TEM margin-left: auto */
+.loadingSpinner {
+  font-size: 2.5rem;
+  color: var(--primary-red);
+  animation: spin 1s linear infinite;
 }
-
 
 .loadingContainer p {
   font-size: 0.875rem;
@@ -1375,22 +1381,12 @@
   animation: pulse 1.5s ease-in-out infinite;
 }
 
+[data-theme="dark"] .loadingContainer {
+  background: var(--dark-bg);
+}
 
-.filmesContainer.dark .loadingContainer p {
+[data-theme="dark"] .loadingContainer p {
   color: var(--dark-text-secondary);
-}
-
-/* ✅ SPINNER IGUAL AO DO FOTOS */
-.loadingSpinner {
-  font-size: 2.5rem;
-  color: var(--primary-red);
-  animation: spin 1s linear infinite;
-}
-
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 @keyframes pulse {
@@ -1398,20 +1394,28 @@
   50% { opacity: 1; }
 }
 
-/* ===== ERROR CONTAINER ===== */
+/* ===== ERROR CONTAINER - TELA CHEIA ===== */
 .errorContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  width: 100vw;
   gap: 1rem;
   padding: 2rem;
   text-align: center;
   background: var(--bg-primary);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  margin: 0;
 }
 
-.filmesContainer.dark .errorContainer {
+[data-theme="dark"] .errorContainer {
   background: var(--dark-bg);
 }
 
@@ -1427,7 +1431,7 @@
   color: var(--gray-900);
 }
 
-.filmesContainer.dark .errorContainer h3 {
+[data-theme="dark"] .errorContainer h3 {
   color: var(--dark-text);
 }
 
@@ -1439,7 +1443,7 @@
   max-width: 380px;
 }
 
-.filmesContainer.dark .errorContainer p {
+[data-theme="dark"] .errorContainer p {
   color: var(--dark-text-secondary);
 }
 
@@ -1453,6 +1457,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
+  margin-top: 0.5rem;
 }
 
 .errorContainer button:hover {

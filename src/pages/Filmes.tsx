@@ -788,7 +788,7 @@ export default function Filmes() {
                               <span className={styles.buttonTitle}>Materiais do Debate</span>
                               <span className={styles.buttonSubtitle}>Fotos e documentos</span>
                             </div>
-                            {loadingMaterials && <FaSpinner className={styles.loadingSpinner} aria-hidden="true" />}
+                            {loadingMaterials && <FaSpinner className={styles.buttonSpinner} aria-hidden="true" />}
                           </button>
                         )}
                         <button className={`${styles.accessButton} ${styles.playlistButton}`} onClick={handleGoToCineMarPlaylist} disabled={loadingPlaylist}>
@@ -797,7 +797,7 @@ export default function Filmes() {
                             <span className={styles.buttonTitle}>Playlist Oficial</span>
                             <span className={styles.buttonSubtitle}>CineMar no Spotify</span>
                           </div>
-                          {loadingPlaylist && <FaSpinner className={styles.loadingSpinner} aria-hidden="true" />}
+                          {loadingPlaylist && <FaSpinner className={styles.buttonSpinner} aria-hidden="true" />}
                         </button>
                         {selectedFilme.playlistLink && (
                           <button className={styles.accessButton} onClick={handleOpenExternalPlaylist} disabled={loadingYouTube}>
@@ -806,7 +806,7 @@ export default function Filmes() {
                               <span className={styles.buttonTitle}>Trilha Sonora</span>
                               <span className={styles.buttonSubtitle}>YouTube Music</span>
                             </div>
-                            {loadingYouTube && <FaSpinner className={styles.loadingSpinner} aria-hidden="true" />}
+                            {loadingYouTube && <FaSpinner className={styles.buttonSpinner} aria-hidden="true" />}
                             <FaExternalLinkAlt className={styles.externalIcon} aria-hidden="true" />
                           </button>
                         )}
