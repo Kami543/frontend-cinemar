@@ -1,4 +1,4 @@
-/* Filmes.module.css - Versão Completa para a página de Filmes */
+/* Filmes.module.css - Versão Completa Corrigida */
 
 /* ===== VARIÁVEIS GLOBAIS ===== */
 :root {
@@ -34,6 +34,22 @@
   --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
   --shadow:    0 4px 12px rgba(0,0,0,.1);
   --shadow-lg: 0 10px 25px rgba(0,0,0,.1);
+
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
 }
 
 /* ===== BASE ===== */
@@ -1327,23 +1343,74 @@
 }
 .noFilmeSelected p { font-size: 0.825rem; color: var(--gray-400); margin: 0; }
 
-.loadingContainer,
+/* ===== LOADING CONTAINER - IGUAL AO FOTOS ===== */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 1rem;
+  text-align: center;
+  background: var(--bg-primary);
+  width: 100%;
+}
+
+.filmesContainer.dark .loadingContainer {
+  background: var(--dark-bg);
+}
+
+.loadingContainer p {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+.filmesContainer.dark .loadingContainer p {
+  color: var(--dark-text-secondary);
+}
+
+/* ✅ SPINNER IGUAL AO DO FOTOS */
+.loadingSpinner {
+  font-size: 2.5rem;
+  color: var(--primary-red);
+  animation: spin 1s linear infinite;
+}
+
+/* ===== ERROR CONTAINER ===== */
 .errorContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
+  min-height: 100vh;
   gap: 1rem;
   padding: 2rem;
   text-align: center;
-  background: var(--gray-50);
-  border-radius: var(--radius);
+  background: var(--bg-primary);
 }
-.filmesContainer.dark .loadingContainer,
-.filmesContainer.dark .errorContainer { background: var(--dark-bg); }
 
-.loadingContainer p,
+.filmesContainer.dark .errorContainer {
+  background: var(--dark-bg);
+}
+
+.errorContainer svg {
+  font-size: 2.5rem;
+  color: var(--primary-red);
+}
+
+.errorContainer h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--gray-900);
+}
+
+.filmesContainer.dark .errorContainer h3 {
+  color: var(--dark-text);
+}
+
 .errorContainer p {
   font-size: 0.875rem;
   font-weight: 500;
@@ -1352,8 +1419,10 @@
   max-width: 380px;
 }
 
-.errorContainer svg { font-size: 2.5rem; color: var(--primary-red); }
-.errorContainer h3 { font-size: 1.125rem; font-weight: 700; margin: 0; color: var(--gray-900); }
+.filmesContainer.dark .errorContainer p {
+  color: var(--dark-text-secondary);
+}
+
 .errorContainer button {
   padding: 0.5rem 1.25rem;
   background: var(--primary-red);
@@ -1365,7 +1434,10 @@
   cursor: pointer;
   transition: background 0.15s;
 }
-.errorContainer button:hover { background: var(--primary-red-dark); }
+
+.errorContainer button:hover {
+  background: var(--primary-red-dark);
+}
 
 /* ===== TOAST ===== */
 .toast {

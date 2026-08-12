@@ -18,7 +18,7 @@ import FilmesService from '../services/filmes.service';
 
 const PLACEHOLDER_IMAGE = getPlaceholderImage();
 
-// ─── URL helper (mesmo padrão de Members.tsx) ────────────────────────────────
+// ─── URL helper ────────────────────────────────────────────────
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 function buildMediaUrl(path: string | null | undefined): string | null {
@@ -27,7 +27,7 @@ function buildMediaUrl(path: string | null | undefined): string | null {
   const normalized = path.startsWith('/') ? path : `/${path}`;
   return `${API_BASE}${normalized}`;
 }
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 
 export default function Filmes() {
   const navigate   = useNavigate();
@@ -60,7 +60,6 @@ export default function Filmes() {
   const [uploadingCover,  setUploadingCover]  = useState(false);
   const [coverPreview,    setCoverPreview]    = useState<string | null>(null);
   
-  // ✅ Força re-render da imagem
   const [imageKey, setImageKey] = useState(0);
 
   const [filmeForm, setFilmeForm] = useState<Partial<CreateFilmePayload>>({
@@ -185,25 +184,15 @@ export default function Filmes() {
     window.open(url, '_blank');
   }, [selectedFilme]);
 
-  // ✅ FUNÇÃO CORRIGIDA - Usando FilmesService.updateCover
   const handleUpdateCover = async () => {
     if (!selectedFilme || !newCoverImage) return;
     setUploadingCover(true);
     try {
       const updatedFilme = await FilmesService.updateCover(selectedFilme.id, newCoverImage);
-      
-      // Força a atualização
       setSelectedFilme(updatedFilme);
-      
-      // Limpa o cache da imagem antiga
       setImageErrors(prev => ({ ...prev, [selectedFilme.id]: false }));
-      
-      // Força re-render da imagem
       setImageKey(prev => prev + 1);
-      
-      // Aguarda a refetch
       await refetch();
-      
       setShowCoverModal(false);
       setNewCoverImage(null);
       if (coverPreview) {
@@ -226,14 +215,12 @@ export default function Filmes() {
     }
   };
 
-  // ✅ FUNÇÃO CORRIGIDA - Prioriza foto principal
   const getFilmeImageUrl = (filme: any): string => {
     if (!filme) return PLACEHOLDER_IMAGE;
     if (imageErrors[filme.id]) return PLACEHOLDER_IMAGE;
     
     let url = PLACEHOLDER_IMAGE;
     
-    // Primeiro, tenta pegar a foto principal (capa)
     if (filme.filmesFotos?.length > 0) {
       const principal = filme.filmesFotos.find((f: any) => f.principal === true);
       if (principal && principal.path) {
@@ -246,12 +233,10 @@ export default function Filmes() {
       }
     }
     
-    // Se não tem foto, tenta imageUrl
     if (url === PLACEHOLDER_IMAGE && filme.imageUrl) {
       url = buildMediaUrl(filme.imageUrl) ?? PLACEHOLDER_IMAGE;
     }
     
-    // Adiciona timestamp para quebrar cache
     if (url !== PLACEHOLDER_IMAGE && url.includes('http')) {
       const separator = url.includes('?') ? '&' : '?';
       url = `${url}${separator}t=${Date.now()}`;
@@ -260,7 +245,6 @@ export default function Filmes() {
     return url;
   };
 
-  // ✅ Função auxiliar para status seguro
   const getStatusClass = (status: string | undefined): string => {
     if (!status) return '';
     return styles[status.toLowerCase()] || '';
@@ -365,27 +349,23 @@ export default function Filmes() {
 
   const clearAllFilters = () => { setSearchTerm(''); setActiveFilter('all'); resetFilters(); };
 
-  // ✅ LOADING CORRIGIDO - igual ao Fotos.tsx com spinner girando
+  // ✅ LOADING IGUAL AO DO FOTOS.tsx - SEM O WRAPPER
   if (isLoading && filmesBackend.length === 0) {
     return (
-      <div className={`${styles.filmesContainer} ${isDarkMode ? styles.dark : ''}`}>
-        <div className={styles.loadingContainer}>
-          <FaSpinner className={styles.loadingSpinner} />
-          <p>Carregando catálogo de filmes...</p>
-        </div>
+      <div className={styles.loadingContainer}>
+        <FaSpinner className={styles.loadingSpinner} />
+        <p>Carregando catálogo de filmes...</p>
       </div>
     );
   }
 
   if (backendError && filmesBackend.length === 0) {
     return (
-      <div className={`${styles.filmesContainer} ${isDarkMode ? styles.dark : ''}`}>
-        <div className={styles.errorContainer}>
-          <FaExclamationTriangle />
-          <h3>Erro ao carregar filmes</h3>
-          <p>{backendError}</p>
-          <button onClick={() => refetch()}>Tentar novamente</button>
-        </div>
+      <div className={styles.errorContainer}>
+        <FaExclamationTriangle />
+        <h3>Erro ao carregar filmes</h3>
+        <p>{backendError}</p>
+        <button onClick={() => refetch()}>Tentar novamente</button>
       </div>
     );
   }
