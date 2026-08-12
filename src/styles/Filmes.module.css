@@ -1350,22 +1350,31 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  gap: 1rem;
+  width: 100%;
+  gap: 1.5rem;
   text-align: center;
   background: var(--bg-primary);
-  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
 }
 
 .filmesContainer.dark .loadingContainer {
   background: var(--dark-bg);
 }
 
+
 .loadingContainer p {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--gray-500);
   margin: 0;
+  animation: pulse 1.5s ease-in-out infinite;
 }
+
 
 .filmesContainer.dark .loadingContainer p {
   color: var(--dark-text-secondary);
@@ -1376,6 +1385,17 @@
   font-size: 2.5rem;
   color: var(--primary-red);
   animation: spin 1s linear infinite;
+}
+
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
 /* ===== ERROR CONTAINER ===== */
