@@ -349,7 +349,7 @@ export default function Filmes() {
 
   const clearAllFilters = () => { setSearchTerm(''); setActiveFilter('all'); resetFilters(); };
 
-  // ✅ LOADING IGUAL AO DO FOTOS.tsx - SEM O WRAPPER
+  // ✅ LOADING - Renderizado fora do filmesContainer (igual ao Fotos)
   if (isLoading && filmesBackend.length === 0) {
     return (
       <div className={styles.loadingContainer}>
@@ -359,6 +359,7 @@ export default function Filmes() {
     );
   }
 
+  // ✅ ERROR - Renderizado fora do filmesContainer
   if (backendError && filmesBackend.length === 0) {
     return (
       <div className={styles.errorContainer}>
@@ -370,6 +371,7 @@ export default function Filmes() {
     );
   }
 
+  // Só renderiza o container principal se tiver dados
   return (
     <div className={`${styles.filmesContainer} ${isDarkMode ? styles.dark : ''}`}>
 
