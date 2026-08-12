@@ -23,7 +23,6 @@ import {
   FaPlus,
   FaUpload,
   FaEdit,
-  FaDrive,
 } from 'react-icons/fa';
 import { useTheme } from '../components/context/ThemeContext';
 import styles from '../styles/Fotos.module.css';
@@ -257,9 +256,7 @@ function Visualizador({
             {midia.categoria && <span><FaTag /> {midia.categoria}</span>}
             <span><FaFilm /> Sessão: {sessaoTitulo}</span>
             {midia.driveLink && (
-              <span>
-                <FaDrive /> Drive
-              </span>
+              <span>🔗 Link externo</span>
             )}
           </div>
         </div>
@@ -269,7 +266,7 @@ function Visualizador({
 }
 
 // ============================================================
-// FORM DE UPLOAD (usando classes do CSS)
+// FORM DE UPLOAD
 // ============================================================
 function UploadMidiaForm({
   onSubmit,
@@ -293,21 +290,52 @@ function UploadMidiaForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!titulo || !data || !categoria) return;
-    if (!file && !driveLink) {
-      alert('Envie um arquivo ou informe um link.');
+    
+    // Validação completa
+    if (!titulo.trim()) {
+      alert('O título é obrigatório.');
       return;
     }
-    await onSubmit({
-      titulo,
-      descricao,
+    if (!descricao.trim()) {
+      alert('A descrição é obrigatória.');
+      return;
+    }
+    if (!data) {
+      alert('A data é obrigatória.');
+      return;
+    }
+    if (!categoria.trim()) {
+      alert('A categoria é obrigatória.');
+      return;
+    }
+    
+    // Verifica se tem arquivo OU link
+    if (!file && !driveLink) {
+      alert('Envie um arquivo ou informe um link externo.');
+      return;
+    }
+
+    const payload: UploadMidiaPayload = {
+      titulo: titulo.trim(),
+      descricao: descricao.trim(),
       data,
-      categoria,
+      categoria: categoria.trim(),
       tipo,
-      driveLink: driveLink || undefined,
-      file: file || undefined,
-      url: !file && driveLink ? driveLink : undefined,
+    };
+
+    if (file) {
+      payload.file = file;
+    } else if (driveLink) {
+      payload.driveLink = driveLink.trim();
+      payload.url = driveLink.trim();
+    }
+
+    console.log('📦 Payload final:', {
+      ...payload,
+      file: payload.file ? { name: payload.file.name, type: payload.file.type } : undefined,
     });
+
+    await onSubmit(payload);
   };
 
   return (
@@ -331,7 +359,11 @@ function UploadMidiaForm({
                     type="button"
                     key={t.value}
                     className={`${styles.filterTab} ${tipo === t.value ? styles.filterTabActive : ''}`}
-                    onClick={() => { setTipo(t.value as TipoMidia); setFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                    onClick={() => { 
+                      setTipo(t.value as TipoMidia); 
+                      setFile(null); 
+                      if (fileInputRef.current) fileInputRef.current.value = ''; 
+                    }}
                   >
                     <Icon /> {t.label.replace(/s$/, '')}
                   </button>
@@ -342,6 +374,7 @@ function UploadMidiaForm({
 
           <div className={styles.formSection}>
             <div className={styles.formSectionTitle}>Informações</div>
+            
             <div className={styles.formGroup}>
               <label>Título *</label>
               <input
@@ -353,12 +386,13 @@ function UploadMidiaForm({
             </div>
 
             <div className={styles.formGroup}>
-              <label>Descrição</label>
+              <label>Descrição *</label>
               <textarea
                 placeholder="Descrição detalhada"
                 value={descricao}
                 onChange={e => setDescricao(e.target.value)}
                 rows={3}
+                required
               />
             </div>
 
@@ -409,6 +443,7 @@ function UploadMidiaForm({
                 value={driveLink}
                 onChange={e => setDriveLink(e.target.value)}
               />
+              <small>Use esta opção para links do Google Drive, YouTube, etc.</small>
             </div>
           </div>
 
@@ -549,6 +584,7 @@ export default function Fotos() {
     if (!sessaoId) return;
     setUploading(true);
     try {
+      console.log('📤 Enviando mídia para sessão:', sessaoId);
       await SessoesService.addMidia(sessaoId, payload);
       await reloadSessao();
       setShowUploadForm(false);
