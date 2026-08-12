@@ -58,8 +58,14 @@ export type UpdateMidiaPayload = Partial<Omit<UploadMidiaPayload, 'file'>>;
 
 const SessoesService = {
   async findAll(page = 1, limit = 20): Promise<PaginationResult<Sessao>> {
+    // ✅ CORRIGIDO - Parâmetros simples, sem aninhamento
     const { data } = await api.get<PaginationResult<Sessao>>('/sessoes', {
-      params: { page, limit },
+      params: { 
+        page, 
+        limit,
+        orderBy: 'dataSessao',
+        order: 'desc'
+      },
     });
     return data;
   },
@@ -72,16 +78,15 @@ const SessoesService = {
   async addMidia(sessaoId: string, payload: UploadMidiaPayload): Promise<Foto> {
     const form = new FormData();
     
-    // Campos obrigatórios do AddFotoDto
+    // Campos obrigatórios
     form.append('titulo', payload.titulo);
     form.append('descricao', payload.descricao || '');
     form.append('data', payload.data);
     form.append('categoria', payload.categoria || 'geral');
     form.append('tipo', payload.tipo);
 
-    // 🔑 CRUCIAL: O campo do arquivo DEVE ser 'foto' (definido no FileInterceptor)
     if (payload.file) {
-      form.append('foto', payload.file); // ← Nome correto: 'foto'
+      form.append('foto', payload.file);
       form.append('usarUpload', 'true');
     } else if (payload.url) {
       form.append('url', payload.url);
@@ -91,9 +96,8 @@ const SessoesService = {
       form.append('usarUpload', 'false');
     }
 
-    // Log detalhado para debug
+    // Log para debug
     console.log('📤 Enviando para /sessoes/${sessaoId}/fotos/upload');
-    console.log('📋 FormData:');
     for (let [key, value] of form.entries()) {
       if (value instanceof File) {
         console.log(`  ${key}: [File] ${value.name} (${value.type}, ${value.size} bytes)`);
@@ -112,13 +116,11 @@ const SessoesService = {
           },
         }
       );
-      console.log('✅ Upload realizado com sucesso:', data);
       return data;
     } catch (error: any) {
       console.error('❌ Erro no upload:');
       console.error('  Status:', error.response?.status);
       console.error('  Data:', error.response?.data);
-      console.error('  Message:', error.message);
       throw error;
     }
   },
