@@ -72,17 +72,17 @@ const SessoesService = {
   async addMidia(sessaoId: string, payload: UploadMidiaPayload): Promise<Foto> {
     const form = new FormData();
     
-    // Campos obrigatórios
+    // Campos obrigatórios do AddFotoDto
     form.append('titulo', payload.titulo);
     form.append('descricao', payload.descricao || '');
     form.append('data', payload.data);
     form.append('categoria', payload.categoria || 'geral');
     form.append('tipo', payload.tipo);
 
-    // 🔑 CRUCIAL: usarUpload deve ser 'true' quando tem arquivo
+    // 🔑 CRUCIAL: O campo do arquivo DEVE ser 'foto' (definido no FileInterceptor)
     if (payload.file) {
-      form.append('file', payload.file); // Nome do campo: 'file' (padrão do multer)
-      form.append('usarUpload', 'true'); // String 'true' - o backend vai converter para boolean
+      form.append('foto', payload.file); // ← Nome correto: 'foto'
+      form.append('usarUpload', 'true');
     } else if (payload.url) {
       form.append('url', payload.url);
       form.append('usarUpload', 'false');
