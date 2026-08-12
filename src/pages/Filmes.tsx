@@ -365,6 +365,7 @@ export default function Filmes() {
 
   const clearAllFilters = () => { setSearchTerm(''); setActiveFilter('all'); resetFilters(); };
 
+  // ✅ LOADING CORRIGIDO - igual ao Fotos.tsx com spinner girando
   if (isLoading && filmesBackend.length === 0) {
     return (
       <div className={`${styles.filmesContainer} ${isDarkMode ? styles.dark : ''}`}>
@@ -536,7 +537,6 @@ export default function Filmes() {
                       </span>
                     </div>
 
-                    {/* ✅ CORRIGIDO: usando getStatusClass */}
                     <div className={styles.listItemFooter}>
                       <div className={styles.listItemDate}>
                         <FaCalendarAlt aria-hidden="true" /> {filme.date.split(',')[0]}
@@ -661,7 +661,6 @@ export default function Filmes() {
               <div className={styles.detailsMainContent}>
                 <div className={styles.leftColumn}>
                   <div className={styles.posterContainer}>
-                    {/* ✅ IMAGEM COM KEY PARA FORÇAR RE-RENDER */}
                     <img
                       key={imageKey}
                       src={getFilmeImageUrl(selectedFilme)}
@@ -670,7 +669,6 @@ export default function Filmes() {
                       onError={() => handleImageError(selectedFilme.id)}
                     />
                     <div className={styles.filmeStatusBadge}>
-                      {/* ✅ CORRIGIDO: usando getStatusClass */}
                       <span className={`${styles.statusBadge} ${getStatusClass(selectedFilme.status) || styles.próximo}`}>
                         {selectedFilme.status === 'Próximo' ? 'Em Breve' : 'Exibido'}
                       </span>
