@@ -115,7 +115,6 @@
 
 .logoImage {
   height: clamp(48px, 8vw, 180px);
-  max-height: 80%;
   width: auto;
   filter: brightness(0) invert(1);
 }
