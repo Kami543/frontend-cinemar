@@ -10,15 +10,17 @@
 /* ── Base ── */
 .footer {
   position: relative;
-  width: 100vw;
+  width: 100%; /* ← MUDOU de 100vw para 100% */
+  max-width: 100%; /* ← GARANTE que não ultrapasse */
   background-color: #0a0a0a;
   color: #fff;
   padding: 2.5rem 0 1.25rem;
   animation: slideUp 0.5s ease-out;
-  left: 0; right: 0; margin: 0;
+  margin: 0;
   box-sizing: border-box;
   z-index: 100;
   flex-shrink: 0;
+  overflow-x: hidden; /* ← IMPEDE overflow horizontal */
 }
 
 /* ── Layout principal ── */
@@ -28,10 +30,11 @@
   align-items: flex-start;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 40px;          /* mais fôlego no desktop */
+  padding: 0 40px;
   width: 100%;
   min-height: 160px;
   gap: 2rem;
+  box-sizing: border-box;
 }
 
 /* ── Logo (esquerda) ── */
@@ -59,7 +62,6 @@
   object-fit: contain;
   filter: brightness(0) invert(1);
   opacity: 0.9;
-  /* Evita que a logo quebre o layout em telas pequenas */
   max-width: min(140px, 35vw);
 }
 
@@ -71,6 +73,7 @@
   align-items: flex-end;
   text-align: right;
   animation: fadeIn 0.8s ease-out 0.4s both;
+  min-width: 0; /* ← PERMITE ENCOLHER */
 }
 
 /* ── Links de navegação ── */
@@ -95,7 +98,6 @@
   font-size: 0.9rem;
   font-weight: 400;
   transition: color 0.2s ease;
-  /* Área de toque mínima 44px — bom para touch e não prejudica o desktop */
   min-height: 44px;
   display: inline-flex;
   align-items: center;
@@ -118,6 +120,7 @@
   align-items: flex-end;
   gap: 0.3rem;
   margin-top: auto;
+  width: 100%; /* ← GARANTE LARGURA TOTAL */
 }
 
 .termsContainer {
@@ -161,12 +164,6 @@
 
 /* ════════════════════════════════
    RESPONSIVO
-   Desktop  → ≥ 1024px  (padrão acima)
-   Notebook → 769–1023px
-   Tablet   → 601–768px
-   Mobile   → ≤ 600px
-   Pequeno  → ≤ 480px
-   Mini     → ≤ 360px
    ════════════════════════════════ */
 
 /* Notebook / laptop menor */
@@ -256,7 +253,7 @@
   .copyright  { font-size: 0.65rem; }
 }
 
-/* Mini (≤360px — Galaxy A, iPhone SE) */
+/* Mini (≤360px) */
 @media (max-width: 360px) {
   .footerLogo { height: 68px; }
 
