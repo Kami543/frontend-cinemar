@@ -1,4 +1,4 @@
-/* Filmes.module.css - Versão Completa com listItemAdminActions */
+/* Filmes.module.css - Versão Completa Final */
 
 /* ===== VARIÁVEIS GLOBAIS ===== */
 :root {
@@ -460,9 +460,8 @@
   flex-shrink: 0;
 }
 
-/* ✅ Wrapper para botões admin - desktop: transparente, mobile: escondido */
 .listItemAdminActions {
-  display: contents; /* desktop: os botões continuam soltos no flex do itemActions */
+  display: contents;
 }
 
 .actionBtn {
@@ -1921,7 +1920,7 @@
   .posterContainer        { height: 265px; }
 }
 
-/* Mobile - Sidebar embaixo do conteúdo com mesma largura */
+/* ===== MOBILE - Sidebar embaixo do conteúdo com mesma largura ===== */
 @media (max-width: 768px) {
   .heroHeader             { padding: 1.25rem 1rem; }
   .heroTitle              { font-size: 1.5rem; }
@@ -1944,6 +1943,7 @@
     order: unset;
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     box-sizing: border-box;
     flex-shrink: 0;
   }
@@ -1980,13 +1980,9 @@
     overflow: hidden;
   }
 
-  /* ✅ Esconder botões admin na lista em mobile */
   .listItemAdminActions {
     display: none !important;
   }
-
-  /* Remove a regra antiga que escondia por nth-child */
-  /* .itemActions .actionBtn:nth-child(n+3) { display: none; } */
 
   .detailsMainContent     { grid-template-columns: 1fr; }
   .posterContainer        { max-width: 260px; height: 320px; margin: 0 auto; }
@@ -2045,6 +2041,7 @@
   }
 }
 
+/* ===== MOBILE PEQUENO ===== */
 @media (max-width: 480px) {
   .heroTitle              { font-size: 1.25rem; }
   
@@ -2092,6 +2089,7 @@
   }
 }
 
+/* ===== MOBILE MUITO PEQUENO ===== */
 @media (max-width: 380px) {
   .filmesContent          { 
     gap: 0.5rem;
@@ -2124,7 +2122,7 @@
   }
 }
 
-/* Proteção para imagens */
+/* ===== PROTEÇÃO PARA IMAGENS ===== */
 .filmeThumbnail,
 .posterImage,
 .fotoItem img {
@@ -2132,7 +2130,7 @@
   height: auto;
 }
 
-/* Scroll suave */
+/* ===== SCROLL SUAVE ===== */
 .filmeList {
   overflow-y: auto;
   overflow-x: hidden;
