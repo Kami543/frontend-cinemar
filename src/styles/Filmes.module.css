@@ -1,4 +1,4 @@
-/* Filmes.module.css - Versão Completa Corrigida */
+/* Filmes.module.css - Versão Completa com listItemAdminActions */
 
 /* ===== VARIÁVEIS GLOBAIS ===== */
 :root {
@@ -458,6 +458,11 @@
   gap: 0.25rem;
   margin-left: auto;
   flex-shrink: 0;
+}
+
+/* ✅ Wrapper para botões admin - desktop: transparente, mobile: escondido */
+.listItemAdminActions {
+  display: contents; /* desktop: os botões continuam soltos no flex do itemActions */
 }
 
 .actionBtn {
@@ -1189,7 +1194,6 @@
 }
 .filmesContainer.dark .buttonSubtitle { color: var(--dark-text-secondary); }
 
-/* ✅ RENOMEADO - Spinner para botões de acesso (não conflita com o de tela cheia) */
 .buttonSpinner {
   animation: spin 1s linear infinite;
   font-size: 0.875rem;
@@ -1366,7 +1370,6 @@
   padding: 0;
 }
 
-/* ✅ SPINNER DE TELA CHEIA - NÃO TEM margin-left: auto */
 .loadingSpinner {
   font-size: 2.5rem;
   color: var(--primary-red);
@@ -1925,7 +1928,6 @@
   .heroSubtitle           { font-size: 0.9rem; }
   .heroHeaderTop          { margin-bottom: 1rem; }
 
-  /* ✅ CORREÇÃO PRINCIPAL - Garantir mesma largura */
   .filmesContent { 
     display: flex !important;
     flex-direction: column !important;
@@ -1937,7 +1939,6 @@
     box-sizing: border-box;
   }
 
-  /* ✅ Forçar mesma largura para sidebar e detalhes */
   .sidebar,
   .filmeDetails {
     order: unset;
@@ -1957,7 +1958,6 @@
     order: 1 !important;
   }
 
-  /* ✅ CORREÇÃO - Evitar que texto estoure o card */
   .filmeListItem {
     grid-template-columns: 64px minmax(0, 1fr) !important;
     gap: 0.75rem;
@@ -1967,7 +1967,6 @@
     box-sizing: border-box;
   }
 
-  /* ✅ Garantir que textos quebrem */
   .listItemTitle,
   .listItemDirector,
   .listItemMeta span {
@@ -1980,6 +1979,14 @@
     min-width: 0;
     overflow: hidden;
   }
+
+  /* ✅ Esconder botões admin na lista em mobile */
+  .listItemAdminActions {
+    display: none !important;
+  }
+
+  /* Remove a regra antiga que escondia por nth-child */
+  /* .itemActions .actionBtn:nth-child(n+3) { display: none; } */
 
   .detailsMainContent     { grid-template-columns: 1fr; }
   .posterContainer        { max-width: 260px; height: 320px; margin: 0 auto; }
@@ -2022,7 +2029,6 @@
     font-size: 1rem;
   }
 
-  /* ✅ Corrigir textos longos nos cards da lista */
   .listItemMeta {
     flex-wrap: wrap;
     gap: 0.25rem;
@@ -2064,9 +2070,6 @@
   .floatingAddBtn         { bottom: 1rem; right: 1rem; width: 42px; height: 42px; font-size: 1rem; }
   .toast                  { bottom: 4rem; max-width: calc(100vw - 2rem); white-space: normal; }
   
-  /* ✅ Esconder botões extras em telas muito pequenas */
-  .itemActions .actionBtn:nth-child(n+3) { display: none; }
-  
   .fotosGrid {
     grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
     gap: 0.5rem;
@@ -2080,7 +2083,6 @@
     max-height: 350px;
   }
 
-  /* ✅ Ajustar textos */
   .listItemTitle {
     font-size: 0.8rem;
   }

@@ -488,7 +488,7 @@ export default function Filmes() {
                           {watchlist.includes(filme.id) ? <FaBookmark /> : <FaRegBookmark />}
                         </button>
                         {isAdmin && (
-                          <>
+                          <div className={styles.listItemAdminActions}>
                             <button
                               className={styles.actionBtn}
                               onClick={e => { e.stopPropagation(); openEditFilme(filme); }}
@@ -505,7 +505,7 @@ export default function Filmes() {
                             >
                               <FaTrash aria-hidden="true" />
                             </button>
-                          </>
+                          </div>
                         )}
                       </div>
                     </div>
