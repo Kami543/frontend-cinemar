@@ -43,6 +43,40 @@ interface PaginationResult<T> {
   totalPages: number;
 }
 
+// ── Query DTOs (batem com QuerySessaoDto/QueryFotoDto do backend) ──
+
+export interface QuerySessaoDto {
+  page?: number;
+  limit?: number;
+  search?: string;
+  diretor?: string;
+  ano?: number;
+  orderBy?: 'dataSessao' | 'titulo' | 'createdAt';
+  order?: 'asc' | 'desc';
+}
+
+export interface QueryFotoDto {
+  page?: number;
+  limit?: number;
+  categoria?: string;
+  tipo?: TipoMidia;
+}
+
+// ── Payloads de sessão (CRUD usado pelo useSessoes.ts) ──
+
+export interface CreateSessaoPayload {
+  titulo: string;
+  diretor: string;
+  ano: number;
+  dataSessao: string;
+  descricao: string;
+  participantes?: number;
+}
+
+export type UpdateSessaoPayload = Partial<CreateSessaoPayload>;
+
+// ── Payloads de mídia ──
+
 export interface UploadMidiaPayload {
   titulo: string;
   descricao: string;
@@ -56,15 +90,30 @@ export interface UploadMidiaPayload {
 
 export type UpdateMidiaPayload = Partial<Omit<UploadMidiaPayload, 'file'>>;
 
+// AddFotoPayload é o formato aceito por /sessoes/:id/fotos/upload sem arquivo
+// (link direto), usado pelo useSessoes.ts -> addFoto
+export interface AddFotoPayload {
+  titulo: string;
+  descricao: string;
+  data: string;
+  categoria: string;
+  tipo: TipoMidia;
+  driveLink?: string;
+  url?: string;
+}
+
 const SessoesService = {
-  async findAll(page = 1, limit = 20): Promise<PaginationResult<Sessao>> {
-    // ✅ CORRIGIDO - Parâmetros simples, sem aninhamento
+  // Aceita a query inteira como objeto — é isso que useSessoes.ts manda
+  async findAll(query: QuerySessaoDto = {}): Promise<PaginationResult<Sessao>> {
     const { data } = await api.get<PaginationResult<Sessao>>('/sessoes', {
-      params: { 
-        page, 
-        limit,
-        orderBy: 'dataSessao',
-        order: 'desc'
+      params: {
+        page: query.page ?? 1,
+        limit: query.limit ?? 20,
+        orderBy: query.orderBy ?? 'dataSessao',
+        order: query.order ?? 'desc',
+        ...(query.search ? { search: query.search } : {}),
+        ...(query.diretor ? { diretor: query.diretor } : {}),
+        ...(query.ano ? { ano: query.ano } : {}),
       },
     });
     return data;
@@ -75,10 +124,48 @@ const SessoesService = {
     return data;
   },
 
+  async create(payload: CreateSessaoPayload): Promise<Sessao> {
+    const { data } = await api.post<Sessao>('/sessoes', payload);
+    return data;
+  },
+
+  async update(id: string, payload: UpdateSessaoPayload): Promise<Sessao> {
+    const { data } = await api.patch<Sessao>(`/sessoes/${id}`, payload);
+    return data;
+  },
+
+  async remove(id: string): Promise<void> {
+    await api.delete(`/sessoes/${id}`);
+  },
+
+  async findFotos(sessaoId: string, query: QueryFotoDto = {}): Promise<PaginationResult<Foto>> {
+    const { data } = await api.get<PaginationResult<Foto>>(`/sessoes/${sessaoId}/fotos`, {
+      params: query,
+    });
+    return data;
+  },
+
+  // link direto, sem upload de arquivo (rota .../fotos/upload aceita ambos
+  // via usarUpload=false)
+  async addFoto(sessaoId: string, payload: AddFotoPayload): Promise<Foto> {
+    const form = new FormData();
+    form.append('titulo', payload.titulo);
+    form.append('descricao', payload.descricao || '');
+    form.append('data', payload.data);
+    form.append('categoria', payload.categoria || 'geral');
+    form.append('tipo', payload.tipo);
+    form.append('usarUpload', 'false');
+    if (payload.url) form.append('url', payload.url);
+    if (payload.driveLink) form.append('driveLink', payload.driveLink);
+
+    const { data } = await api.post<Foto>(`/sessoes/${sessaoId}/fotos/upload`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
+
   async addMidia(sessaoId: string, payload: UploadMidiaPayload): Promise<Foto> {
     const form = new FormData();
-    
-    // Campos obrigatórios
     form.append('titulo', payload.titulo);
     form.append('descricao', payload.descricao || '');
     form.append('data', payload.data);
@@ -96,33 +183,10 @@ const SessoesService = {
       form.append('usarUpload', 'false');
     }
 
-    // Log para debug
-    console.log('📤 Enviando para /sessoes/${sessaoId}/fotos/upload');
-    for (let [key, value] of form.entries()) {
-      if (value instanceof File) {
-        console.log(`  ${key}: [File] ${value.name} (${value.type}, ${value.size} bytes)`);
-      } else {
-        console.log(`  ${key}: "${value}"`);
-      }
-    }
-
-    try {
-      const { data } = await api.post<Foto>(
-        `/sessoes/${sessaoId}/fotos/upload`,
-        form,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-      return data;
-    } catch (error: any) {
-      console.error('❌ Erro no upload:');
-      console.error('  Status:', error.response?.status);
-      console.error('  Data:', error.response?.data);
-      throw error;
-    }
+    const { data } = await api.post<Foto>(`/sessoes/${sessaoId}/fotos/upload`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
   },
 
   async updateMidia(fotoId: string, payload: UpdateMidiaPayload): Promise<Foto> {
@@ -131,6 +195,11 @@ const SessoesService = {
   },
 
   async removeMidia(sessaoId: string, fotoId: string): Promise<void> {
+    await api.delete(`/sessoes/${sessaoId}/fotos/${fotoId}`);
+  },
+
+  // alias usado pelo useSessoes.ts
+  async removeFoto(sessaoId: string, fotoId: string): Promise<void> {
     await api.delete(`/sessoes/${sessaoId}/fotos/${fotoId}`);
   },
 };

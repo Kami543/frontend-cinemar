@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  FaCalendarAlt, 
-  FaClock, 
-  FaMapMarkerAlt, 
-  FaArrowRight, 
-  FaFilm, 
+  FaCalendarAlt,
+  FaClock,
+  FaMapMarkerAlt,
+  FaArrowRight,
+  FaFilm,
   FaHeart,
   FaStar,
   FaQuoteRight,
@@ -21,88 +21,40 @@ import {
   FaComments,
   FaAngleRight,
   FaRegCircle,
-  FaUsers 
+  FaUsers
 } from 'react-icons/fa';
-import Corra from '../images/filmes/Corra.jpg';
-import AgenteSecreto from '../images/filmes/O-agente-secreto.jpg';
 import { useTheme } from '../components/context/ThemeContext';
 import LoadingScreen from '../components/common/LoadingScreen';
+import { useFilmes } from '../hooks/useFilmes';
 import styles from '../styles/HomePage.module.css';
 
-interface Filme {
-  id: number;
-  title: string;
-  director: string;
-  year: number;
-  poster: string;
-  genre: string;
-  duration: string;
-  rating: number;
-  description: string;
-  date: string;
-  status: 'Realizado' | 'Próximo';
-  highlight: boolean;
-  views?: number;
+const API_BASE = import.meta.env.VITE_API_URL ?? 'https://backend-cinemar-6.onrender.com';
+const PLACEHOLDER_IMAGE = '/placeholder.jpg';
+
+function buildMediaUrl(path?: string | null): string | null {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
+function getPoster(filme: any): string {
+  const principal = filme.filmesFotos?.find((f: any) => f.principal) ?? filme.filmesFotos?.[0];
+  return buildMediaUrl(principal?.path) ?? buildMediaUrl(filme.imageUrl) ?? PLACEHOLDER_IMAGE;
 }
 
 function HomePage() {
-  const [ultimoFilme, setUltimoFilme] = useState<Filme | null>(null);
-  const [proximoFilme, setProximoFilme] = useState<Filme | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { theme } = useTheme();
-  useEffect(() => {
-    const loadData = () => {
-      const filmesData: Filme[] = [
-        { 
-          id: 8, 
-          title: 'Corra!', 
-          director: 'Jordan Peele',
-          year: 2017,
-          poster: Corra, 
-          genre: 'Terror/Suspense', 
-          duration: '104 min', 
-          rating: 4.8,
-          description: 'Chris, um jovem fotógrafo negro, visita a família de sua namorada branca pela primeira vez. O que começa como um fim de semana tenso se transforma em um pesadelo psicológico perturbador que revela preconceitos e tensões raciais profundamente enraizadas na sociedade.',
-          date: '23 de Novembro, 2024',
-          status: 'Realizado',
-          highlight: false,
-          views: 4120
-        },
-        { 
-          id: 12, 
-          title: 'O Agente Secreto', 
-          director: 'Kleber Mendonça Filho',
-          year: 2025,
-          poster: AgenteSecreto, 
-          genre: 'Thriller Político/Drama', 
-          duration: '158 min', 
-          rating: 4.4,
-          description: 'Durante a ditadura militar brasileira, o ex-professor Armando retorna a Recife em busca de refúgio, mas se vê perseguido por um passado político violento e envolto em uma teia de corrupção e segredos.',
-          date: '6 de Novembro, 2025',
-          status: 'Próximo',
-          highlight: true,
-          views: 0
-        }
-      ];
-      
-      const realizados = filmesData.filter(f => f.status === 'Realizado');
-      if (realizados.length > 0) {
-        const ultimo = realizados.reduce((prev, current) => 
-          prev.id > current.id ? prev : current
-        );
-        setUltimoFilme(ultimo);
-      }
-      
-      const proximos = filmesData.filter(f => f.status === 'Próximo');
-      if (proximos.length > 0) {
-        setProximoFilme(proximos[0]);
-      }
-      
-      setIsLoading(false);
-    };
+  const { filmes, isLoading } = useFilmes({ limit: 100 });
 
-    setTimeout(loadData, 500);
-  }, []);
+  const realizados = filmes.filter(f => f.status === 'Realizado');
+  const ultimoFilme = realizados.length
+    ? realizados.reduce((prev, curr) => (new Date(curr.date) > new Date(prev.date) ? curr : prev))
+    : null;
+
+  const proximos = filmes
+    .filter(f => f.status === 'Próximo')
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const proximoFilme = proximos[0] ?? null;
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -273,7 +225,7 @@ function HomePage() {
                   
                   <div className={styles.filmeContent}>
                     <div className={styles.filmePoster}>
-                      <img src={ultimoFilme.poster} alt={ultimoFilme.title} />
+                      <img src={getPoster(ultimoFilme)} alt={ultimoFilme.title} />
                     </div>
                     
                     <div className={styles.filmeInfo}>
@@ -296,7 +248,7 @@ function HomePage() {
                         </div>
                         <div className={styles.filmeStat}>
                           <FaStar className={styles.statIcon} />
-                          <span>{ultimoFilme.rating.toFixed(1)}</span>
+                          <span>{(ultimoFilme.rating ?? 0).toFixed(1)}</span>
                         </div>
                       </div>
                       
@@ -366,7 +318,7 @@ function HomePage() {
                       </div>
                       <div className={styles.metaItem}>
                         <FaStar className={styles.metaIcon} />
-                        <span>{proximoFilme.rating.toFixed(1)}</span>
+                        <span>{(proximoFilme.rating ?? 0).toFixed(1)}</span>
                       </div>
                     </div>
                     
@@ -409,7 +361,7 @@ function HomePage() {
                   </div>
                   
                   <div className={styles.featuredPoster}>
-                    <img src={proximoFilme.poster} alt={proximoFilme.title} />
+                    <img src={getPoster(proximoFilme)} alt={proximoFilme.title} />
                   </div>
                 </div>
               </div>
