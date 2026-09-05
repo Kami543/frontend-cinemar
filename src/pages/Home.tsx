@@ -339,7 +339,7 @@ function HomePage() {
                           <strong>Endereço:</strong> Rua EUA, 118, Praia - Camocim/CE
                         </div>
                         <div className={styles.detailItem}>
-                          <strong>Horário:</strong> 19:30h
+                          <strong>Horário:</strong> 18:30h
                         </div>
                         <div className={styles.detailItem}>
                           <strong>Entrada:</strong> Gratuita • 16 anos

@@ -2073,7 +2073,10 @@
   }
   
   .sidebar {
-    max-height: 450px;
+    position: static !important;  /* remove o sticky, sidebar volta ao fluxo normal */
+    top: auto;
+    max-height: 500px;
+    margin-top: 0;
   }
   
   .filmeList {
